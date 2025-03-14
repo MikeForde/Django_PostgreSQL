@@ -1,0 +1,10 @@
+<h1>Event List</h1>
+<ul>
+  {% for e in events %}
+    <li>
+      {{ e.inserted }} |<a href="{% url 'event_detail' e.id %}">Event ID {{ e.id }}</a>
+      | {{ e.display_term }} | {{ e.descriptive_text }}
+    </li>
+  {% endfor %}
+</ul>
+
