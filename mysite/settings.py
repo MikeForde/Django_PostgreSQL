@@ -80,6 +80,14 @@ DATABASES = {
     }
 }
 
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    # 'django.contrib.auth.hashers.BCryptSHA256PasswordHasher', # also FIPS-compliant in most cases
+    # 'django.contrib.auth.hashers.Argon2PasswordHasher',        # if Argon2 is supported and installed
+    # 'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',    # SHA1 may be disallowed under strict FIPS
+]
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
