@@ -20,7 +20,11 @@ SECRET_KEY = 'django-insecure-m8sm5q*c-pri$a$vlnhj3vgil-&29=2+oi9h*z#7c6l4+q*o#z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'django-postgre-sql-uksc-medsnomed-medsno.apps.ocp1.azure.dso.digital.mod.uk',
+    # Optionally add other hosts or wildcard subdomains
+    # '.apps.ocp1.azure.dso.digital.mod.uk',
+]
 
 
 # Application definition
