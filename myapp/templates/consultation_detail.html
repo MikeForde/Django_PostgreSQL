@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Consultation Detail</h1>
+
+<p><strong>ID:</strong> {{ consultation.id }}</p>
+<p><strong>Patient ID:</strong> {{ consultation.patient_id }}</p>
+<p><strong>Assigned Date:</strong> {{ consultation.assigned_date }}</p>
+<p><strong>Location:</strong> {{ consultation.location_id }}</p>
+<p><strong>Consultation Type:</strong> {{ consultation.consultation_type }}</p>
+<p><strong>Duration:</strong> {{ consultation.duration }}</p>
+<p><strong>External Consultant:</strong> {{ consultation.external_consultant }}</p>
+
+<a href="{% url 'consultation_list' %}">Back to Consultations</a>
+{% endblock %}

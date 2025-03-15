@@ -1,10 +1,33 @@
-<h1>Event List</h1>
-<ul>
-  {% for e in events %}
-    <li>
-      {{ e.inserted }} |<a href="{% url 'event_detail' e.id %}">Event ID {{ e.id }}</a>
-      | {{ e.display_term }} | {{ e.descriptive_text }}
-    </li>
-  {% endfor %}
-</ul>
+{% extends "base.html" %}
 
+{% block title %}Events{% endblock %}
+
+{% block content %}
+<h1>Events</h1>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Patient ID</th>
+            <th>Assigned Date</th>
+            <th>Display Term</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for event in events %}
+        <tr>
+            <td>{{ event.id }}</td>
+            <td>{{ event.patient_id }}</td>
+            <td>{{ event.assigned_date }}</td>
+            <td>{{ event.display_term }}</td>
+            <td><a href="{% url 'event_detail' event.id %}">View</a></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No events available.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

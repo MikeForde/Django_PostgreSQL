@@ -22,6 +22,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'django-postgre-sql-uksc-medsnomed-medsno.apps.ocp1.azure.dso.digital.mod.uk',
+    'localhost',
     # Optionally add other hosts or wildcard subdomains
     # '.apps.ocp1.azure.dso.digital.mod.uk',
 ]

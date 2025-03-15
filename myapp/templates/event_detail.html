@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h1>Event Detail</h1>
 <table>
     <tr><th>ID</th><td>{{ event.id }}</td></tr>
@@ -38,3 +41,4 @@
     <tr><th>Updated</th><td>{{ event.updated }}</td></tr>
     <tr><th>Inserted</th><td>{{ event.inserted }}</td></tr>
 </table>
+{% endblock %}

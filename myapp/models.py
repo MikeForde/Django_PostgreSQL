@@ -1,4 +1,5 @@
-from django.db import models
+from django.db import models, connection
+from django.utils.safestring import mark_safe
 import uuid
 
 class MrEvent(models.Model):
@@ -44,3 +45,59 @@ class MrEvent(models.Model):
         managed = False  # Do not create or alter this table via migrations
         db_table = '"emispatient"."mr_event"'
         app_label = 'myapp'
+
+    @staticmethod
+    def get_events_by_consultation(consultation_id):
+        """
+        Fetches all events linked to a given consultation, using a raw SQL join.
+        Replaces `<c>` in `descriptive_text` with `display_term` and filters out unwanted entries.
+        """
+        query = """
+            SELECT e.id, e.descriptive_text, e.display_term
+            FROM "emispatient"."mr_event" e
+            JOIN "emispatient"."mr_consultation_content" c
+                ON e.id = c.item_id
+            WHERE e.consultation_id = %s
+            ORDER BY c.heading_id, c.display_order
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(query, [consultation_id])
+            columns = [col[0] for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+        # Replace `<c>` with `display_term` and filter out unwanted rows
+        filtered_results = []
+        for result in results:
+            descriptive_text = result["descriptive_text"] or ""
+            display_term = result["display_term"] or ""
+            formatted_text = descriptive_text.replace("<c>", display_term)
+            
+            # Remove entries with "Fit for Full Duties within current MES"
+            if formatted_text.strip().lower() != "fit for full duties within current mes":
+                result["formatted_text"] = mark_safe(formatted_text)  # Mark safe to allow rendering
+                filtered_results.append(result)
+
+        return filtered_results
+
+
+class MrConsultation(models.Model):
+    id = models.IntegerField(primary_key=True)
+    assigned_date = models.DateTimeField()
+    date_part = models.SmallIntegerField()
+    user_id = models.IntegerField(null=True, blank=True)
+    patient_id = models.IntegerField()
+    location_id = models.IntegerField(null=True, blank=True)
+    location_type_id = models.IntegerField(null=True, blank=True)
+    accompanying_hcp_id = models.IntegerField(null=True, blank=True)
+    external_consultant = models.CharField(max_length=50, null=True, blank=True)
+    consultation_type = models.SmallIntegerField(null=True, blank=True)
+    duration = models.SmallIntegerField(null=True, blank=True)
+    travel_time = models.SmallIntegerField(null=True, blank=True)
+    appointment_slot_id = models.IntegerField(null=True, blank=True)
+    data_source_id = models.SmallIntegerField()
+    policy_id = models.IntegerField(null=True, blank=True)
+    deleted = models.BooleanField()
+
+    class Meta:
+        managed = False  # We are using an existing table
+        db_table = '"emispatient"."mr_consultation"'

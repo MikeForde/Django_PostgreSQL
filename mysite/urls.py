@@ -22,4 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('events/', views.event_list, name='event_list'),
     path('events/<int:event_id>/', views.event_detail, name='event_detail'),
+    path('consultations/', views.consultation_list, name='consultation_list'),
+    path('consultations/<int:consultation_id>/', views.consultation_detail, name='consultation_detail'),
+    path('consultations/<int:consultation_id>/events/', views.consultation_combined_view, name='consultation_combined'),
 ]

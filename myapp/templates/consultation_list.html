@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Consultations</h1>
+<table border="1">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Patient ID</th>
+            <th>Assigned Date</th>
+            <th>Location</th>
+            <th>Consultation Type</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for consultation in consultations %}
+        <tr>
+            <td>{{ consultation.id }}</td>
+            <td>{{ consultation.patient_id }}</td>
+            <td>{{ consultation.assigned_date }}</td>
+            <td>{{ consultation.location_id }}</td>
+            <td>{{ consultation.consultation_type }}</td>
+            <td>
+                <a href="{% url 'consultation_combined' consultation.id %}">View</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No consultations available.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

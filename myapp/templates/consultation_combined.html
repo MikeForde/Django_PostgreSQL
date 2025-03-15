@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Consultation & Events{% endblock %}
+
+{% block content %}
+<h1>Consultation Details</h1>
+
+<p><strong>ID:</strong> {{ consultation.id }}</p>
+<p><strong>Patient ID:</strong> {{ consultation.patient_id }}</p>
+<p><strong>Assigned Date:</strong> {{ consultation.assigned_date }}</p>
+<p><strong>Location:</strong> {{ consultation.location_id }}</p>
+<p><strong>Consultation Type:</strong> {{ consultation.consultation_type }}</p>
+
+<h2>Related Events</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Combined Text and Codes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for event in events %}
+        <tr>
+            <td>{{ event.formatted_text }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No related events found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'consultation_list' %}">Back to Consultations</a>
+{% endblock %}
