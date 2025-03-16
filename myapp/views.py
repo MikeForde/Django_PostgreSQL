@@ -2,6 +2,12 @@ from django.shortcuts import render, get_object_or_404
 from .models import MrEvent
 from .models import MrConsultation
 
+def home_view(request):
+    """
+    Displays the landing page.
+    """
+    return render(request, 'home.html')
+
 def event_list(request):
     """
     Displays the first 100 MrEvent records in a list view.

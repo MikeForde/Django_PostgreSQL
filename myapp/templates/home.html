@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to My Django App{% endblock %}
+
+{% block content %}
+<h1>Welcome to the Mick-P</h1>
+<p>Here are some links to get started:</p>
+
+<ul>
+    <li><a href="{% url 'event_list' %}">View Events</a></li>
+    <li><a href="{% url 'consultation_list' %}">View Consultations</a></li>
+    <li><a href="/admin/">Go to Admin Site</a></li>
+</ul>
+{% endblock %}
