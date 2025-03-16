@@ -27,6 +27,10 @@ ALLOWED_HOSTS = [
     # '.apps.ocp1.azure.dso.digital.mod.uk',
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://django-postgre-sql-uksc-medsnomed-medsno.apps.ocp1.azure.dso.digital.mod.uk",
+]
+
 
 # Application definition
 
