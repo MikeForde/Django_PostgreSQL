@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Import EMIS Template</h1>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Upload</button>
+  </form>
+  {% if controls %}
+    <h2>Preview</h2>
+    <div style="position:relative; border:1px solid #ccc; width:{{ canvas.width }}px; height:{{ canvas.height }}px;">
+      {% for c in controls %}
+        <div style="position:absolute;
+                    left:{{ c.x }}px;
+                    top:{{ c.y }}px;
+                    width:{{ c.width }}px;
+                    height:{{ c.height }}px;
+                    border:1px solid #000;
+                    overflow:hidden;
+                    font-size:12px;">
+          {{ c.type }}: {{ c.name }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

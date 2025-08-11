@@ -9,3 +9,7 @@
 - You need to set ALLOWED_HOSTS to the OS address for the webapp to be accessible via OS
 - For the admin/login function to workon OS you need to set the CSRF_TRUSTED_ORIGINS to the same OS address
 - The easiest way to set up the superuser is to connect to the OS PostgreSQL instance using the terminal oc method and then perform the createsuperuser in the local VS Code version of the Django webapp - you may need to change the database name in the local .env file if it doesn't match the one used in the OS version.
+
+## Importing EMIS Templates
+
+Visit `/import-tex/` to upload an EMIS PCS `.tex` file and preview its layout.
