@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from .models import MrEvent
 from .models import MrConsultation
+from .forms import TexUploadForm
+from .tex_parser import parse_tex
 
 def home_view(request):
     """
@@ -48,3 +50,19 @@ def consultation_combined_view(request, consultation_id):
         'consultation': consultation,
         'events': events
     })
+
+
+def import_tex_view(request):
+    """Upload and render an EMIS PCS template."""
+    form = TexUploadForm(request.POST or None, request.FILES or None)
+    controls = []
+    canvas = {"width": 0, "height": 0}
+    if request.method == "POST" and form.is_valid():
+        tex_file = form.cleaned_data["tex_file"]
+        content = tex_file.read().decode("latin-1")
+        controls = parse_tex(content)
+        if controls:
+            canvas["width"] = max(c.x + c.width for c in controls) + 10
+            canvas["height"] = max(c.y + c.height for c in controls) + 10
+    context = {"form": form, "controls": controls, "canvas": canvas}
+    return render(request, "import_tex.html", context)

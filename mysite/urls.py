@@ -26,4 +26,5 @@ urlpatterns = [
     path('consultations/', views.consultation_list, name='consultation_list'),
     path('consultations/<int:consultation_id>/', views.consultation_detail, name='consultation_detail'),
     path('consultations/<int:consultation_id>/events/', views.consultation_combined_view, name='consultation_combined'),
+    path('import-tex/', views.import_tex_view, name='import_tex'),
 ]
