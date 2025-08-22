@@ -1,27 +1,81 @@
+{# templates/import_template.html #}
 {% extends "base.html" %}
-
 {% block content %}
-  <h1>Import EMIS Template</h1>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Upload</button>
-  </form>
-  {% if controls %}
-    <h2>Preview</h2>
-    <div style="position:relative; border:1px solid #ccc; width:{{ canvas.width }}px; height:{{ canvas.height }}px;">
-      {% for c in controls %}
-        <div style="position:absolute;
-                    left:{{ c.x }}px;
-                    top:{{ c.y }}px;
-                    width:{{ c.width }}px;
-                    height:{{ c.height }}px;
-                    border:1px solid #000;
-                    overflow:hidden;
-                    font-size:12px;">
-          {{ c.type }}: {{ c.name }}
-        </div>
-      {% endfor %}
+<h1>Import EMIS Template</h1>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Upload</button>
+</form>
+
+{% if controls %}
+<h2>Preview</h2>
+<form method="post" action="{% url 'submit_tex_form' %}">
+  {% csrf_token %}
+  <div
+    style="position:relative; border:1px solid #ccc; width:{{ canvas.width }}px; height:{{ canvas.height }}px; font-size:12px;">
+    {% for c in controls %}
+    <div
+      style="position:absolute; left:{{ c.x }}px; top:{{ c.y }}px; width:{{ c.width }}px; height:{{ c.height }}px; overflow:hidden;">
+
+      {# Labels #}
+      {% if 'Label' in c.type %}
+      <label
+        style="display:block;
+              {% if c.font_name %}font-family:{{ c.font_name }};{% endif %}
+              {% if c.font_size_pt %}font-size:{{ c.font_size_pt }}pt;{% endif %}
+              {% if c.font_color %}color:{{ c.font_color }};{% endif %}
+              font-weight:{% if c.is_bold %}700{% else %}400{% endif %};">
+        {{ c.caption|default:c.name }}
+      </label>
+
+      {# Buttons #}
+      {% elif 'Button' in c.type %}
+      <button type="button" name="{{ c.name }}">
+        {{ c.caption|default:c.name }}
+      </button>
+
+      {# Read lists: exclusive -> radio group; else -> checkboxes/select #}
+      {% elif 'ReadList' in c.type %}
+      <fieldset style="border:0; padding:0; margin:0;">
+        {% if c.caption %}<legend style="font-weight:600;">{{ c.caption }}</legend>{% endif %}
+        {% if c.exclusive %}
+        {% for opt in c.options %}
+        <label style="display:block;">
+          <input type="radio" name="{{ c.name }}" value="{{ opt.code|default:opt.label }}">
+          {{ opt.label }}
+        </label>
+        {% endfor %}
+        {% else %}
+        {% for opt in c.options %}
+        <label style="display:block;">
+          <input type="checkbox" name="{{ c.name }}[]" value="{{ opt.code|default:opt.label }}">
+          {{ opt.label }}
+        </label>
+        {% endfor %}
+        {% endif %}
+      </fieldset>
+
+      {# ReadCode components -> text/number with unit and an associated prompt/label #}
+      {% elif 'ReadCode' in c.type %}
+      {% if c.prompt %}<label for="{{ c.name }}">{{ c.prompt }}</label>{% endif %}
+      <input id="{{ c.name }}" name="{{ c.name }}" type="text" style="width: 95%;">
+      {% if c.unit %}<small>{{ c.unit }}</small>{% endif %}
+
+      {# Fallback: show type and name (same as wireframe) #}
+      {% else %}
+      <div style="border:1px solid #000;">
+        {{ c.type }}: {{ c.name }}
+      </div>
+      {% endif %}
+
     </div>
-  {% endif %}
+    {% endfor %}
+  </div>
+
+  <div style="margin-top:1rem;">
+    <button type="submit">Submit (demo)</button>
+  </div>
+</form>
+{% endif %}
 {% endblock %}

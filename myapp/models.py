@@ -42,7 +42,7 @@ class MrEvent(models.Model):
     inserted = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        managed = False  # Do not create or alter this table via migrations
+        managed = False # Do not create or alter this table via migrations
         db_table = '"emispatient"."mr_event"'
         app_label = 'myapp'
 

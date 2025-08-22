@@ -3,6 +3,7 @@ from .models import MrEvent
 from .models import MrConsultation
 from .forms import TexUploadForm
 from .tex_parser import parse_tex
+from django.http import JsonResponse
 
 def home_view(request):
     """
@@ -57,12 +58,32 @@ def import_tex_view(request):
     form = TexUploadForm(request.POST or None, request.FILES or None)
     controls = []
     canvas = {"width": 0, "height": 0}
+
     if request.method == "POST" and form.is_valid():
         tex_file = form.cleaned_data["tex_file"]
         content = tex_file.read().decode("latin-1")
-        controls = parse_tex(content)
-        if controls:
-            canvas["width"] = max(c.x + c.width for c in controls) + 10
-            canvas["height"] = max(c.y + c.height for c in controls) + 10
+
+        # NEW: parser now returns (controls, canvas)
+        controls, parsed_canvas = parse_tex(content)
+
+        # prefer canvas from parser; safe fallback to computed bounds
+        if parsed_canvas and parsed_canvas.get("width") and parsed_canvas.get("height"):
+            canvas = parsed_canvas
+        elif controls:
+            canvas = {
+                "width":  max(c.x + c.width for c in controls) + 10,
+                "height": max(c.y + c.height for c in controls) + 10,
+            }
+
     context = {"form": form, "controls": controls, "canvas": canvas}
     return render(request, "import_tex.html", context)
+
+def submit_tex_form(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+    posted = {}
+    for key, values in request.POST.lists():
+        if key == "csrfmiddlewaretoken":
+            continue
+        posted[key] = values if len(values) > 1 else values[0]
+    return render(request, "import_tex_result.html", {"data": posted})
