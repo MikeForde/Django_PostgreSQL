@@ -1,7 +1,8 @@
-{# templates/import_template.html #}
+{# templates/import_tex.html #}
 {% extends "base.html" %}
 {% block content %}
 <h1>Import EMIS Template</h1>
+
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
   {{ form.as_p }}
@@ -12,70 +13,350 @@
 <h2>Preview</h2>
 <form method="post" action="{% url 'submit_tex_form' %}">
   {% csrf_token %}
+  <div style="display:flex; align-items:flex-start; gap:16px;">
+
+  {# Canvas (left) #}
   <div
-    style="position:relative; border:1px solid #ccc; width:{{ canvas.width }}px; height:{{ canvas.height }}px; font-size:12px;">
+    style="position:relative; border:1px solid #ccc; width:{{ canvas.width }}px; height:{{ canvas.height }}px; font-family:sans-serif, 'MS Sans Serif', Tahoma, Arial; font-size:10.5px; line-height:1.2; background:#fff;">
+
     {% for c in controls %}
-    <div
-      style="position:absolute; left:{{ c.x }}px; top:{{ c.y }}px; width:{{ c.width }}px; height:{{ c.height }}px; overflow:hidden;">
+    {% if c.props.Visible != 'False' %}
+    <div class="ctrl readcode-host"
+         data-readcodes="{{ c.hover_codes|default:''|escapejs }}"
+         style="position:absolute; left:{{ c.x }}px; top:{{ c.y }}px; width:{{ c.width|add:5 }}px; height:{{ c.height }}px; overflow:visible;">
 
       {# Labels #}
       {% if 'Label' in c.type %}
-      <label
-        style="display:block;
-              {% if c.font_name %}font-family:{{ c.font_name }};{% endif %}
-              {% if c.font_size_pt %}font-size:{{ c.font_size_pt }}pt;{% endif %}
-              {% if c.font_color %}color:{{ c.font_color }};{% endif %}
-              font-weight:{% if c.is_bold %}700{% else %}400{% endif %};">
-        {{ c.caption|default:c.name }}
-      </label>
+        <label style="display:block;
+                      {% if c.font_name %}font-family:{% if ' ' in c.font_name %}'{{ c.font_name }}'{% else %}{{ c.font_name }}{% endif %}, sans-serif;{% endif %}
+                      {% if c.font_size_pt %}font-size:{{ c.font_size_pt }}pt;{% endif %}
+                      {% if c.font_color %}color:{{ c.font_color }};{% endif %}
+                      font-weight:{% if c.is_bold %}700{% else %}400{% endif %};">
+          {{ c.caption|default:c.name }}
+        </label>
 
       {# Buttons #}
       {% elif 'Button' in c.type %}
-      <button type="button" name="{{ c.name }}">
-        {{ c.caption|default:c.name }}
-      </button>
+        <button type="button" name="{{ c.name }}" tabindex="{{ c.props.TabOrder|default:'0' }}">
+          {{ c.caption|default:c.name }}
+        </button>
 
-      {# Read lists: exclusive -> radio group; else -> checkboxes/select #}
+      {# Read lists (your existing branches) #}
       {% elif 'ReadList' in c.type %}
-      <fieldset style="border:0; padding:0; margin:0;">
-        {% if c.caption %}<legend style="font-weight:600;">{{ c.caption }}</legend>{% endif %}
-        {% if c.exclusive %}
-        {% for opt in c.options %}
-        <label style="display:block;">
-          <input type="radio" name="{{ c.name }}" value="{{ opt.code|default:opt.label }}">
-          {{ opt.label }}
-        </label>
-        {% endfor %}
-        {% else %}
-        {% for opt in c.options %}
-        <label style="display:block;">
-          <input type="checkbox" name="{{ c.name }}[]" value="{{ opt.code|default:opt.label }}">
-          {{ opt.label }}
-        </label>
-        {% endfor %}
-        {% endif %}
-      </fieldset>
+        {# ... keep your ReadList rendering EXACTLY as you have it now ... #}
+        <div class="rl-wrap" style="white-space:normal;">
+          {% if c.caption %}
+            <div style="font-weight:600; margin-bottom:4px;">{{ c.caption }}</div>
+          {% endif %}
+          {% if c.rl_minimised and c.rl_multi %}
+            <div class="ms" id="ms_{{ c.name }}" style="position:relative; display:inline-block; min-width:220px;">
+              <button type="button" class="ms-btn" aria-haspopup="listbox" aria-expanded="false"
+                      style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-width:220px; padding:2px 6px; border:1px solid #888; background:#fff; cursor:pointer;">
+                <span class="ms-label">Select…</span><span aria-hidden="true">▾</span>
+              </button>
+              <div class="ms-panel"
+                   style="position:absolute; top:100%; left:0; z-index:1000; display:none; border:1px solid #888; background:#fff; max-height:180px; overflow:auto; min-width:220px; padding:6px; box-shadow:0 2px 6px rgba(0,0,0,.15);">
+                {% for opt in c.options %}
+                  <label style="display:block; white-space:nowrap;">
+                    <input type="checkbox" name="{{ c.name }}[]"
+                           value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
+                    {{ opt.label }}
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+          {% elif c.rl_minimised %}
+            <select name="{{ c.name }}" id="{{ c.name }}" size="1" tabindex="{{ c.props.TabOrder|default:'0' }}" style="min-width:220px;">
+              {% for opt in c.options %}
+                <option value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
+                  {{ opt.label }}
+                </option>
+              {% endfor %}
+            </select>
+          {% else %}
+            <select name="{{ c.name }}{% if c.rl_multi %}[]{% endif %}" id="{{ c.name }}" {% if c.rl_multi %}multiple{% endif %}
+                    size="{{ c.rl_size|default:5 }}" tabindex="{{ c.props.TabOrder|default:'0' }}" style="min-width:120px;">
+              {% for opt in c.options %}
+                <option value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
+                  {{ opt.label }}
+                </option>
+              {% endfor %}
+            </select>
+          {% endif %}
 
-      {# ReadCode components -> text/number with unit and an associated prompt/label #}
+          {% if c.rl_date_prompt %}
+            <div style="margin-top:6px;">
+              <label for="{{ c.name }}_date" style="margin-right:6px;">Date:</label>
+              <input id="{{ c.name }}_date" name="{{ c.name }}_date" type="date" tabindex="{{ c.props.TabOrder|default:'0' }}">
+            </div>
+          {% endif %}
+        </div>
+
+      {# ReadCode: for TEmisReadCode and TEmisQuestionReadCode #}
       {% elif 'ReadCode' in c.type %}
-      {% if c.prompt %}<label for="{{ c.name }}">{{ c.prompt }}</label>{% endif %}
-      <input id="{{ c.name }}" name="{{ c.name }}" type="text" style="width: 95%;">
-      {% if c.unit %}<small>{{ c.unit }}</small>{% endif %}
+      <div class="rc-row readcode-host"
+        data-readcodes="{{ c.rc_code|default:'' }} — {{ c.rc_term|default:'' }}{% if c.rc_is_question and c.rc_has_negation %}\nNegation-{{ c.rc_code }} — Not - {{c.rc_term}}{% endif %}"
+        style="white-space:nowrap;">
 
-      {# Fallback: show type and name (same as wireframe) #}
-      {% else %}
-      <div style="border:1px solid #000;">
-        {{ c.type }}: {{ c.name }}
+
+        {# Full prompt label #}
+        <label for="{{ c.name }}_yes" style="display:inline; margin-right:4px;">
+          {{ c.rc_prompt }}
+        </label>
+
+        {% if c.rc_is_question and c.rc_has_negation %}
+          {# Yes checkbox (records original readcode) #}
+          <label style="margin-left:0px; margin-right:0px;">
+            <input id="{{ c.name }}_yes"
+                  class="rc-yesno"
+                  data-pair="{{ c.name }}_no"
+                  name="{{ c.name }}_checked_yes"
+                  type="checkbox"
+                  value="{{ c.rc_code|default:'' }}"
+                  tabindex="{{ c.props.TabOrder|default:'0' }}"
+                  style="vertical-align:middle; margin-right:0px;">
+          </label>
+
+          {# No checkbox (records Negation-<readcode>) #}
+          <label style="margin-right:0px;">
+            no
+            <input id="{{ c.name }}_no"
+                  class="rc-yesno"
+                  data-pair="{{ c.name }}_yes"
+                  name="{{ c.name }}_checked_no"
+                  type="checkbox"
+                  value="{% if c.rc_code %}{{ c.rc_neg_prefix }}{{ c.rc_code }}{% endif %}"
+                  tabindex="{{ c.props.TabOrder|default:'0' }}"
+                  style="vertical-align:middle; margin-right:0px;">
+          </label>
+
+          {% if c.rc_has_text %}
+            <input id="{{ c.name }}_text"
+                  name="{{ c.name }}_text"
+                  type="text"
+                  {% if c.rc_required %}required{% endif %}
+                  disabled
+                  style="width:100px; vertical-align:middle;">
+          {% endif %}
+
+        {% else %}
+          {# Simple ReadCode: single checkbox (unchanged) #}
+          <input id="{{ c.name }}_chk"
+                class="rc-chk"
+                data-target="{{ c.name }}_text"
+                name="{{ c.name }}_checked"
+                type="checkbox"
+                value="{{ c.rc_code|default:'' }}"
+                tabindex="{{ c.props.TabOrder|default:'0' }}"
+                style="margin-right:8px; vertical-align:middle;">
+
+          {% if c.rc_has_text %}
+            <input id="{{ c.name }}_text"
+                  name="{{ c.name }}_text"
+                  type="text"
+                  {% if c.rc_required %}required{% endif %}
+                  disabled
+                  style="width:100px; vertical-align:middle;">
+          {% endif %}
+        {% endif %}
+
+        {% if c.rc_code %}
+          <input type="hidden" name="{{ c.name }}_readcode" value="{{ c.rc_code }}">
+        {% endif %}
       </div>
-      {% endif %}
 
+
+
+      {# DiaryEntry (unchanged) #}
+      {% elif 'DiaryEntry' in c.type %}
+        {# ... your existing DiaryEntry branch exactly as-is ... #}
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:nowrap; white-space:nowrap; width:100%;">
+          <label for="{{ c.name }}_date" style="font-weight:600; margin-right:6px; white-space:nowrap;">
+            {{ c.diary_prompt }}
+          </label>
+          <input id="{{ c.name }}_date" name="{{ c.name }}_date" type="date" tabindex="{{ c.props.TabOrder|default:'0' }}" style="vertical-align:middle;">
+          {% if c.diary_editbox and not c.diary_prompt_below %}
+            <input id="{{ c.name }}_text" name="{{ c.name }}_text" type="text" tabindex="{{ c.props.TabOrder|default:'0' }}"
+                   {% if c.diary_editbox_chars %} style="width: {{ c.diary_editbox_chars }}ch;" {% else %} style="width: 24ch;" {% endif %}>
+          {% endif %}
+        </div>
+        {% if c.diary_editbox and c.diary_prompt_below %}
+          <div style="margin-top:4px;">
+            <input id="{{ c.name }}_text" name="{{ c.name }}_text" type="text" tabindex="{{ c.props.TabOrder|default:'0' }}"
+                   {% if c.diary_editbox_chars %} style="width: {{ c.diary_editbox_chars }}ch;" {% else %} style="width: 24ch;" {% endif %}>
+          </div>
+        {% endif %}
+        {% if c.diary_readcode %}
+          <input type="hidden" name="{{ c.name }}_readcode" value="{{ c.diary_readcode }}">
+        {% endif %}
+
+      {% endif %}
     </div>
+    {% endif %}
     {% endfor %}
   </div>
 
-  <div style="margin-top:1rem;">
-    <button type="submit">Submit (demo)</button>
-  </div>
+  {# Sidebar (right) #}
+  <aside style="width:320px; max-height:{{ canvas.height }}px; overflow:auto; border:1px solid #ddd; padding:8px; background:#fafafa;">
+    <h3 style="margin:0 0 8px;">Data Entry Read codes in form</h3>
+    {% if all_read_codes %}
+      <ul style="margin:0 0 12px; padding-left:18px;">
+        {% for rc in all_read_codes %}
+          <li><code>{{ rc.code }}</code> — {{ rc.label }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p style="margin:0 0 12px; color:#666;">None detected.</p>
+    {% endif %}
+
+    <h4 style="margin:0 0 8px;">Diary entry codes</h4>
+    {% if diary_read_codes %}
+      <ul style="margin:0; padding-left:18px;">
+        {% for rc in diary_read_codes %}
+          <li><code>{{ rc.code }}</code> — {{ rc.label }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p style="margin:0; color:#666;">None detected.</p>
+    {% endif %}
+  </aside>
+</div>
+
 </form>
+
+<script>
+  (function () {
+    function toggleTarget(chk) {
+      var tgtId = chk.getAttribute('data-target');
+      if (!tgtId) return;
+      var input = document.getElementById(tgtId);
+      if (!input) return;
+      input.disabled = !chk.checked;
+      if (chk.checked) {
+        try { input.focus(); } catch (e) { }
+      }
+    }
+    document.querySelectorAll('.rc-chk').forEach(function (chk) {
+      chk.addEventListener('change', function () { toggleTarget(chk); });
+      // initialize state on load
+      toggleTarget(chk);
+    });
+  })();
+</script>
+
+<script>
+  (function () {
+    function setupMultiDropdown(ms) {
+      var btn   = ms.querySelector('.ms-btn');
+      var panel = ms.querySelector('.ms-panel');
+      var label = ms.querySelector('.ms-label');
+
+      function close() { panel.style.display = 'none'; btn.setAttribute('aria-expanded','false'); }
+      function open()  { panel.style.display = 'block'; btn.setAttribute('aria-expanded','true'); }
+
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        (panel.style.display === 'block') ? close() : open();
+      });
+
+      panel.addEventListener('click', function (e) { e.stopPropagation(); });
+      document.addEventListener('click', close);
+
+      function updateLabel() {
+        var checked = panel.querySelectorAll('input[type=checkbox]:checked');
+        if (checked.length === 0) label.textContent = 'Select…';
+        else if (checked.length === 1) label.textContent = checked[0].closest('label').textContent.trim();
+        else label.textContent = checked.length + ' selected';
+      }
+
+      panel.querySelectorAll('input[type=checkbox]').forEach(function (cb) {
+        cb.addEventListener('change', updateLabel);
+      });
+      updateLabel();
+    }
+
+    document.querySelectorAll('.ms').forEach(setupMultiDropdown);
+  })();
+</script>
+
+<script>
+  (function () {
+    // --- Simple checkbox controls: enable/disable their text inputs
+    function toggleTarget(chk) {
+      var tgtId = chk.getAttribute('data-target');
+      if (!tgtId) return;
+      var input = document.getElementById(tgtId);
+      if (!input) return;
+      input.disabled = !chk.checked;
+      if (chk.checked) { try { input.focus(); } catch (e) {} }
+    }
+    document.querySelectorAll('.rc-chk').forEach(function (chk) {
+      chk.addEventListener('change', function () { toggleTarget(chk); });
+      toggleTarget(chk); // init
+    });
+
+    // --- Yes/No pairs (QuestionReadCode): mutually exclusive; optional text enabled by YES
+    function handleYesNoChange(el) {
+      var pairId = el.getAttribute('data-pair');
+      if (pairId) {
+        var other = document.getElementById(pairId);
+        if (other && el.checked) other.checked = false;
+      }
+      // if there is a sibling text input, enable only when YES is checked
+      var row = el.closest('.rc-row');
+      if (!row) return;
+      var yes = row.querySelector('input.rc-yesno[id$="_yes"]');
+      var text = row.querySelector('input[type="text"]');
+      if (text) {
+        text.disabled = !(yes && yes.checked);
+      }
+    }
+    document.querySelectorAll('.rc-yesno').forEach(function (el) {
+      el.addEventListener('change', function () { handleYesNoChange(el); });
+      handleYesNoChange(el); // init
+    });
+
+    // --- Hover tooltip for readcode-host (decodes \u000A)
+    var tip = document.createElement('div');
+    Object.assign(tip.style, {
+      position: 'fixed', zIndex: '2000', display: 'none', pointerEvents: 'none',
+      background: 'rgba(0,0,0,0.8)', color: '#fff', padding: '6px 8px',
+      borderRadius: '4px', font: '12px/1.3 Tahoma, Arial, sans-serif',
+      maxWidth: '360px', whiteSpace: 'pre-wrap', boxShadow: '0 2px 8px rgba(0,0,0,.25)'
+    });
+    document.body.appendChild(tip);
+    function decodeEscapes(s) {
+      if (!s) return '';
+      try { return JSON.parse('"' + s.replace(/"/g, '\\"') + '"'); }
+      catch (e) { return s.replace(/\\u000A/gi, '\n').replace(/\\n/g, '\n'); }
+    }
+    function showTip(e, text) {
+      if (!text) return;
+      tip.textContent = decodeEscapes(text);
+      tip.style.display = 'block';
+      position(e);
+    }
+    function hideTip() { tip.style.display = 'none'; }
+    function position(e) {
+      var x = e.clientX + 12, y = e.clientY + 12;
+      var rect = tip.getBoundingClientRect();
+      if (x + rect.width > window.innerWidth - 8) x = window.innerWidth - rect.width - 8;
+      if (y + rect.height > window.innerHeight - 8) y = window.innerHeight - rect.height - 8;
+      tip.style.left = x + 'px'; tip.style.top = y + 'px';
+    }
+    document.querySelectorAll('.readcode-host').forEach(function (el) {
+      var data = el.getAttribute('data-readcodes');
+      if (!data) return;
+      el.addEventListener('mouseenter', function (e) { showTip(e, data); });
+      el.addEventListener('mousemove', position);
+      el.addEventListener('mouseleave', hideTip);
+      el.addEventListener('scroll', hideTip, true);
+    });
+  })();
+</script>
+
+
+
+
 {% endif %}
 {% endblock %}
