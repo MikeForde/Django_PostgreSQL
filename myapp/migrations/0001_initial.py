@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': '"emispatient"."mr_consultation"',
-                'managed': True,
+                'managed': False,
             },
         ),
         migrations.CreateModel(
@@ -80,7 +80,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': '"emispatient"."mr_event"',
-                'managed': True,
+                'managed': False,
             },
         ),
     ]
