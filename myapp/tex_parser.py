@@ -56,6 +56,9 @@ class Control:
     rc_has_text: bool = False  # bTextPrompt
     rc_prompt_width_ch: Optional[int] = None  # nTextPromptWidth
     rc_required: bool = False  # bInputRequired
+    rc_has_value: bool = False
+    rc_value_unit: Optional[str] = None
+    rc_has_datepicker: bool = False
 
     # read list (TEmisReadList)
     is_readlist: bool = False
@@ -296,6 +299,9 @@ def parse_tex(content: str):
                 c.rc_code = props.get("ReadCode")
                 c.rc_term = props.get("strReadTerm")
                 c.rc_has_text = (props.get("bTextPrompt", "False") == "True")
+                c.rc_has_value = props.get("bValue", "False") == "True"
+                c.rc_value_unit = props.get("ValueUnit") or c.unit
+                c.rc_has_datepicker = props.get("bDatePicker", "False") == "True"
                 c.rc_required = (props.get("bInputRequired", "False") == "True")
                 try:
                     c.rc_prompt_width_ch = (

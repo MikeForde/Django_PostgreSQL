@@ -22,11 +22,11 @@
     {% if c.props.Visible != 'False' %}
     <div class="ctrl readcode-host"
          data-readcodes="{{ c.hover_codes|default:''|escapejs }}"
-         style="position:absolute; left:{{ c.x }}px; top:{{ c.y }}px; width:{{ c.width|add:5 }}px; height:{{ c.height }}px; overflow:visible;">
+         style="position:absolute; left:{{ c.x }}px; top:{{ c.y }}px; width:{{ c.width|add:6 }}px; height:{{ c.height }}px; overflow:visible;">
 
       {# Labels #}
       {% if 'Label' in c.type %}
-        <label style="display:block;
+        <label style="display:block; width:{{ c.width|add:10 }}px;
                       {% if c.font_name %}font-family:{% if ' ' in c.font_name %}'{{ c.font_name }}'{% else %}{{ c.font_name }}{% endif %}, sans-serif;{% endif %}
                       {% if c.font_size_pt %}font-size:{{ c.font_size_pt }}pt;{% endif %}
                       {% if c.font_color %}color:{{ c.font_color }};{% endif %}
@@ -45,12 +45,12 @@
         {# ... keep your ReadList rendering EXACTLY as you have it now ... #}
         <div class="rl-wrap" style="white-space:normal;">
           {% if c.caption %}
-            <div style="font-weight:600; margin-bottom:4px;">{{ c.caption }}</div>
+            <div style="font-weight:600; margin-bottom:-1px;">{{ c.caption }}</div>
           {% endif %}
           {% if c.rl_minimised and c.rl_multi %}
             <div class="ms" id="ms_{{ c.name }}" style="position:relative; display:inline-block; min-width:140px;">
               <button type="button" class="ms-btn" aria-haspopup="listbox" aria-expanded="false"
-                      style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-width:140px; padding:2px 6px; border:1px solid #888; background:#fff; cursor:pointer;">
+                      style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-width:140px; padding:0px 6px; border:1px solid #888; background:#fff; cursor:pointer;">
                 <span class="ms-label">Select…</span><span aria-hidden="true">▾</span>
               </button>
               <div class="ms-panel"
@@ -141,13 +141,12 @@
         {% else %}
           {# Simple ReadCode: single checkbox (unchanged) #}
           <input id="{{ c.name }}_chk"
-                class="rc-chk"
-                data-target="{{ c.name }}_text"
-                name="{{ c.name }}_checked"
-                type="checkbox"
-                value="{{ c.rc_code|default:'' }}"
-                tabindex="{{ c.props.TabOrder|default:'0' }}"
-                style="margin-right:8px; vertical-align:middle;">
+            class="rc-chk"
+            data-targets="{% if c.rc_has_text %}{{ c.name }}_text{% endif %}{% if c.rc_has_value %}{% if c.rc_has_text %},{% endif %}{{ c.name }}_val{% endif %}{% if c.rc_has_datepicker %}{% if c.rc_has_text or c.rc_has_value %},{% endif %}{{ c.name }}_date{% endif %}"
+            name="{{ c.name }}_checked"
+            type="checkbox"
+            tabindex="{{ c.props.TabOrder|default:'0' }}"
+            style="margin-right:8px; vertical-align:middle;">
 
           {% if c.rc_has_text %}
             <input id="{{ c.name }}_text"
@@ -158,6 +157,27 @@
                   style="width:100px; vertical-align:middle;">
           {% endif %}
         {% endif %}
+
+        {% if c.rc_has_value %}
+        <input id="{{ c.name }}_val"
+              name="{{ c.name }}_val"
+              type="text"
+              inputmode="decimal"
+              disabled
+              style="width:20px; vertical-align:middle; margin-left:{% if c.rc_has_text %}4{% else %}0{% endif %}px;">
+        {% if c.rc_value_unit %}<span style="margin-left:4px;">{{ c.rc_value_unit }}</span>{% endif %}
+        {% endif %}
+
+        {% if c.rc_has_datepicker %}
+        <input id="{{ c.name }}_date"
+              name="{{ c.name }}_date"
+              type="date"
+              disabled
+              tabindex="{{ c.props.TabOrder|default:'0' }}"
+              style="vertical-align:middle; margin-left:0px; width: 2px;">
+        {% endif %}
+
+        {# Hidden input to carry the readcode itself #}
 
         {% if c.rc_code %}
           <input type="hidden" name="{{ c.name }}_readcode" value="{{ c.rc_code }}">
@@ -218,6 +238,13 @@
         125/85
       </span>
 
+      {# Hyperlink #}
+      {% elif 'HyperLink' in c.type %}
+      <a href="{{ c.props.strURL|default:'#' }}" target="_blank" rel="noopener"
+        style="display:inline-block; text-decoration:underline; cursor:pointer;">
+        {{ c.props.strHyperLink|default:c.props.strNormal|default:c.name }}
+      </a>
+
       {% else %}
       <div style="border:1px solid #000;">{{ c.type }}: {{ c.name }}</div>
 
@@ -257,20 +284,21 @@
 
 <script>
   (function () {
-    function toggleTarget(chk) {
-      var tgtId = chk.getAttribute('data-target');
-      if (!tgtId) return;
-      var input = document.getElementById(tgtId);
-      if (!input) return;
-      input.disabled = !chk.checked;
+    function toggleTargets(chk) {
+      var ids = (chk.getAttribute('data-targets') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+      if (!ids.length) return;
+      ids.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.disabled = !chk.checked;
+      });
       if (chk.checked) {
-        try { input.focus(); } catch (e) { }
+        var first = document.getElementById(ids[0]);
+        if (first) { try { first.focus(); } catch (e) {} }
       }
     }
     document.querySelectorAll('.rc-chk').forEach(function (chk) {
-      chk.addEventListener('change', function () { toggleTarget(chk); });
-      // initialize state on load
-      toggleTarget(chk);
+      chk.addEventListener('change', function () { toggleTargets(chk); });
+      toggleTargets(chk); // init
     });
   })();
 </script>
