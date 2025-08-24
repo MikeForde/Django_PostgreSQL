@@ -173,7 +173,7 @@
               type="date"
               disabled
               tabindex="{{ c.props.TabOrder|default:'0' }}"
-              style="vertical-align:middle; margin-left:0px; width: 2px;">
+              style="vertical-align:middle; margin-left:0px; width: 2px; font-size: 10.5px;">
         {% endif %}
 
         {# Hidden input to carry the readcode itself #}
@@ -192,7 +192,7 @@
           <label for="{{ c.name }}_date" style="font-weight:600; margin-right:6px; white-space:nowrap;">
             {{ c.diary_prompt }}
           </label>
-          <input id="{{ c.name }}_date" name="{{ c.name }}_date" type="date" tabindex="{{ c.props.TabOrder|default:'0' }}" style="vertical-align:middle;">
+          <input id="{{ c.name }}_date" name="{{ c.name }}_date" type="date" tabindex="{{ c.props.TabOrder|default:'0' }}" style="vertical-align:middle; font-size: 10.5px;">
           {% if c.diary_editbox and not c.diary_prompt_below %}
             <input id="{{ c.name }}_text" name="{{ c.name }}_text" type="text" tabindex="{{ c.props.TabOrder|default:'0' }}"
                    {% if c.diary_editbox_chars %} style="width: {{ c.diary_editbox_chars }}ch;" {% else %} style="width: 24ch;" {% endif %}>
@@ -218,7 +218,7 @@
           title="{{ c.le_code|default:'' }}{% if c.le_term %} — {{ c.le_term }}{% endif %}"
         {% endif %}
         disabled
-        style="width: 150px;">
+        style="width: 150px; font-size: 10.5px;">
       
       {% elif 'Panel' in c.type %}
 
