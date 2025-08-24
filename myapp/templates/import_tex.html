@@ -167,6 +167,7 @@
         {% if c.rc_value_unit %}<span style="margin-left:4px;">{{ c.rc_value_unit }}</span>{% endif %}
         {% endif %}
 
+        {# Date picker (if applicable) #}
         {% if c.rc_has_datepicker %}
         <input id="{{ c.name }}_date"
               name="{{ c.name }}_date"
@@ -236,6 +237,42 @@
       <span class="tpl-avgbp" style="font-size: 10.5px;">
         125/85
       </span>
+
+      {# --- TTplIdealWeight ---------------------------------------------------- #}
+      {% elif 'IdealWeight' in c.type %}
+      <div class="rc-row" style="white-space:nowrap;">
+        <label for="{{ c.name }}_chk" style="margin-right:4px;">Ideal Weight</label>
+        <input id="{{ c.name }}_chk" name="{{ c.name }}_checked" type="checkbox"
+              tabindex="{{ c.props.TabOrder|default:'0' }}"
+              style="margin-right:0px; vertical-align:middle;">
+        <input id="{{ c.name }}_value" name="{{ c.name }}_value" type="text"
+              readonly style="width:20px; vertical-align:middle;">
+        <span style="margin-left:2px;">kg</span>
+      </div>
+
+      {# --- TTplBMI ------------------------------------------------------------ #}
+      {% elif 'BMI' in c.type %}
+      <div class="rc-row" style="white-space:nowrap;">
+        <label for="{{ c.name }}_chk" style="margin-right:4px;">BMI</label>
+        <input id="{{ c.name }}_chk" name="{{ c.name }}_checked" type="checkbox"
+              tabindex="{{ c.props.TabOrder|default:'0' }}"
+              style="margin-right:0px; vertical-align:middle;">
+        <input id="{{ c.name }}_value" name="{{ c.name }}_value" type="text"
+              readonly style="width:25px; vertical-align:middle;">
+        <span style="margin-left:2px;">kg/m²</span>
+      </div>
+
+      {# --- TTplExpPeakFlow ---------------------------------------------------- #}
+      {% elif 'ExpPeakFlow' in c.type %}
+      <div class="rc-row" style="white-space:nowrap;">
+        <label for="{{ c.name }}_chk" style="margin-right:6px;">Predicted PEFR</label>
+        <input id="{{ c.name }}_chk" name="{{ c.name }}_checked" type="checkbox"
+              tabindex="{{ c.props.TabOrder|default:'0' }}"
+              style="margin-right:8px; vertical-align:middle;">
+        <input id="{{ c.name }}_value" name="{{ c.name }}_value" type="text"
+              readonly style="width:25px; vertical-align:middle;">
+        <span style="margin-left:2px;">L/min</span>
+      </div>
 
       {# Hyperlink #}
       {% elif 'HyperLink' in c.type %}
@@ -424,6 +461,57 @@
     });
   })();
 </script>
+
+<script>
+(function () {
+  function num(v){ var x=parseFloat(String(v||'').replace(/[^0-9.]/g,'')); return isNaN(x)?null:x; }
+  function findValueByLabelContains(substr){
+    substr = substr.toLowerCase();
+    // Assume height/weight appear as ReadCode rows with a label then a value box
+    var rows = Array.from(document.querySelectorAll('.rc-row'));
+    for (var r of rows){
+      var lab = r.querySelector('label');
+      var val = r.querySelector('input[type="text"], input[type="number"]');
+      if (lab && val && lab.textContent.toLowerCase().includes(substr)) return val;
+    }
+    return null;
+  }
+  function recalcDerived(){
+    var hInput = findValueByLabelContains('height');
+    var wInput = findValueByLabelContains('weight');
+    var hcm = hInput ? num(hInput.value) : null;
+    var wkg = wInput ? num(wInput.value) : null;
+    var hm = (hcm!=null) ? (hcm/100) : null;
+    var age = 30; // assumed (male)
+
+    document.querySelectorAll('.rc-row').forEach(function(row){
+      var lab = row.querySelector('label'); if(!lab) return;
+      var out = row.querySelector('input[id$="_value"][name$="_value"]'); if(!out) return;
+      var t = lab.textContent.trim().toLowerCase();
+      if (t === 'ideal weight'){
+        if (hm!=null){ out.value = Math.round(22 * hm * hm); }  // BMI 22 target
+      } else if (t === 'bmi'){
+        if (hm!=null && wkg!=null){ out.value = (wkg / (hm*hm)).toFixed(1); }
+      } else if (t === 'expected peak flow' || t.includes('peak flow')){
+      if (hm != null){
+        var lmin = (((hm * 5.48) + 1.58) - (age * 0.041)) * 60;
+        if (lmin < 0) lmin = 0;
+        out.value = Math.round(lmin);
+      }
+      }
+    });
+  }
+  ['input','change'].forEach(function(ev){
+    document.addEventListener(ev, function(e){
+      if (e.target && e.target.matches('.rc-row input[type="text"], .rc-row input[type="number"]')) {
+        recalcDerived();
+      }
+    });
+  });
+  window.addEventListener('DOMContentLoaded', recalcDerived);
+})();
+</script>
+
 
 {% endif %}
 {% endblock %}

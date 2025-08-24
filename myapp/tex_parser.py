@@ -345,6 +345,16 @@ def parse_tex(content: str):
                 visible = max(3, min(len(items) or 0, 10))
                 # if the TEX provides a NonMinimisedHeight, you could refine this later
                 c.rl_size = 1 if c.rl_minimised else visible
+            
+            if "IdealWeight" in ctrl_type or "BMI" in ctrl_type:
+                c.is_readcode = True
+                c.rc_prompt = "Ideal Weight" if "IdealWeight" in ctrl_type else "BMI"
+                c.rc_code = None
+                c.rc_term = c.rc_prompt
+                c.rc_has_text = False
+                c.rc_required = False
+                c.rc_has_value = True   # NEW flag
+                c.rc_value_unit = "kg" if "IdealWeight" in ctrl_type else "kg/m²"
 
             controls.append(c)
 
