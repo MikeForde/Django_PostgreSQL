@@ -492,12 +492,12 @@
         if (hm!=null){ out.value = Math.round(22 * hm * hm); }  // BMI 22 target
       } else if (t === 'bmi'){
         if (hm!=null && wkg!=null){ out.value = (wkg / (hm*hm)).toFixed(1); }
-      } else if (t === 'expected peak flow' || t.includes('peak flow')){
-      if (hm != null){
-        var lmin = (((hm * 5.48) + 1.58) - (age * 0.041)) * 60;
-        if (lmin < 0) lmin = 0;
-        out.value = Math.round(lmin);
-      }
+      } else if (t === 'predicted pefr' || t.includes('peak flow')){
+        if (hm != null){
+          var lmin = (((hm * 5.48) + 1.58) - (age * 0.041)) * 60;
+          if (lmin < 0) lmin = 0;
+          out.value = Math.round(lmin);
+        }
       }
     });
   }
