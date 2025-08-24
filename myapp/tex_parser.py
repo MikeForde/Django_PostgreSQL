@@ -79,7 +79,10 @@ class Control:
     rc_neg_label: str = "No"
     rc_neg_prefix: str = "Negation-"
 
-
+    # TTplLastEntry (read-only date showing "last entry")
+    is_lastentry: bool = False
+    le_code: Optional[str] = None
+    le_term: Optional[str] = None
 
 FORM_HEADER_RE = re.compile(
     r"#FORM~(?P<name>[^~]+)~(?P<title>[^~]+)~(?P<geom>\d+,\d+,\d+,\d+)"
@@ -309,6 +312,12 @@ def parse_tex(content: str):
                     c.rc_has_negation = True
                     c.rc_neg_label = neg_label
                     c.rc_neg_prefix = neg_prefix
+
+            # TTplLastEntry → read-only date (tooltip can show its readcode)
+            if "LastEntry" in ctrl_type:
+                c.is_lastentry = True
+                c.le_code = props.get("ReadCode") or props.get("strReadCode") or props.get("TermID")
+                c.le_term = props.get("strReadTerm") or props.get("Caption") or None
 
             
             # readlists → options + exclusivity + extra flags

@@ -1,12 +1,11 @@
 {# templates/import_tex.html #}
 {% extends "base.html" %}
 {% block content %}
-<h1>Import EMIS Template</h1>
 
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
   {{ form.as_p }}
-  <button type="submit">Upload</button>
+  <noscript><button type="submit">Upload</button></noscript>
 </form>
 
 {% if controls %}
@@ -37,7 +36,7 @@
 
       {# Buttons #}
       {% elif 'Button' in c.type %}
-        <button type="button" name="{{ c.name }}" tabindex="{{ c.props.TabOrder|default:'0' }}">
+        <button type="button" name="{{ c.name }}" tabindex="{{ c.props.TabOrder|default:'0' }}" style="font-size: 9px;">
           {{ c.caption|default:c.name }}
         </button>
 
@@ -49,9 +48,9 @@
             <div style="font-weight:600; margin-bottom:4px;">{{ c.caption }}</div>
           {% endif %}
           {% if c.rl_minimised and c.rl_multi %}
-            <div class="ms" id="ms_{{ c.name }}" style="position:relative; display:inline-block; min-width:220px;">
+            <div class="ms" id="ms_{{ c.name }}" style="position:relative; display:inline-block; min-width:140px;">
               <button type="button" class="ms-btn" aria-haspopup="listbox" aria-expanded="false"
-                      style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-width:220px; padding:2px 6px; border:1px solid #888; background:#fff; cursor:pointer;">
+                      style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-width:140px; padding:2px 6px; border:1px solid #888; background:#fff; cursor:pointer;">
                 <span class="ms-label">Select…</span><span aria-hidden="true">▾</span>
               </button>
               <div class="ms-panel"
@@ -66,7 +65,7 @@
               </div>
             </div>
           {% elif c.rl_minimised %}
-            <select name="{{ c.name }}" id="{{ c.name }}" size="1" tabindex="{{ c.props.TabOrder|default:'0' }}" style="min-width:220px;">
+            <select name="{{ c.name }}" id="{{ c.name }}" size="1" tabindex="{{ c.props.TabOrder|default:'0' }}" style="min-width:140px;">
               {% for opt in c.options %}
                 <option value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
                   {{ opt.label }}
@@ -190,6 +189,38 @@
           <input type="hidden" name="{{ c.name }}_readcode" value="{{ c.diary_readcode }}">
         {% endif %}
 
+      {# TTplLastEntry: read-only date, no label, optional tooltip of its read code #}
+      {% elif 'LastEntry' in c.type or c.is_lastentry %}
+      <input
+        type="date"
+        class="tpl-lastentry readcode-host"
+        {% if c.le_code or c.le_term %}
+          data-readcodes="Last Entry for {{ c.le_code|default:'' }}{% if c.le_term %} — {{ c.le_term }}{% endif %}"
+          title="{{ c.le_code|default:'' }}{% if c.le_term %} — {{ c.le_term }}{% endif %}"
+        {% endif %}
+        disabled
+        style="width: 150px;">
+      
+      {% elif 'Panel' in c.type %}
+
+      {% elif 'Bevel' in c.type %}
+
+      {% elif 'FORM' in c.type %}
+
+      {% elif 'Btn' in c.type %}
+        <button type="button" name="{{ c.name }}" tabindex="{{ c.props.TabOrder|default:'0' }}" style="font-size: 9px;">
+          Prev Data
+        </button>
+
+      {# TTplAvgBP: fixed read-only average blood pressure #}
+      {% elif 'AvgBP' in c.type %}
+      <span class="tpl-avgbp" style="font-size: 10.5px;">
+        125/85
+      </span>
+
+      {% else %}
+      <div style="border:1px solid #000;">{{ c.type }}: {{ c.name }}</div>
+
       {% endif %}
     </div>
     {% endif %}
@@ -277,6 +308,18 @@
 
     document.querySelectorAll('.ms').forEach(setupMultiDropdown);
   })();
+
+      // initialise TTplLastEntry dates to 1 year ago
+    document.querySelectorAll('.tpl-lastentry').forEach(function (inp) {
+      var d = new Date();
+      d.setFullYear(d.getFullYear() - 1); // exactly one year back
+      // format YYYY-MM-DD in local time
+      var yyyy = d.getFullYear();
+      var mm = String(d.getMonth() + 1).padStart(2, '0');
+      var dd = String(d.getDate()).padStart(2, '0');
+      inp.value = yyyy + '-' + mm + '-' + dd;
+    });
+
 </script>
 
 <script>
@@ -355,7 +398,16 @@
   })();
 </script>
 
-
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const fileInput = document.querySelector('input[type="file"][name="tex_file"]');
+    if (fileInput) {
+      fileInput.addEventListener("change", function() {
+        this.form.submit();
+      });
+    }
+  });
+</script>
 
 
 {% endif %}
