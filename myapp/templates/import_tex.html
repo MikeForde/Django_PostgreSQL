@@ -42,7 +42,6 @@
 
       {# Read lists (your existing branches) #}
       {% elif 'ReadList' in c.type %}
-        {# ... keep your ReadList rendering EXACTLY as you have it now ... #}
         <div class="rl-wrap" style="white-space:normal;">
           {% if c.caption %}
             <div style="font-weight:600; margin-bottom:-1px;">{{ c.caption }}</div>
@@ -50,7 +49,7 @@
           {% if c.rl_minimised and c.rl_multi %}
             <div class="ms" id="ms_{{ c.name }}" style="position:relative; display:inline-block; min-width:140px;">
               <button type="button" class="ms-btn" aria-haspopup="listbox" aria-expanded="false"
-                      style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-width:140px; padding:0px 6px; border:1px solid #888; background:#fff; cursor:pointer;">
+                      style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-width:140px; padding:0px 6px; border:1px solid #888; background:#fff; cursor:pointer; font-size: 10.5px;">
                 <span class="ms-label">Select…</span><span aria-hidden="true">▾</span>
               </button>
               <div class="ms-panel"
@@ -255,7 +254,7 @@
   </div>
 
   {# Sidebar (right) #}
-  <aside style="width:320px; max-height:{{ canvas.height }}px; overflow:auto; border:1px solid #ddd; padding:8px; background:#fafafa;">
+  <aside style="width:320px; max-height:{{ canvas.height }}px; overflow:auto; border:1px solid #ddd; padding:8px; background:#fafafa; font-size: 12px;">
     <h3 style="margin:0 0 8px;">Data Entry Read codes in form</h3>
     {% if all_read_codes %}
       <ul style="margin:0 0 12px; padding-left:18px;">
