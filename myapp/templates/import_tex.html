@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-<form method="post" enctype="multipart/form-data">
+<form id="tex-upload-form" method="post" enctype="multipart/form-data">
   {% csrf_token %}
   {{ form.as_p }}
   <noscript><button type="submit">Upload</button></noscript>
@@ -399,16 +399,26 @@
 </script>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const fileInput = document.querySelector('input[type="file"][name="tex_file"]');
-    if (fileInput) {
-      fileInput.addEventListener("change", function() {
-        this.form.submit();
-      });
-    }
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("tex-upload-form");
+    if (!form) return;
+
+    const fileInput = form.querySelector('input[type="file"]');
+    if (!fileInput) return;
+
+    let submitted = false;
+    fileInput.addEventListener("change", function () {
+      if (submitted || !fileInput.files || fileInput.files.length === 0) return;
+      submitted = true;
+
+      // Small delay helps some environments finish populating the file field
+      setTimeout(function () {
+      if (form.requestSubmit) form.requestSubmit();
+        else form.submit();
+      }, 50);
+    });
   });
 </script>
-
 
 {% endif %}
 {% endblock %}
