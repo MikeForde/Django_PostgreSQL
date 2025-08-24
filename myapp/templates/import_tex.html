@@ -65,7 +65,7 @@
               </div>
             </div>
           {% elif c.rl_minimised %}
-            <select name="{{ c.name }}" id="{{ c.name }}" size="1" tabindex="{{ c.props.TabOrder|default:'0' }}" style="min-width:140px;">
+            <select name="{{ c.name }}" id="{{ c.name }}" size="1" tabindex="{{ c.props.TabOrder|default:'0' }}" style="min-width:140px; font-size: 10.5px;">
               {% for opt in c.options %}
                 <option value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
                   {{ opt.label }}
@@ -74,7 +74,7 @@
             </select>
           {% else %}
             <select name="{{ c.name }}{% if c.rl_multi %}[]{% endif %}" id="{{ c.name }}" {% if c.rl_multi %}multiple{% endif %}
-                    size="{{ c.rl_size|default:5 }}" tabindex="{{ c.props.TabOrder|default:'0' }}" style="min-width:120px;">
+                    size="{{ c.rl_size|default:5 }}" tabindex="{{ c.props.TabOrder|default:'0' }}" style="min-width:120px; font-size: 10.5px;">
               {% for opt in c.options %}
                 <option value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
                   {{ opt.label }}
