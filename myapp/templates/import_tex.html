@@ -2,10 +2,10 @@
 {% extends "base.html" %}
 {% block content %}
 
-<form id="tex-upload-form" method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" style="display:flex; align-items:center;">
   {% csrf_token %}
   {{ form.as_p }}
-  <noscript><button type="submit">Upload</button></noscript>
+  <button type="submit">Render</button>
 </form>
 
 {% if controls %}
@@ -396,28 +396,6 @@
       el.addEventListener('scroll', hideTip, true);
     });
   })();
-</script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById("tex-upload-form");
-    if (!form) return;
-
-    const fileInput = form.querySelector('input[type="file"]');
-    if (!fileInput) return;
-
-    let submitted = false;
-    fileInput.addEventListener("change", function () {
-      if (submitted || !fileInput.files || fileInput.files.length === 0) return;
-      submitted = true;
-
-      // Small delay helps some environments finish populating the file field
-      setTimeout(function () {
-      if (form.requestSubmit) form.requestSubmit();
-        else form.submit();
-      }, 50);
-    });
-  });
 </script>
 
 {% endif %}
