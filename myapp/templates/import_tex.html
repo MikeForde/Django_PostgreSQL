@@ -284,9 +284,9 @@
             {# LEFT SIDE #}
             <div class="pul-left" style="display:grid; grid-auto-rows:min-content; row-gap:8px;">
 
-              <div class="row" style="display:grid; grid-template-columns: 80px 80px 40px auto; align-items:center; gap:6px;">
+              <div class="row" style="display:grid; grid-template-columns: 80px 40px 20px auto; align-items:center; gap:6px;margin-top:7px;">
                 <label>Physical</label>
-                <select name="{{ c.name }}_physical" style="width:70px;">
+                <select name="{{ c.name }}_physical" style="width:40px;">
                   <option>2</option><option>3</option>
                   <option>4</option><option>7</option><option>8</option><option>0</option>
                 </select>
@@ -294,9 +294,9 @@
                 <label>Remedial</label>
               </div>
 
-              <div class="row" style="display:grid; grid-template-columns: 80px 80px 40px auto; align-items:center; gap:6px;">
+              <div class="row" style="display:grid; grid-template-columns: 80px 40px 20px auto; align-items:center; gap:6px;margin-top:7px;">
                 <label>Upper Limbs</label>
-                <select name="{{ c.name }}_upper" style="width:70px;">
+                <select name="{{ c.name }}_upper" style="width:40px;">
                   <option>2</option><option>3</option>
                   <option>4</option><option>7</option><option>8</option><option>0</option>
                 </select>
@@ -304,9 +304,9 @@
                 <label>Remedial</label>
               </div>
 
-              <div class="row" style="display:grid; grid-template-columns: 80px 80px 40px auto; align-items:center; gap:6px;">
+              <div class="row" style="display:grid; grid-template-columns: 80px 40px 20px auto; align-items:center; gap:6px;margin-top:7px;">
                 <label>Lower Limbs</label>
-                <select name="{{ c.name }}_lower" style="width:70px;">
+                <select name="{{ c.name }}_lower" style="width:40px;">
                   <option>2</option><option>3</option>
                   <option>4</option><option>7</option><option>8</option><option>0</option>
                 </select>
@@ -314,19 +314,19 @@
                 <label>Remedial</label>
               </div>
 
-              <div class="row" style="display:grid; grid-template-columns: 70px 85px 80px; align-items:center; margin-top:4px;">
+              <div class="row" style="display:grid; grid-template-columns: 70px 85px 80px; align-items:center; margin-top:14px;">
                 <span></span>
                 <strong style="text-align:center;">Right</strong>
                 <strong style="text-align:center;">Left</strong>
               </div>
 
-              <div class="row" style="display:grid; grid-template-columns: 80px 80px 80px; align-items:center; gap:6px;">
+              <div class="row" style="display:grid; grid-template-columns: 80px 80px 80px; align-items:center; gap:6px;margin-top:14px;">
                 <label>Hearing</label>
                 <input type="text" value="2" readonly style="width:40px; text-align:center;">
                 <input type="text" value="2" readonly style="width:40px; text-align:center;">
               </div>
 
-              <div class="row" style="display:grid; grid-template-columns: 70px 80px 80px; align-items:center; gap:6px;">
+              <div class="row" style="display:grid; grid-template-columns: 70px 80px 80px; align-items:center; gap:6px;margin-top:14px;">
                 <span></span>
                 <div style="display:flex; justify-content:space-around; width:100%;">
                   <label>U</label><label>C</label>
@@ -336,28 +336,28 @@
                 </div>
               </div>
 
-              <div class="row" style="display:grid; grid-template-columns: 70px 80px 80px; align-items:center; gap:6px;">
+              <div class="row" style="display:grid; grid-template-columns: 70px 80px 80px; align-items:center; gap:7px;margin-top:5px;">
                 <label>Eyes</label>
                 <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
                   <input type="text" value="2" readonly style="width:24px; text-align:center;">
-                  <input type="text" value="2" readonly style="width:24px; text-align:center;">
+                  <input type="text" value="" readonly style="width:24px; text-align:center;">
                 </div>
                 <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
                   <input type="text" value="2" readonly style="width:24px; text-align:center;">
-                  <input type="text" value="2" readonly style="width:24px; text-align:center;">
+                  <input type="text" value="" readonly style="width:24px; text-align:center;">
                 </div>
               </div>
 
-              <div class="row" style="display:grid; grid-template-columns: 80px 80px; align-items:center; gap:6px;">
+              <div class="row" style="display:grid; grid-template-columns: 80px 40px; align-items:center; gap:6px;margin-top:14px;">
                 <label>Mental</label>
-                <select name="{{ c.name }}_mental" style="width:70px;">
+                <select name="{{ c.name }}_mental" style="width:40px;">
                   <option>2</option><option>3</option><option>7</option><option>8</option>
                 </select>
               </div>
 
-              <div class="row" style="display:grid; grid-template-columns: 80px 80px 40px auto; align-items:center; gap:6px;">
+              <div class="row" style="display:grid; grid-template-columns: 80px 40px 20px auto; align-items:center; gap:6px;margin-top:7px;">
                 <label>Stability</label>
-                <select name="{{ c.name }}_stability" style="width:70px;">
+                <select name="{{ c.name }}_stability" style="width:40px;">
                   <option>2</option><option>3</option><option>7</option><option>8</option>
                 </select>
                 <input type="checkbox" name="{{ c.name }}_stability_remedial">
@@ -377,7 +377,7 @@
             </fieldset>
 
             <label>JMES</label>
-            <div class="jmes-row" style="display:grid; grid-template-columns:auto auto auto auto auto auto auto auto; align-items:center; gap:6px;">
+            <div class="jmes-row" style="display:grid; grid-template-columns:auto auto auto auto auto auto auto auto; align-items:center; gap:6px;margin-top:3px;">
               <label>A</label>
               <select name="{{ c.name }}_jmes_A"> {% for i in "123456"|make_list %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
               </select>
@@ -391,7 +391,7 @@
               <select name="{{ c.name }}_jmes_E"> {% for i in "123456"|make_list %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
               </select>
             </div>
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;margin-top:5px;">
               <label>JMES Status</label>
               <select name="{{ c.name }}_jmes_status">
                 <option>Temporary</option>
@@ -400,14 +400,14 @@
               </select>
             </div>
 
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;margin-top:5px;">
               <label>Review Date</label>
               <input type="date" name="{{ c.name }}_review_date">
             </div>
 
-            <div>
+            <div style="margin-top:5px;">
               <label>Notes</label>
-              <textarea name="{{ c.name }}_notes" rows="4" style="width:100%; box-sizing:border-box;"></textarea>
+              <textarea name="{{ c.name }}_notes" rows="1" style="width:100%; box-sizing:border-box;margin-top:10px;"></textarea>
             </div>
           </div>
         </div>
