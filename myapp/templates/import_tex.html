@@ -227,6 +227,8 @@
 
       {% elif 'FORM' in c.type %}
 
+      {% elif 'Group' in c.type %}
+
       {% elif 'Btn' in c.type %}
         <button type="button" name="{{ c.name }}" tabindex="{{ c.props.TabOrder|default:'0' }}" style="font-size: 9px;">
           Prev Data
@@ -273,6 +275,7 @@
               readonly style="width:25px; vertical-align:middle;">
         <span style="margin-left:2px;">L/min</span>
       </div>
+      
 
       {# Hyperlink #}
       {% elif 'HyperLink' in c.type %}

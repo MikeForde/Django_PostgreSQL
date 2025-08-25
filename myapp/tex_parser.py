@@ -357,6 +357,26 @@ def parse_tex(content: str):
                 c.rc_value_unit = "kg" if "IdealWeight" in ctrl_type else "kg/m²"
 
             controls.append(c)
+    
+    by_name = {c.name: c for c in controls}
+    adjusted: set[str] = set()
+
+    for g in controls:
+        children_str = g.props.get("ChildControls") or ""
+        if not children_str:
+            continue
+
+        gx, gy = g.x, g.y
+        for child_name in (n for n in children_str.split(";") if n):
+            ch = by_name.get(child_name)
+            if not ch:
+                continue
+            # allow nested groups to cascade; only adjust each control once
+            if ch.name in adjusted:
+                continue
+            ch.x += gx
+            ch.y += gy
+            adjusted.add(ch.name)
 
     controls.sort(key=lambda k: (k.y, k.x))
     return controls, canvas
