@@ -275,7 +275,143 @@
               readonly style="width:25px; vertical-align:middle;">
         <span style="margin-left:2px;">L/min</span>
       </div>
-      
+
+      {# import_tex.html #}
+      {% elif 'PULHHEEMS' in c.type %}
+        <div class="pulhheems-widget"
+            style="position:absolute; left:{{ c.x }}px; top:{{ c.y }}px; width:{{ c.width }}px; height:{{ c.height }}px; box-sizing:border-box; padding:8px;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; height:100%;">
+            {# LEFT SIDE #}
+            <div class="pul-left" style="display:grid; grid-auto-rows:min-content; row-gap:8px;">
+
+              <div class="row" style="display:grid; grid-template-columns: 80px 80px 40px auto; align-items:center; gap:6px;">
+                <label>Physical</label>
+                <select name="{{ c.name }}_physical" style="width:70px;">
+                  <option>2</option><option>3</option>
+                  <option>4</option><option>7</option><option>8</option><option>0</option>
+                </select>
+                <input type="checkbox" name="{{ c.name }}_physical_remedial">
+                <label>Remedial</label>
+              </div>
+
+              <div class="row" style="display:grid; grid-template-columns: 80px 80px 40px auto; align-items:center; gap:6px;">
+                <label>Upper Limbs</label>
+                <select name="{{ c.name }}_upper" style="width:70px;">
+                  <option>2</option><option>3</option>
+                  <option>4</option><option>7</option><option>8</option><option>0</option>
+                </select>
+                <input type="checkbox" name="{{ c.name }}_upper_remedial">
+                <label>Remedial</label>
+              </div>
+
+              <div class="row" style="display:grid; grid-template-columns: 80px 80px 40px auto; align-items:center; gap:6px;">
+                <label>Lower Limbs</label>
+                <select name="{{ c.name }}_lower" style="width:70px;">
+                  <option>2</option><option>3</option>
+                  <option>4</option><option>7</option><option>8</option><option>0</option>
+                </select>
+                <input type="checkbox" name="{{ c.name }}_lower_remedial">
+                <label>Remedial</label>
+              </div>
+
+              <div class="row" style="display:grid; grid-template-columns: 70px 85px 80px; align-items:center; margin-top:4px;">
+                <span></span>
+                <strong style="text-align:center;">Right</strong>
+                <strong style="text-align:center;">Left</strong>
+              </div>
+
+              <div class="row" style="display:grid; grid-template-columns: 80px 80px 80px; align-items:center; gap:6px;">
+                <label>Hearing</label>
+                <input type="text" value="2" readonly style="width:40px; text-align:center;">
+                <input type="text" value="2" readonly style="width:40px; text-align:center;">
+              </div>
+
+              <div class="row" style="display:grid; grid-template-columns: 70px 80px 80px; align-items:center; gap:6px;">
+                <span></span>
+                <div style="display:flex; justify-content:space-around; width:100%;">
+                  <label>U</label><label>C</label>
+                </div>
+                <div style="display:flex; justify-content:space-around; width:100%;">
+                  <label>U</label><label>C</label>
+                </div>
+              </div>
+
+              <div class="row" style="display:grid; grid-template-columns: 70px 80px 80px; align-items:center; gap:6px;">
+                <label>Eyes</label>
+                <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
+                  <input type="text" value="2" readonly style="width:24px; text-align:center;">
+                  <input type="text" value="2" readonly style="width:24px; text-align:center;">
+                </div>
+                <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
+                  <input type="text" value="2" readonly style="width:24px; text-align:center;">
+                  <input type="text" value="2" readonly style="width:24px; text-align:center;">
+                </div>
+              </div>
+
+              <div class="row" style="display:grid; grid-template-columns: 80px 80px; align-items:center; gap:6px;">
+                <label>Mental</label>
+                <select name="{{ c.name }}_mental" style="width:70px;">
+                  <option>2</option><option>3</option><option>7</option><option>8</option>
+                </select>
+              </div>
+
+              <div class="row" style="display:grid; grid-template-columns: 80px 80px 40px auto; align-items:center; gap:6px;">
+                <label>Stability</label>
+                <select name="{{ c.name }}_stability" style="width:70px;">
+                  <option>2</option><option>3</option><option>7</option><option>8</option>
+                </select>
+                <input type="checkbox" name="{{ c.name }}_stability_remedial">
+                <label>Remedial</label>
+              </div>
+
+            </div>
+
+
+          {# RIGHT SIDE #}
+          <div class="pul-right" style="display:grid; grid-auto-rows:min-content; row-gap:10px;">
+            <fieldset style="padding:6px 8px;">
+              <legend>Medical Deployability</legend>
+              <label><input type="radio" name="{{ c.name }}_deploy" value="Full"> Full</label>
+              <label style="margin-left:12px;"><input type="radio" name="{{ c.name }}_deploy" value="Limited"> Limited</label>
+              <label style="margin-left:12px;"><input type="radio" name="{{ c.name }}_deploy" value="Not"> Not</label>
+            </fieldset>
+
+            <label>JMES</label>
+            <div class="jmes-row" style="display:grid; grid-template-columns:auto auto auto auto auto auto auto auto; align-items:center; gap:6px;">
+              <label>A</label>
+              <select name="{{ c.name }}_jmes_A"> {% for i in "123456"|make_list %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
+              </select>
+              <label>L</label>
+              <select name="{{ c.name }}_jmes_L"> {% for i in "123456"|make_list %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
+              </select>
+              <label>M</label>
+              <select name="{{ c.name }}_jmes_M"> {% for i in "123456"|make_list %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
+              </select>
+              <label>E</label>
+              <select name="{{ c.name }}_jmes_E"> {% for i in "123456"|make_list %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
+              </select>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label>JMES Status</label>
+              <select name="{{ c.name }}_jmes_status">
+                <option>Temporary</option>
+                <option>Permanent</option>
+                <option>Not Applicable</option>
+              </select>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label>Review Date</label>
+              <input type="date" name="{{ c.name }}_review_date">
+            </div>
+
+            <div>
+              <label>Notes</label>
+              <textarea name="{{ c.name }}_notes" rows="4" style="width:100%; box-sizing:border-box;"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {# Hyperlink #}
       {% elif 'HyperLink' in c.type %}
