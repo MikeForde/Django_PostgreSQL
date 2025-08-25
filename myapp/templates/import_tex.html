@@ -468,20 +468,14 @@
 <script>
 (function () {
   function num(v){ var x=parseFloat(String(v||'').replace(/[^0-9.]/g,'')); return isNaN(x)?null:x; }
-  function findValueByLabelContains(substr){
-    substr = substr.toLowerCase();
-    // Assume height/weight appear as ReadCode rows with a label then a value box
-    var rows = Array.from(document.querySelectorAll('.rc-row'));
-    for (var r of rows){
-      var lab = r.querySelector('label');
-      var val = r.querySelector('input[type="text"], input[type="number"]');
-      if (lab && val && lab.textContent.toLowerCase().includes(substr)) return val;
-    }
-    return null;
+  function findValueByReadCode(code) {
+    const host = document.querySelector(`.readcode-host[data-readcodes^="${code}"]`);
+    if (!host) return null;
+    return host.querySelector('.rc-value') || host.querySelector('input[type="number"], input[type="text"]');
   }
   function recalcDerived(){
-    var hInput = findValueByLabelContains('height');
-    var wInput = findValueByLabelContains('weight');
+    const hInput = findValueByReadCode('229..'); // O/E - height
+    const wInput = findValueByReadCode('22A..'); // O/E - weight
     var hcm = hInput ? num(hInput.value) : null;
     var wkg = wInput ? num(wInput.value) : null;
     var hm = (hcm!=null) ? (hcm/100) : null;
