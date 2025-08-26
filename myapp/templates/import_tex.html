@@ -50,7 +50,7 @@
             <div class="ms" id="ms_{{ c.name }}" style="position:relative; display:inline-block; min-width:140px;">
               <button type="button" class="ms-btn" aria-haspopup="listbox" aria-expanded="false"
                       style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-width:140px; padding:0px 6px; border:1px solid #888; background:#fff; cursor:pointer; font-size: 10.5px;">
-                <span class="ms-label">{{ c.caption|default:"Select…" }}</span><span aria-hidden="true">▾</span>
+                <span class="ms-label">{{ c.caption|default:"Selettct…" }}</span><span aria-hidden="true">▾</span>
               </button>
               <div class="ms-panel"
                    style="position:absolute; top:100%; left:0; z-index:1000; display:none; border:1px solid #888; background:#fff; max-height:180px; overflow:auto; min-width:220px; padding:6px; box-shadow:0 2px 6px rgba(0,0,0,.15);">
@@ -518,6 +518,11 @@
       var panel = ms.querySelector('.ms-panel');
       var label = ms.querySelector('.ms-label');
 
+      // NEW: use existing label text (or data-caption) as the default
+      var defaultCaption = (label && label.textContent.trim()) ||
+                           ms.getAttribute('data-caption') ||
+                           'Select…';
+
       function close() { panel.style.display = 'none'; btn.setAttribute('aria-expanded','false'); }
       function open()  { panel.style.display = 'block'; btn.setAttribute('aria-expanded','true'); }
 
@@ -531,9 +536,14 @@
 
       function updateLabel() {
         var checked = panel.querySelectorAll('input[type=checkbox]:checked');
-        if (checked.length === 0) label.textContent = 'Select…';
-        else if (checked.length === 1) label.textContent = checked[0].closest('label').textContent.trim();
-        else label.textContent = checked.length + ' selected';
+        if (checked.length === 0) {
+          label.textContent = defaultCaption;           // CHANGED
+        } else if (checked.length === 1) {
+          var t = checked[0].closest('label');
+          label.textContent = t ? t.textContent.trim() : defaultCaption;
+        } else {
+          label.textContent = checked.length + ' selected';
+        }
       }
 
       panel.querySelectorAll('input[type=checkbox]').forEach(function (cb) {
@@ -544,19 +554,8 @@
 
     document.querySelectorAll('.ms').forEach(setupMultiDropdown);
   })();
-
-      // initialise TTplLastEntry dates to 1 year ago
-    document.querySelectorAll('.tpl-lastentry').forEach(function (inp) {
-      var d = new Date();
-      d.setFullYear(d.getFullYear() - 1); // exactly one year back
-      // format YYYY-MM-DD in local time
-      var yyyy = d.getFullYear();
-      var mm = String(d.getMonth() + 1).padStart(2, '0');
-      var dd = String(d.getDate()).padStart(2, '0');
-      inp.value = yyyy + '-' + mm + '-' + dd;
-    });
-
 </script>
+
 
 <script>
   (function () {
