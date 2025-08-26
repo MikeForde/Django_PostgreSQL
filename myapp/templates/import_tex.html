@@ -43,14 +43,14 @@
       {# Read lists (your existing branches) #}
       {% elif 'ReadList' in c.type %}
         <div class="rl-wrap" style="white-space:normal;">
-          {% if c.caption %}
+          {% if c.caption and not c.rl_minimised %}
             <div style="font-weight:600; margin-bottom:-1px;">{{ c.caption }}</div>
           {% endif %}
           {% if c.rl_minimised and c.rl_multi %}
             <div class="ms" id="ms_{{ c.name }}" style="position:relative; display:inline-block; min-width:140px;">
               <button type="button" class="ms-btn" aria-haspopup="listbox" aria-expanded="false"
                       style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-width:140px; padding:0px 6px; border:1px solid #888; background:#fff; cursor:pointer; font-size: 10.5px;">
-                <span class="ms-label">Select…</span><span aria-hidden="true">▾</span>
+                <span class="ms-label">{{ c.caption|default:"Select…" }}</span><span aria-hidden="true">▾</span>
               </button>
               <div class="ms-panel"
                    style="position:absolute; top:100%; left:0; z-index:1000; display:none; border:1px solid #888; background:#fff; max-height:180px; overflow:auto; min-width:220px; padding:6px; box-shadow:0 2px 6px rgba(0,0,0,.15);">
@@ -65,6 +65,7 @@
             </div>
           {% elif c.rl_minimised %}
             <select name="{{ c.name }}" id="{{ c.name }}" size="1" tabindex="{{ c.props.TabOrder|default:'0' }}" style="min-width:140px; font-size: 10.5px;">
+              <option value="" selected disabled hidden>{{ c.caption|default:"Select…" }}</option>
               {% for opt in c.options %}
                 <option value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
                   {{ opt.label }}
