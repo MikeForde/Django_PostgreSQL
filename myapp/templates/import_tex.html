@@ -435,6 +435,7 @@
             <div style="display:flex; align-items:center; gap:8px;margin-top:5px;">
               <label>Review Date</label>
               <input type="date" name="{{ c.name }}_review_date" class="readcode-host"
+                    data-diary="1"
                     data-readcodes="RAFPUPU1 — Diary entry for PULHHEEMS Profile">
             </div>
 
@@ -674,6 +675,106 @@
     });
   });
   window.addEventListener('DOMContentLoaded', recalcDerived);
+})();
+</script>
+<script>
+(function () {
+  // Decode \u000A etc.
+  function decodeEscapes(s) {
+    if (!s) return '';
+    try { return JSON.parse('"' + s.replace(/"/g, '\\"') + '"'); }
+    catch(e) { return s.replace(/\\u000A/gi, '\n').replace(/\\n/g, '\n'); }
+  }
+
+  var sidebar = document.querySelector('aside');
+  if (!sidebar) return;
+
+  var h3 = sidebar.querySelector('h3');    // "Data Entry Read codes in form"
+  var h4 = sidebar.querySelector('h4');    // "Diary entry codes"
+
+  // Return {ul, noneP} where noneP is the "None detected." <p> if present
+  function getSection(afterHeader) {
+    var sib = afterHeader ? afterHeader.nextElementSibling : null;
+    var noneP = null, ul = null;
+
+    if (sib && sib.tagName === 'UL') {
+      ul = sib;
+    } else if (sib && sib.tagName === 'P') {
+      // keep a ref so we can remove it if we add items
+      noneP = sib;
+    }
+
+    // Ensure we have a UL; if not, create it just after the header (and before/replace the <p>)
+    if (!ul) {
+      ul = document.createElement('ul');
+      ul.style.margin = '0 0 12px';
+      ul.style.paddingLeft = '18px';
+      ul.style.color = ''; // inherit default (avoid grey)
+      if (noneP) {
+        noneP.parentNode.insertBefore(ul, noneP.nextSibling);
+      } else if (afterHeader && afterHeader.parentNode) {
+        afterHeader.parentNode.insertBefore(ul, afterHeader.nextSibling);
+      }
+    } else {
+      // make sure list uses normal color (not inherited grey)
+      ul.style.color = '';
+    }
+
+    return { ul: ul, noneP: noneP };
+  }
+
+  var allSec   = getSection(h3);
+  var diarySec = getSection(h4);
+
+  function collectExistingCodes(ul) {
+    var set = new Set();
+    ul.querySelectorAll('li > code').forEach(function (c) {
+      set.add((c.textContent || '').trim());
+    });
+    return set;
+  }
+
+  var seenAll   = collectExistingCodes(allSec.ul);
+  var seenDiary = collectExistingCodes(diarySec.ul);
+
+  var addedAll = 0, addedDiary = 0;
+
+  document.querySelectorAll('.readcode-host').forEach(function (el) {
+    var blob = el.getAttribute('data-readcodes');
+    if (!blob) return;
+
+    var isDiary = el.getAttribute('data-diary') === '1' ||
+                  el.classList.contains('tpl-lastentry');
+
+    decodeEscapes(blob).split(/\r?\n/).forEach(function (line) {
+      line = line.trim();
+      if (!line) return;
+
+      var m = line.split('—');
+      var code  = (m[0] || '').trim();
+      var label = (m.slice(1).join('—') || '').trim();
+      if (!code) return;
+
+      var ul   = isDiary ? diarySec.ul : allSec.ul;
+      var seen = isDiary ? seenDiary : seenAll;
+
+      if (seen.has(code)) return;
+
+      var li = document.createElement('li');
+      var c  = document.createElement('code');
+      c.textContent = code;
+      li.appendChild(c);
+      if (label) li.appendChild(document.createTextNode(' — ' + label));
+      ul.appendChild(li);
+      seen.add(code);
+
+      if (isDiary) addedDiary++; else addedAll++;
+    });
+  });
+
+  // If we added anything, remove the old "None detected." paragraph
+  if (addedAll && allSec.noneP) allSec.noneP.remove();
+  if (addedDiary && diarySec.noneP) diarySec.noneP.remove();
 })();
 </script>
 
