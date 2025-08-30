@@ -878,6 +878,67 @@
 })();
 </script>
 
+<script>
+(function () {
+  function extractDenom(text) {
+    var m = String(text || '').match(/6\/(\d+(?:\.\d+)?)/);
+    return m ? parseFloat(m[1]) : null;
+  }
+
+  // Uncorrected (U)
+  function scoreU(d) {
+    if (d == null) return '';
+    if (d <= 6) return 1;               // 6/4, 6/5, 6/6
+    if (d === 7.5 || d === 9) return 2; // 6/7.5, 6/9
+    if (d === 12) return 3;             // 6/12
+    if (d >= 15) return 4;              // 6/15 or worse
+    return '';
+  }
+
+  // Corrected (C)
+  function scoreC(d) {
+    if (d == null) return '';
+    if (d <= 6) return 1;  // 6/4, 6/5, 6/6
+    if (d === 9)  return 2; 
+    if (d === 12) return 3;
+    if (d === 18) return 4;
+    if (d === 24) return 5;
+    return '';
+  }
+
+  function selectedText(sel) {
+    return (sel && sel.options && sel.selectedIndex >= 0)
+      ? sel.options[sel.selectedIndex].text
+      : (sel ? sel.value : '');
+  }
+
+  function updateWidget(widget) {
+    var rU = widget.querySelector('select[name$="_right_uncorr"]');
+    var lU = widget.querySelector('select[name$="_left_uncorr"]');
+    var rC = widget.querySelector('select[name$="_right_corr"]');
+    var lC = widget.querySelector('select[name$="_left_corr"]');
+
+    var out_rU = widget.querySelector('input[name$="_right_U"]');
+    var out_lU = widget.querySelector('input[name$="_left_U"]');
+    var out_rC = widget.querySelector('input[name$="_right_C"]');
+    var out_lC = widget.querySelector('input[name$="_left_C"]');
+
+    if (rU && out_rU) out_rU.value = scoreU(extractDenom(selectedText(rU))) || '';
+    if (lU && out_lU) out_lU.value = scoreU(extractDenom(selectedText(lU))) || '';
+    if (rC && out_rC) out_rC.value = scoreC(extractDenom(selectedText(rC))) || '';
+    if (lC && out_lC) out_lC.value = scoreC(extractDenom(selectedText(lC))) || '';
+  }
+
+  document.querySelectorAll('.visual-acuity-widget').forEach(function (widget) {
+    widget.querySelectorAll('select[name$="_uncorr"], select[name$="_corr"]').forEach(function (sel) {
+      sel.addEventListener('change', function () { updateWidget(widget); });
+    });
+    // initialise once on load
+    updateWidget(widget);
+  });
+})();
+</script>
+
 
 {% endif %}
 {% endblock %}
