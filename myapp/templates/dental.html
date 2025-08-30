@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dental | Mick-P App - POC{% endblock %}
+
+{% block content %}
+    <style>
+    .dental-layout{display:flex;gap:16px;align-items:flex-start}
+    .canvas-col{flex:1 1 auto;min-width:0}
+    .panel-col{width:340px;max-height:660px;overflow:auto;background:#fff;border:1px solid #ccc;padding:10px;border-radius:6px}
+    .panel-col h4{margin:0 0 8px 0}
+    .panel-actions{display:flex;gap:8px;margin-top:8px}
+    .panel-col table{width:100%;border-collapse:collapse}
+    .panel-col th,.panel-col td{border:1px solid #ddd;padding:6px 8px;font-size:13px}
+    .panel-col th{background:#7C9DB3;color:#FFFF54;text-align:left}
+    .muted{color:#666;font-size:12px}
+    </style>
+
+    <div class="dental-layout">
+    <div class="canvas-col">
+        <h5>DENS - Dental Exceptional Notation System</h5>
+
+        <canvas id="chartCanvas" width="800" height="400"></canvas>
+
+        <div id="tabControls" style="margin:10px 0;">
+        <button style="background-color: rgb(236, 234, 234);" onclick="setActiveTab('Observations')">Observations</button>
+        <button onclick="setActiveTab('Existing Restorations')">Existing Restorations</button>
+        <button onclick="setActiveTab('Planned Restorations')">Planned Restorations</button>
+        <button onclick="setActiveTab('Replace Restorations')">Replace Restorations</button>
+        </div>
+
+        <canvas id="itemsCanvas" width="800" height="200"></canvas>
+    </div>
+
+    <aside class="panel-col">
+        <h4>Selections</h4>
+        <div class="muted" id="panelMeta">0 items</div>
+        <div id="problemsPanel"></div>
+        <div class="panel-actions">
+        <button id="clearAllBtn" type="button">Clear all</button>
+        <button id="copyJsonBtn" type="button">Copy JSON</button>
+        </div>
+    </aside>
+    </div>
+
+    <!-- jQuery + chart JS remain the same -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+
+  <!-- Your dental chart logic (copy the JS you shared into this file path) -->
+  <script src="{% static 'myapp/js/dentalChart.js' %}" defer></script>
+{% endblock %}

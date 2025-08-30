@@ -12,6 +12,9 @@ def home_view(request):
     """
     return render(request, 'home.html')
 
+def dental(request):
+    return render(request, 'dental.html')
+
 def event_list(request):
     """
     Displays the first 100 MrEvent records in a list view.

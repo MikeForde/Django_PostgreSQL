@@ -28,4 +28,5 @@ urlpatterns = [
     path('consultations/<int:consultation_id>/events/', views.consultation_combined_view, name='consultation_combined'),
     path('import-tex/', views.import_tex_view, name='import_tex'),
     path("import-tex/submit/", views.submit_tex_form, name="submit_tex_form"),
+    path('dental/', views.dental, name='dental'),
 ]
