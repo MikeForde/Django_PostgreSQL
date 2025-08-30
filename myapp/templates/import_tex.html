@@ -447,6 +447,106 @@
         </div>
       </div>
 
+      {% elif 'VisualAcuity' in c.type %}
+      <div class="visual-acuity-widget"
+          style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box; padding:10px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr 180px; column-gap:14px; row-gap:10px; height:100%;">
+
+          {# ---- Top row: Uncorrected ---- #}
+          <div>
+            <div style="font-weight:600; margin-bottom:4px;">Right Eye Uncorrected</div>
+            <select name="{{ c.name }}_right_uncorr" size="7" style="width:100%;">
+              <option>O/E - visual acuity R-eye=6/4</option>
+              <option>O/E - visual acuity R-eye=6/5</option>
+              <option>O/E - visual acuity R-eye=6/6</option>
+              <option>O/E - visual acuity R-eye=6/7.5</option>
+              <option>O/E - visual acuity R-eye=6/9</option>
+              <option>O/E - visual acuity R-eye=6/12</option>
+              <option>O/E - visual acuity R-eye=6/15</option>
+              <option>O/E - visual acuity R-eye=6/18</option>
+              <option>O/E - visual acuity R-eye=6/24</option>
+            </select>
+          </div>
+
+          <div>
+            <div style="font-weight:600; margin-bottom:4px;">Left Eye Uncorrected</div>
+            <select name="{{ c.name }}_left_uncorr" size="7" style="width:100%;">
+              <option>O/E - visual acuity L-eye=6/4</option>
+              <option>O/E - visual acuity L-eye=6/5</option>
+              <option>O/E - visual acuity L-eye=6/6</option>
+              <option>O/E - visual acuity L-eye=6/7.5</option>
+              <option>O/E - visual acuity L-eye=6/9</option>
+              <option>O/E - visual acuity L-eye=6/12</option>
+              <option>O/E - visual acuity L-eye=6/15</option>
+              <option>O/E - visual acuity L-eye=6/18</option>
+              <option>O/E - visual acuity L-eye=6/24</option>
+            </select>
+          </div>
+
+          {# ---- Summary column (independently lowered) ---- #}
+          <div style="display:flex; align-items:flex-start; justify-content:center; height:100%;">
+            <div style="width:100%; transform: translateY(100px);">
+              <!-- existing summary rows stay the same -->
+              <div class="row" style="display:grid; grid-template-columns: 70px 1fr 1fr; align-items:center; margin-top:2px;">
+                <span></span>
+                <strong style="text-align:center;">Right</strong>
+                <strong style="text-align:center;">Left</strong>
+              </div>
+
+              <div class="row" style="display:grid; grid-template-columns: 70px 1fr 1fr; align-items:center; gap:6px; margin-top:10px;">
+                <span></span>
+                <div style="display:flex; justify-content:space-around; width:100%;"><label>U</label><label>C</label></div>
+                <div style="display:flex; justify-content:space-around; width:100%;"><label>U</label><label>C</label></div>
+              </div>
+
+              <div class="row" style="display:grid; grid-template-columns: 70px 1fr 1fr; align-items:center; gap:6px; margin-top:6px;">
+                <label>Eyes</label>
+                <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
+                  <input type="text" name="{{ c.name }}_right_U" readonly style="width:10px; text-align:center;">
+                  <input type="text" name="{{ c.name }}_right_C" readonly style="width:10px; text-align:center;">
+                </div>
+                <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
+                  <input type="text" name="{{ c.name }}_left_U" readonly style="width:10px; text-align:center;">
+                  <input type="text" name="{{ c.name }}_left_C" readonly style="width:10px; text-align:center;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          {# ---- Second row: Corrected ---- #}
+          <div>
+            <div style="font-weight:600; margin:8px 0 4px;">Right Eye Corrected</div>
+            <select name="{{ c.name }}_right_corr" size="7" style="width:100%;">
+              <option>O/E - visual acuity (corrected) R-eye=6/4</option>
+              <option>O/E - visual acuity (corrected) R-eye=6/5</option>
+              <option>O/E - visual acuity (corrected) R-eye=6/6</option>
+              <option>O/E - visual acuity (corrected) R-eye=6/9</option>
+              <option>O/E - visual acuity (corrected) R-eye=6/12</option>
+              <option>O/E - visual acuity (corrected) R-eye=6/18</option>
+              <option>O/E - visual acuity (corrected) R-eye=6/24</option>
+            </select>
+          </div>
+
+          <div>
+            <div style="font-weight:600; margin:8px 0 4px;">Left Eye Corrected</div>
+            <select name="{{ c.name }}_left_corr" size="7" style="width:100%;">
+              <option>O/E - visual acuity (corrected) L-eye=6/4</option>
+              <option>O/E - visual acuity (corrected) L-eye=6/5</option>
+              <option>O/E - visual acuity (corrected) L-eye=6/6</option>
+              <option>O/E - visual acuity (corrected) L-eye=6/9</option>
+              <option>O/E - visual acuity (corrected) L-eye=6/12</option>
+              <option>O/E - visual acuity (corrected) L-eye=6/18</option>
+              <option>O/E - visual acuity (corrected) L-eye=6/24</option>
+            </select>
+          </div>
+
+          {# spacer to balance grid under summary column #}
+          <div></div>
+        </div>
+      </div>
+
+
       {# Hyperlink #}
       {% elif 'HyperLink' in c.type %}
       <a href="{{ c.props.strURL|default:'#' }}" target="_blank" rel="noopener"
