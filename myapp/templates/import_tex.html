@@ -9,7 +9,6 @@
 </form>
 
 {% if controls %}
-<h2>Preview</h2>
 <form method="post" action="{% url 'submit_tex_form' %}">
   {% csrf_token %}
   <div style="display:flex; align-items:flex-start; gap:16px;">
