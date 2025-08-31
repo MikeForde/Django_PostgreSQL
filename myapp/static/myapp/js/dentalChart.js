@@ -1,3 +1,5 @@
+console.log('dentalChart loaded v4');
+
 // dentalChart.js
 $(document).ready(function () {
     const chartCanvas = document.getElementById('chartCanvas');
@@ -272,7 +274,8 @@ $(document).ready(function () {
 
             // Clear the area behind the fullscrew
             if (!isItem) {
-                ctx.fillStyle = 'white';
+                // replace background with grey colour of 
+                ctx.fillStyle = '#f4f4f4'; // Light grey background
                 if (isTop) {
                     ctx.fillRect(x - 18, y - 40, width + 30, height + 40);
                 } else {
