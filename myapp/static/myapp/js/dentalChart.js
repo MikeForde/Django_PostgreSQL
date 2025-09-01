@@ -17,16 +17,61 @@ $(document).ready(function () {
     const adjustment = 12;
     const rootToothGap = 5;
 
-    const canvasWidth = (totalTeeth * (toothWidth + gap)) + gap;
-    const chartHeight = (1.8 * (toothHeight + rootHeight + rootToothGap + gap)) + (4 * gap) + adjustment;
+    // const canvasWidth = (totalTeeth * (toothWidth + gap)) + gap;
+    // const chartHeight = (1.8 * (toothHeight + rootHeight + rootToothGap + gap)) + (4 * gap) + adjustment;
     const itemsHeight = 200;
 
-    // Set canvas size
-    chartCanvas.width = canvasWidth + (2 * margin);
-    chartCanvas.height = chartHeight + (2 * margin);
-    itemsCanvas.width = canvasWidth + (2 * margin);
-    itemsCanvas.height = itemsHeight + (2 * margin);
+    const DESIGN = {
+        width: (totalTeeth * (toothWidth + gap)) + gap + (2 * margin),       // original design width
+        chartHeight: (1.8 * (toothHeight + rootHeight + rootToothGap + gap)) + (4 * gap) + adjustment + (2 * margin),
+        itemsHeight: itemsHeight + (2 * margin)
+    };
+
+    let uiScale = 1;                              // current scale vs design
+    const dpr = window.devicePixelRatio || 1;     // retina handling
     let hoverTooltip = null;
+
+    function clearCanvas(ctx, canvas) {
+        // Clear in device pixels irrespective of current transform
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+    }
+
+    function resizeCanvases() {
+        const container = document.querySelector('.canvas-col') || chartCanvas.parentElement;
+        const cssTargetWidth = container.clientWidth || window.innerWidth;
+
+        // Don’t upscale above design size; scale down on smaller screens
+        uiScale = uiScale = cssTargetWidth / DESIGN.width;
+
+        // Set CSS (display) size
+        chartCanvas.style.width = (DESIGN.width * uiScale) + 'px';
+        chartCanvas.style.height = (DESIGN.chartHeight * uiScale) + 'px';
+        itemsCanvas.style.width = (DESIGN.width * uiScale) + 'px';
+        itemsCanvas.style.height = (DESIGN.itemsHeight * uiScale) + 'px';
+
+        // Set internal pixel buffer (retina-aware)
+        chartCanvas.width = Math.floor(DESIGN.width * uiScale * dpr);
+        chartCanvas.height = Math.floor(DESIGN.chartHeight * uiScale * dpr);
+        itemsCanvas.width = Math.floor(DESIGN.width * uiScale * dpr);
+        itemsCanvas.height = Math.floor(DESIGN.itemsHeight * uiScale * dpr);
+
+        // Apply transform so all drawing uses design coordinates
+        ctx.setTransform(dpr * uiScale, 0, 0, dpr * uiScale, 0, 0);
+        itemsCtx.setTransform(dpr * uiScale, 0, 0, dpr * uiScale, 0, 0);
+
+        // Redraw everything
+        drawProblems();   // this internally calls drawTeeth() etc.
+        drawItems();
+    }
+
+    function debounce(fn, ms) {
+        let t;
+        return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+    }
+    window.addEventListener('resize', debounce(resizeCanvases, 100));
 
     const lineDrawings = {
         acrylicDenture: (ctx, x, y, width, height, lineColor) => {
@@ -187,16 +232,16 @@ $(document).ready(function () {
         rotateClockwise: (ctx, x, y, width, height, lineColor) => {
             ctx.strokeStyle = lineColor;
             ctx.lineWidth = 2;
-        
+
             const radius = Math.min(width, height) / 2.5; // Radius for the arc
             const centerX = x + width / 2;
             const centerY = y + height / 2;
-        
+
             // Draw clockwise ¾ circular arrow
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0.25 * Math.PI, 2 * Math.PI); // ¾ circle arc from 45 degrees to 360 degrees
             ctx.stroke();
-        
+
             // Draw arrow head
             ctx.beginPath();
             ctx.moveTo(centerX + radius * Math.cos(2 * Math.PI), centerY + radius * Math.sin(2 * Math.PI)); // End of arc
@@ -206,20 +251,20 @@ $(document).ready(function () {
             ctx.stroke();
             ctx.lineWidth = 1;
         },
-        
+
         rotateAntiClockwise: (ctx, x, y, width, height, lineColor) => {
             ctx.strokeStyle = lineColor;
             ctx.lineWidth = 2;
-        
+
             const radius = Math.min(width, height) / 2.5; // Radius for the arc
             const centerX = x + width / 2;
             const centerY = y + height / 2;
-        
+
             // Draw anti-clockwise ¾ circular arrow
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 1.2 * Math.PI, -0.5 * Math.PI, true); // ¾ circle arc from 135 degrees to -90 degrees
             ctx.stroke();
-        
+
             // Draw arrow head
             ctx.beginPath();
             ctx.moveTo(centerX + radius * Math.cos(-0.5 * Math.PI), centerY + radius * Math.sin(-0.5 * Math.PI)); // End of arc
@@ -1241,8 +1286,8 @@ $(document).ready(function () {
     });
 
     const tip = document.createElement('div');
-        tip.id = 'itemsTooltip';
-        Object.assign(tip.style, {
+    tip.id = 'itemsTooltip';
+    Object.assign(tip.style, {
         position: 'fixed',
         padding: '4px 6px',
         background: 'rgba(0,0,0,0.8)',
@@ -1252,14 +1297,14 @@ $(document).ready(function () {
         pointerEvents: 'none',
         zIndex: '9999',
         display: 'none'
-        });
-        document.body.appendChild(tip);
+    });
+    document.body.appendChild(tip);
 
     itemsCanvas.addEventListener('mousemove', function (event) {
         if (!hoverTooltip) return;
         const rect = itemsCanvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        const x = (event.clientX - rect.left) / uiScale;
+        const y = (event.clientY - rect.top) / uiScale;
 
         const match = hoverTooltip.find(r =>
             x >= r.x && x <= r.x + r.w &&
@@ -1269,7 +1314,7 @@ $(document).ready(function () {
         if (match) {
             tip.textContent = `${match.label} — ${match.code}`;
             tip.style.left = (event.clientX + 10) + 'px';
-            tip.style.top  = (event.clientY + 12) + 'px';
+            tip.style.top = (event.clientY + 12) + 'px';
             tip.style.display = 'block';
         } else {
             tip.style.display = 'none';
@@ -1281,6 +1326,8 @@ $(document).ready(function () {
     });
 
     function drawTeeth() {
+        teeth.length = 0;
+        clearCanvas(ctx, chartCanvas);
         const topNumbers = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
         const bottomNumbers = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
 
@@ -1491,10 +1538,11 @@ $(document).ready(function () {
         const columnMargin = 100; // Margin between columns
         const hoverRegions = [];
 
-        itemsCtx.clearRect(0, 0, itemsCanvas.width, itemsCanvas.height);
+
+        clearCanvas(itemsCtx, itemsCanvas);
 
         // Calculate the number of items that fit vertically
-        const maxItemsPerColumn = Math.floor((itemsCanvas.height - 2 * margin) / lineHeight);
+        const maxItemsPerColumn = Math.floor((itemsHeight - 2 * margin) / lineHeight);
 
         // Filter problem codes by active tab
         const filteredProblemCodes = problemCodes.filter(item => item.tab === activeTab);
@@ -1546,16 +1594,17 @@ $(document).ready(function () {
                 w: textWidth,
                 h: itemSize,
                 code: item.code,
-                label: item.short
+                label: item.short   // ← ADDED
             });
 
+            // existing ICON region
             hoverRegions.push({
                 x: x,
                 y: y,
                 w: itemSize,
                 h: itemSize,
                 code: item.code,
-                label: item.short
+                label: item.short   // ← ADDED
             });
         });
         hoverTooltip = hoverRegions;
@@ -1564,12 +1613,12 @@ $(document).ready(function () {
     itemsCanvas.addEventListener('click', function (event) {
         const textOffset = 10;
         const rect = itemsCanvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        const x = (event.clientX - rect.left) / uiScale;
+        const y = (event.clientY - rect.top) / uiScale;
         const itemSize = 30;
         const lineHeight = itemSize + 10; // Height of each line
         const columnMargin = 100; // Margin between columns
-        const maxItemsPerColumn = Math.floor((itemsCanvas.height - 2 * margin) / lineHeight);
+        const maxItemsPerColumn = Math.floor((itemsHeight - 2 * margin) / lineHeight);
 
         // Filter problem codes by active tab
         const filteredProblemCodes = problemCodes.filter(item => item.tab === activeTab);
@@ -1597,8 +1646,8 @@ $(document).ready(function () {
 
     $('#chartCanvas').click(function (event) {
         const rect = chartCanvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        const x = (event.clientX - rect.left) / uiScale;
+        const y = (event.clientY - rect.top) / uiScale;
 
         let tooth = null;
         let area = null;
@@ -1972,33 +2021,6 @@ $(document).ready(function () {
         return dentalArea;
     }
 
-
-    // function getAreaPosition(x, y, width, height, rectX, rectY, rectWidth, rectHeight, area) {
-    //     switch (area) {
-    //         case 'T':
-    //             return { x: x + width / 2 - rectWidth / 2, y: y, width: rectWidth, height: rectHeight };
-    //         case 'B':
-    //             return { x: x + width / 2 - rectWidth / 2, y: y + height - rectHeight, width: rectWidth, height: rectHeight };
-    //         case 'L':
-    //             return { x: x, y: y + height / 2 - rectHeight / 2, width: rectWidth, height: rectHeight };
-    //         case 'R':
-    //             return { x: x + width - rectWidth, y: y + height / 2 - rectHeight / 2, width: rectWidth, height: rectHeight };
-    //         case 'O':
-    //             return { x: rectX, y: rectY, width: rectWidth, height: rectHeight };
-    //     }
-    // }
-
-
-    // function getAdjacentTooth(x, y, currentTooth) {
-    //     console.log(currentTooth);
-    //     const threshold = 30; // Define a threshold distance to find adjacent teeth
-    //     return teeth.find(t =>
-    //         t !== currentTooth &&
-    //         Math.abs(t.x - currentTooth.x) <= threshold &&
-    //         Math.abs(t.y - currentTooth.y) <= threshold
-    //     );
-    // }
-
     function getLabels(number) {
         let labels = {};
         if (number >= 11 && number <= 18) {
@@ -2187,8 +2209,7 @@ $(document).ready(function () {
 
     window.setActiveTab = setActiveTab;
 
-    drawTeeth();
-    drawItems();
+    resizeCanvases();
 
 });
 
