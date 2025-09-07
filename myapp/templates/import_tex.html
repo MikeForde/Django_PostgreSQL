@@ -583,6 +583,95 @@
         </div>
       </div>
 
+      {% elif 'Audiometry' in c.type %}
+      <div class="audiometry-widget" style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box;">
+
+        {# --- Graph / chart frame ----------------------------------------------- #}
+        <div style="position:absolute; left:140px; top:40px; width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
+          <div style="position:absolute; inset:12px; border:1px solid #888; background:#fff;"></div>
+          <div style="position:absolute; right:14px; top:14px; border:1px solid #666; padding:3px 6px; background:#fff; font-size:11px;">
+            <div><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>Right ear</div>
+            <div style="margin-top:2px;"><span style="display:inline-block; width:8px; height:8px; border-left:2px solid #06c; border-bottom:2px solid #06c; transform:rotate(45deg); margin-right:8px;"></span>Left ear</div>
+          </div>
+          <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
+            Hearing Level (dB)
+          </div>
+          <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
+            Frequency (Hz)
+          </div>
+        </div>
+
+        {# --- Column headers (Hz) ------------------------------------------------ #}
+        <div style="position:absolute; left:113px; top:430px; width:30px; text-align:center;">500Hz</div>
+        <div style="position:absolute; left:163px; top:430px; width:30px; text-align:center;">1000Hz</div>
+        <div style="position:absolute; left:213px; top:430px; width:30px; text-align:center;">2000Hz</div>
+        <div style="position:absolute; left:263px; top:430px; width:30px; text-align:center;">3000Hz</div>
+        <div style="position:absolute; left:313px; top:430px; width:30px; text-align:center;">4000Hz</div>
+        <div style="position:absolute; left:363px; top:430px; width:30px; text-align:center;">6000Hz</div>
+        <div style="position:absolute; left:413px; top:430px; width:30px; text-align:center;">8000Hz</div>
+
+        {# --- Row labels --------------------------------------------------------- #}
+        <div style="position:absolute; left:60px; top:456px;">Right (dB)</div>
+        <div style="position:absolute; left:60px; top:486px;">Left (dB)</div>
+
+        {# --- Right ear inputs (y=454) ------------------------------------------ #}
+        <input name="{{ c.name }}_r_500"   type="text" style="position:absolute; left:113px; top:454px; width:30px; height:18px;">
+        <input name="{{ c.name }}_r_1000"  type="text" style="position:absolute; left:163px; top:454px; width:30px; height:18px;">
+        <input name="{{ c.name }}_r_2000"  type="text" style="position:absolute; left:213px; top:454px; width:30px; height:18px;">
+        <input name="{{ c.name }}_r_3000"  type="text" style="position:absolute; left:263px; top:454px; width:30px; height:18px;">
+        <input name="{{ c.name }}_r_4000"  type="text" style="position:absolute; left:313px; top:454px; width:30px; height:18px;">
+        <input name="{{ c.name }}_r_6000"  type="text" style="position:absolute; left:363px; top:454px; width:30px; height:18px;">
+        <input name="{{ c.name }}_r_8000"  type="text" style="position:absolute; left:413px; top:454px; width:30px; height:18px;">
+
+        {# --- Left ear inputs (y=484) ------------------------------------------- #}
+        <input name="{{ c.name }}_l_500"   type="text" style="position:absolute; left:113px; top:484px; width:30px; height:18px;">
+        <input name="{{ c.name }}_l_1000"  type="text" style="position:absolute; left:163px; top:484px; width:30px; height:18px;">
+        <input name="{{ c.name }}_l_2000"  type="text" style="position:absolute; left:213px; top:484px; width:30px; height:18px;">
+        <input name="{{ c.name }}_l_3000"  type="text" style="position:absolute; left:263px; top:484px; width:30px; height:18px;">
+        <input name="{{ c.name }}_l_4000"  type="text" style="position:absolute; left:313px; top:484px; width:30px; height:18px;">
+        <input name="{{ c.name }}_l_6000"  type="text" style="position:absolute; left:363px; top:484px; width:30px; height:18px;">
+        <input name="{{ c.name }}_l_8000"  type="text" style="position:absolute; left:413px; top:484px; width:30px; height:18px;">
+
+        {# --- Repeat audiogram block (482,430)-(646,517) ------------------------ #}
+        <fieldset style="position:absolute; left:482px; top:430px; width:164px; height:75px; padding:4px 5px;">
+          <legend>Is this a repeat audiogram?</legend>
+          <label style="margin-right:14px;"><input type="radio" name="{{ c.name }}_repeat" value="Yes"> Yes</label>
+          <label><input type="radio" name="{{ c.name }}_repeat" value="No"> No</label>
+          <div style="margin-top:8px;margin-left: 34px;">
+            <button type="button">Initial Analysis</button>
+          </div>
+        </fieldset>
+
+        {# --- Sums / H grade (Right row y=544; Left row y=584) ------------------ #}
+        <div style="position:absolute; left:113px; top:526px;">Sum L Freq.</div>
+        <div style="position:absolute; left:183px; top:526px;">Sum H Freq.</div>
+        <div style="position:absolute; left:253px; top:526px;">H Grade</div>
+
+        <div style="position:absolute; left:60px; top:546px;">Right</div>
+        <input name="{{ c.name }}_r_sum_low"  type="text" readonly style="position:absolute; left:113px; top:544px; width:30px; height:18px;">
+        <input name="{{ c.name }}_r_sum_high" type="text" readonly style="position:absolute; left:183px; top:544px; width:30px; height:18px;">
+        <input name="{{ c.name }}_r_hgrade"   type="text" readonly style="position:absolute; left:253px; top:544px; width:30px; height:18px;">
+
+        <div style="position:absolute; left:60px; top:586px;">Left</div>
+        <input name="{{ c.name }}_l_sum_low"  type="text" readonly style="position:absolute; left:113px; top:584px; width:30px; height:18px;">
+        <input name="{{ c.name }}_l_sum_high" type="text" readonly style="position:absolute; left:183px; top:584px; width:30px; height:18px;">
+        <input name="{{ c.name }}_l_hgrade"   type="text" readonly style="position:absolute; left:253px; top:584px; width:30px; height:18px;">
+
+        {# --- Right/Left/Points/Lines/Print block (452,543)-(676,607) ----------- #}
+        <fieldset style="position:absolute; left:452px; top:543px; width:224px; height:60px; padding:4px 5px;">
+          <div style="display:grid; grid-template-columns:auto auto min-content; grid-template-rows:auto auto; column-gap:12px; row-gap:3px; align-items:center; height:100%;">
+            <label><input type="checkbox" name="{{ c.name }}_show_right" checked> Right</label>
+            <label><input type="checkbox" name="{{ c.name }}_show_points"> Points</label>
+
+            {# Print button to the right, centered between rows #}
+            <button type="button" style="grid-column:3; grid-row:1 / span 2; align-self:center; justify-self:center;">Print</button>
+
+            <label><input type="checkbox" name="{{ c.name }}_show_left" checked> Left</label>
+            <label><input type="checkbox" name="{{ c.name }}_show_lines"> Lines</label>
+          </div>
+        </fieldset>
+
+      </div>
 
       {# Hyperlink #}
       {% elif 'HyperLink' in c.type %}
