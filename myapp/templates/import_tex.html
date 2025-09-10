@@ -603,14 +603,14 @@
 
             <!-- Age row -->
             <div style="display:flex; gap:8px; align-items:center;">
-              <label style="min-width:60px;">Age:</label>
-              <input type="text" name="{{ c.name }}_a1_age" style="width:48px;" readonly>
+              <label style="min-width:60px;position:relative; left:70px;">Age:</label>
+              <input type="text" name="{{ c.name }}_a1_age" style="width:48px;position:relative; left:50px;" readonly>
             </div>
 
             <!-- Reason row -->
             <div style="display:flex; gap:8px; align-items:center;">
-              <label style="min-width:90px;">Reason:</label>
-              <input value="Subjective Audiometry" type="text" name="{{ c.name }}_a1_reason" style="width:180px;" readonly>
+              <label style="min-width:90px;position:relative; left:53px;">Reason:</label>
+              <input value="Subjective Audiometry" type="text" name="{{ c.name }}_a1_reason" style="width:180px;position:relative; left:20px;" readonly>
             </div>
 
             <!-- Hz headers + Right/Left rows (identical widths to Audiometry widget) -->
@@ -641,12 +641,12 @@
             <div style="display:grid; grid-template-columns: 60px repeat(3, 70px); gap:8px 20px; align-items:center; margin-top:10px;">
               <span></span><div>Sum of Low</div><div>Sum of High</div><div>H Grade</div>
 
-              <div>R</div>
+              <div style="position:relative; left:50px;">R</div>
               <input type="text" name="{{ c.name }}_a1_r_sum_low"  style="width:30px; height:18px; text-align:center;" readonly>
               <input type="text" name="{{ c.name }}_a1_r_sum_high" style="width:30px; height:18px; text-align:center;" readonly>
               <input type="text" name="{{ c.name }}_a1_r_hgrade"   style="width:30px; height:18px; text-align:center;" readonly>
 
-              <div>L</div>
+              <div style="position:relative; left:50px;">L</div>
               <input type="text" name="{{ c.name }}_a1_l_sum_low"  style="width:30px; height:18px; text-align:center;" readonly>
               <input type="text" name="{{ c.name }}_a1_l_sum_high" style="width:30px; height:18px; text-align:center;" readonly>
               <input type="text" name="{{ c.name }}_a1_l_hgrade"   style="width:30px; height:18px; text-align:center;" readonly>
@@ -666,15 +666,15 @@
 
             <!-- Age row -->
             <div style="display:flex; gap:8px; align-items:center;">
-              <label style="min-width:110px;">Age:</label>
+              <label style="min-width:110px;position:relative; left:70px;">Age:</label>
               <input type="text" name="{{ c.name }}_a2_age" style="width:48px;" readonly>
               <label style="min-width:110px;">Age Difference:</label>
-              <input type="text" name="{{ c.name }}_age_diff" style="width:70px;" readonly>
+              <input type="text" name="{{ c.name }}_age_diff" style="width:48px;" readonly>
             </div>
 
             <!-- Reason row -->
             <div style="display:flex; gap:8px; align-items:center;">
-              <label style="min-width:110px;">Reason:</label>
+              <label style="min-width:110px;position:relative; left:53px;">Reason:</label>
               <input value="Subjective Audiometry" type="text" name="{{ c.name }}_a2_reason" style="width:180px;" readonly>
             </div>
 
@@ -706,12 +706,12 @@
             <div style="display:grid; grid-template-columns: 60px repeat(3, 70px); gap:8px 20px; align-items:center; margin-top:10px;">
               <span></span><div>Sum of Low</div><div>Sum of High</div><div>H Grade</div>
 
-              <div>R</div>
+              <div style="position:relative; left:50px;">R</div>
               <input type="text" name="{{ c.name }}_a2_r_sum_low"  style="width:30px; height:18px; text-align:center;" readonly>
               <input type="text" name="{{ c.name }}_a2_r_sum_high" style="width:30px; height:18px; text-align:center;" readonly>
               <input type="text" name="{{ c.name }}_a2_r_hgrade"   style="width:30px; height:18px; text-align:center;" readonly>
 
-              <div>L</div>
+              <div style="position:relative; left:50px;">L</div>
               <input type="text" name="{{ c.name }}_a2_l_sum_low"  style="width:30px; height:18px; text-align:center;" readonly>
               <input type="text" name="{{ c.name }}_a2_l_sum_high" style="width:30px; height:18px; text-align:center;" readonly>
               <input type="text" name="{{ c.name }}_a2_l_hgrade"   style="width:30px; height:18px; text-align:center;" readonly>
