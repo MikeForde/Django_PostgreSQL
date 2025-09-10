@@ -583,6 +583,170 @@
         </div>
       </div>
 
+      {% elif 'AudiometryCompare' in c.type %}
+      <div class="audio-compare-widget"
+          style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box; padding:10px;">
+
+        <!-- Top: two identical panels with Hz rows & sums (readonly) -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+
+          <!-- First audiogram (left) -->
+          <fieldset style="padding:10px;">
+            <legend>First audiogram:</legend>
+
+            <div style="display:grid; grid-template-columns:auto 1fr auto 60px; gap:8px 10px; align-items:center;">
+              <label>Date/Time</label>
+              <input type="datetime-local" name="{{ c.name }}_a1_dt" style="max-width:220px;">
+              <label>Age:</label>
+              <input type="text" name="{{ c.name }}_a1_age" style="width:48px;" readonly>
+
+              <label>Reason:</label>
+              <input value="Subjective Audiometry" type="text" name="{{ c.name }}_a1_reason" style="grid-column:2 / span 3;" readonly>
+            </div>
+
+            <!-- Hz headers + Right/Left rows (identical widths to Audiometry widget) -->
+            <div style="margin-top:10px;">
+              <div style="display:grid; grid-template-columns: 60px repeat(7, 30px); gap:8px 20px; align-items:center;">
+                <span></span>
+                <div style="text-align:center;">500Hz</div>
+                <div style="text-align:center;">1KHz</div>
+                <div style="text-align:center;">2KHz</div>
+                <div style="text-align:center;">3KHz</div>
+                <div style="text-align:center;">4KHz</div>
+                <div style="text-align:center;">6KHz</div>
+                <div style="text-align:center;">8KHz</div>
+
+                <div>R (dB)</div>
+                {% for _ in "1234567"|make_list %}
+                  <input type="text" name="{{ c.name }}_a1_r{{ forloop.counter }}" style="width:30px; height:18px; text-align:center;" readonly>
+                {% endfor %}
+
+                <div>L (dB)</div>
+                {% for _ in "1234567"|make_list %}
+                  <input type="text" name="{{ c.name }}_a1_l{{ forloop.counter }}" style="width:30px; height:18px; text-align:center;" readonly>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Sums / H grade (same labels & widths) -->
+            <div style="display:grid; grid-template-columns: 60px repeat(3, 70px); gap:8px 20px; align-items:center; margin-top:10px;">
+              <span></span><div>Sum of Low</div><div>Sum of High</div><div>H Grade</div>
+
+              <div>R</div>
+              <input type="text" name="{{ c.name }}_a1_r_sum_low"  style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a1_r_sum_high" style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a1_r_hgrade"   style="width:30px; height:18px; text-align:center;" readonly>
+
+              <div>L</div>
+              <input type="text" name="{{ c.name }}_a1_l_sum_low"  style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a1_l_sum_high" style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a1_l_hgrade"   style="width:30px; height:18px; text-align:center;" readonly>
+            </div>
+          </fieldset>
+
+          <!-- Second audiogram (right) -->
+          <fieldset style="padding:10px;">
+            <legend>Second audiogram:</legend>
+
+            <div style="display:grid; grid-template-columns:auto 1fr auto 60px auto 80px; gap:8px 10px; align-items:center;">
+              <label>Date/Time</label>
+              <input type="datetime-local" name="{{ c.name }}_a2_dt" style="max-width:220px;">
+              <label>Age:</label>
+              <input type="text" name="{{ c.name }}_a2_age" style="width:48px;" readonly>
+              <label>Age Difference:</label>
+              <input type="text" name="{{ c.name }}_age_diff" style="width:70px;" readonly>
+
+              <label>Reason:</label>
+              <input value="Subjective Audiometry" type="text" name="{{ c.name }}_a2_reason" style="grid-column:2 / span 5;" readonly>
+            </div>
+
+            <!-- Hz headers + Right/Left rows (identical to left) -->
+            <div style="margin-top:10px;">
+              <div style="display:grid; grid-template-columns: 60px repeat(7, 30px); gap:8px 20px; align-items:center;">
+                <span></span>
+                <div style="text-align:center;">500Hz</div>
+                <div style="text-align:center;">1KHz</div>
+                <div style="text-align:center;">2KHz</div>
+                <div style="text-align:center;">3KHz</div>
+                <div style="text-align:center;">4KHz</div>
+                <div style="text-align:center;">6KHz</div>
+                <div style="text-align:center;">8KHz</div>
+
+                <div>R (dB)</div>
+                {% for _ in "1234567"|make_list %}
+                  <input type="text" name="{{ c.name }}_a2_r{{ forloop.counter }}" style="width:30px; height:18px; text-align:center;" readonly>
+                {% endfor %}
+
+                <div>L (dB)</div>
+                {% for _ in "1234567"|make_list %}
+                  <input type="text" name="{{ c.name }}_a2_l{{ forloop.counter }}" style="width:30px; height:18px; text-align:center;" readonly>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Sums / H grade (identical) -->
+            <div style="display:grid; grid-template-columns: 60px repeat(3, 70px); gap:8px 20px; align-items:center; margin-top:10px;">
+              <span></span><div>Sum of Low</div><div>Sum of High</div><div>H Grade</div>
+
+              <div>R</div>
+              <input type="text" name="{{ c.name }}_a2_r_sum_low"  style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a2_r_sum_high" style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a2_r_hgrade"   style="width:30px; height:18px; text-align:center;" readonly>
+
+              <div>L</div>
+              <input type="text" name="{{ c.name }}_a2_l_sum_low"  style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a2_l_sum_high" style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a2_l_hgrade"   style="width:30px; height:18px; text-align:center;" readonly>
+            </div>
+          </fieldset>
+
+        </div>
+
+        <!-- Bottom: charts EXACTLY like the Audiometry widget (same frame & legend) -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:14px; justify-items:start;">
+
+          <!-- Left chart -->
+          <div style="width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
+            <div style="position:relative; width:100%; height:100%;">
+              <div style="position:absolute; inset:12px; border:1px solid #888; background:#fff;"></div>
+              <div style="position:absolute; right:14px; top:14px; border:1px solid #666; padding:3px 6px; background:#fff; font-size:11px;">
+                <div><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>Right ear</div>
+                <div style="margin-top:2px;"><span style="display:inline-block; width:8px; height:8px; border-left:2px solid #06c; border-bottom:2px solid #06c; transform:rotate(45deg); margin-right:8px;"></span>Left ear</div>
+              </div>
+              <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
+                Hearing Level (dB)
+              </div>
+              <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
+                Frequency (Hz)
+              </div>
+            </div>
+          </div>
+
+          <!-- Right chart -->
+          <div style="width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
+            <div style="position:relative; width:100%; height:100%;">
+              <div style="position:absolute; inset:12px; border:1px solid #888; background:#fff;"></div>
+              <div style="position:absolute; right:14px; top:14px; border:1px solid #666; padding:3px 6px; background:#fff; font-size:11px;">
+                <div><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>Right ear</div>
+                <div style="margin-top:2px;"><span style="display:inline-block; width:8px; height:8px; border-left:2px solid #06c; border-bottom:2px solid #06c; transform:rotate(45deg); margin-right:8px;"></span>Left ear</div>
+              </div>
+              <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
+                Hearing Level (dB)
+              </div>
+              <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
+                Frequency (Hz)
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="text-align:center; margin-top:10px;">
+          <button type="button">Analyse</button>
+        </div>
+      </div>
+
+
       {% elif 'Audiometry' in c.type %}
       <div class="audiometry-widget" style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box;">
 
@@ -673,6 +837,7 @@
 
       </div>
 
+      
       {# Hyperlink #}
       {% elif 'HyperLink' in c.type %}
       <a href="{{ c.props.strURL|default:'#' }}" target="_blank" rel="noopener"
