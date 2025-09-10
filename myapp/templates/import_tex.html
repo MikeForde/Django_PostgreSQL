@@ -597,20 +597,20 @@
             <div style="display:grid; grid-auto-rows:min-content; row-gap:8px; align-items:center; max-width:320px;">
             <!-- Date/Time dropdown (no label) -->
             <select name="{{ c.name }}_a1_dt" style="max-width:170px;position:relative; left:120px;">
-              <option>05/11/2024 14:58</option>
-              <option>22/07/2024 09:12</option>
+              <option>05/04/2024 14:58</option>
+              <option>25/11/2015 09:12</option>
             </select>
 
             <!-- Age row -->
             <div style="display:flex; gap:8px; align-items:center;">
               <label style="min-width:60px;position:relative; left:70px;">Age:</label>
-              <input type="text" name="{{ c.name }}_a1_age" style="width:48px;position:relative; left:50px;" readonly>
+              <input type="text" value="44" name="{{ c.name }}_a1_age" style="width:48px;position:relative; left:50px;" readonly>
             </div>
 
             <!-- Reason row -->
             <div style="display:flex; gap:8px; align-items:center;">
               <label style="min-width:90px;position:relative; left:53px;">Reason:</label>
-              <input value="Subjective Audiometry" type="text" name="{{ c.name }}_a1_reason" style="width:180px;position:relative; left:20px;" readonly>
+              <input value="Routine Audiometry" type="text" name="{{ c.name }}_a1_reason" style="width:180px;position:relative; left:20px;" readonly>
             </div>
 
             <!-- Hz headers + Right/Left rows (identical widths to Audiometry widget) -->
@@ -626,13 +626,20 @@
                 <div style="text-align:center;">8KHz</div>
 
                 <div>R (dB)</div>
-                {% for _ in "1234567"|make_list %}
-                  <input type="text" name="{{ c.name }}_a1_r{{ forloop.counter }}" style="width:30px; height:18px; text-align:center;" readonly>
+                {% for val in ac_1_r %}
+                  <input type="text"
+                        name="{{ c.name }}_a1_r{{ forloop.counter }}"
+                        value="{{ val }}"
+                        style="width:30px; height:18px; text-align:center;"
+                        readonly>
                 {% endfor %}
 
                 <div>L (dB)</div>
-                {% for _ in "1234567"|make_list %}
-                  <input type="text" name="{{ c.name }}_a1_l{{ forloop.counter }}" style="width:30px; height:18px; text-align:center;" readonly>
+                {% for val in ac_1_l %}
+                  <input type="text" name="{{ c.name }}_a1_l{{ forloop.counter }}" 
+                          value="{{ val }}"
+                          style="width:30px; height:18px; text-align:center;" 
+                          readonly>
                 {% endfor %}
               </div>
             </div>
@@ -642,14 +649,14 @@
               <span></span><div>Sum of Low</div><div>Sum of High</div><div>H Grade</div>
 
               <div style="position:relative; left:50px;">R</div>
-              <input type="text" name="{{ c.name }}_a1_r_sum_low"  style="width:30px; height:18px; text-align:center;" readonly>
-              <input type="text" name="{{ c.name }}_a1_r_sum_high" style="width:30px; height:18px; text-align:center;" readonly>
-              <input type="text" name="{{ c.name }}_a1_r_hgrade"   style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a1_r_sum_low"  value="30" style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a1_r_sum_high" value="75" style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a1_r_hgrade"   value="2" style="width:30px; height:18px; text-align:center;" readonly>
 
               <div style="position:relative; left:50px;">L</div>
-              <input type="text" name="{{ c.name }}_a1_l_sum_low"  style="width:30px; height:18px; text-align:center;" readonly>
-              <input type="text" name="{{ c.name }}_a1_l_sum_high" style="width:30px; height:18px; text-align:center;" readonly>
-              <input type="text" name="{{ c.name }}_a1_l_hgrade"   style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a1_l_sum_low"  value="25" style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a1_l_sum_high" value="55" style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a1_l_hgrade"   value="2" style="width:30px; height:18px; text-align:center;" readonly>
             </div>
           </fieldset>
 
@@ -660,22 +667,22 @@
             <div style="display:grid; grid-auto-rows:min-content; row-gap:8px; align-items:center; max-width:420px;">
             <!-- Date/Time dropdown (no label) -->
             <select name="{{ c.name }}_a2_dt" style="max-width:180px;position:relative; left:120px;">
-              <option>05/11/2024 14:58</option>
-              <option>22/07/2024 09:12</option>
+              <option>05/04/2024 14:58</option>
+              <option selected>25/11/2015 09:12</option>
             </select>
 
             <!-- Age row -->
             <div style="display:flex; gap:8px; align-items:center;">
               <label style="min-width:110px;position:relative; left:70px;">Age:</label>
-              <input type="text" name="{{ c.name }}_a2_age" style="width:48px;" readonly>
+              <input type="text" value="35" name="{{ c.name }}_a2_age" style="width:48px;" readonly>
               <label style="min-width:110px;">Age Difference:</label>
-              <input type="text" name="{{ c.name }}_age_diff" style="width:48px;" readonly>
+              <input type="text" value="8/4" name="{{ c.name }}_age_diff" style="width:48px;" readonly>
             </div>
 
             <!-- Reason row -->
             <div style="display:flex; gap:8px; align-items:center;">
               <label style="min-width:110px;position:relative; left:53px;">Reason:</label>
-              <input value="Subjective Audiometry" type="text" name="{{ c.name }}_a2_reason" style="width:180px;" readonly>
+              <input value="Routine Audiometry" type="text" name="{{ c.name }}_a2_reason" style="width:180px;" readonly>
             </div>
 
             <!-- Hz headers + Right/Left rows (identical to left) -->
@@ -691,13 +698,21 @@
                 <div style="text-align:center;">8KHz</div>
 
                 <div>R (dB)</div>
-                {% for _ in "1234567"|make_list %}
-                  <input type="text" name="{{ c.name }}_a2_r{{ forloop.counter }}" style="width:30px; height:18px; text-align:center;" readonly>
+                {% for val in ac_2_r %}
+                  <input type="text" 
+                        name="{{ c.name }}_a2_r{{ forloop.counter }}" 
+                        value="{{ val }}"
+                        style="width:30px; height:18px; text-align:center;" 
+                        readonly>
                 {% endfor %}
 
                 <div>L (dB)</div>
-                {% for _ in "1234567"|make_list %}
-                  <input type="text" name="{{ c.name }}_a2_l{{ forloop.counter }}" style="width:30px; height:18px; text-align:center;" readonly>
+                {% for val in ac_2_l %}
+                  <input type="text" 
+                      name="{{ c.name }}_a2_l{{ forloop.counter }}" 
+                      value="{{ val }}"
+                      style="width:30px; height:18px; text-align:center;" 
+                      readonly>
                 {% endfor %}
               </div>
             </div>
@@ -707,14 +722,14 @@
               <span></span><div>Sum of Low</div><div>Sum of High</div><div>H Grade</div>
 
               <div style="position:relative; left:50px;">R</div>
-              <input type="text" name="{{ c.name }}_a2_r_sum_low"  style="width:30px; height:18px; text-align:center;" readonly>
-              <input type="text" name="{{ c.name }}_a2_r_sum_high" style="width:30px; height:18px; text-align:center;" readonly>
-              <input type="text" name="{{ c.name }}_a2_r_hgrade"   style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a2_r_sum_low"  value="15" style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a2_r_sum_high" value="15" style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a2_r_hgrade"   value="1" style="width:30px; height:18px; text-align:center;" readonly>
 
               <div style="position:relative; left:50px;">L</div>
-              <input type="text" name="{{ c.name }}_a2_l_sum_low"  style="width:30px; height:18px; text-align:center;" readonly>
-              <input type="text" name="{{ c.name }}_a2_l_sum_high" style="width:30px; height:18px; text-align:center;" readonly>
-              <input type="text" name="{{ c.name }}_a2_l_hgrade"   style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a2_l_sum_low"  value="15" style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a2_l_sum_high" value="15" style="width:30px; height:18px; text-align:center;" readonly>
+              <input type="text" name="{{ c.name }}_a2_l_hgrade"   value="1" style="width:30px; height:18px; text-align:center;" readonly>
             </div>
           </fieldset>
 

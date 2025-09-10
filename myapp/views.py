@@ -120,6 +120,10 @@ def import_tex_view(request):
         "canvas": canvas,
         "all_read_codes": all_read_codes,
         "diary_read_codes": diary_read_codes,
+        "ac_1_r" : [10, 15, 5, 10, 25, 40, 55],
+        "ac_1_l" : [5, 5, 15, 10, 20, 25, 15],
+        "ac_2_r" : [5,5,5,5,5,5,5],
+        "ac_2_l" : [5,5,5,5,5,5,5],
     }
     return render(request, "import_tex.html", context)
 
