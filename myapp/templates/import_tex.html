@@ -1275,5 +1275,183 @@
 })();
 </script>
 
+<script>
+(function(){
+  // ---------- helpers ----------
+  const FREQS = ["500","1000","2000","3000","4000","6000","8000"];
+  const Y_MIN = -20, Y_MAX = 130, STEP = 10;
+
+  function toNum(v){ const n = parseFloat((v||'').toString().replace(/[^0-9.-]/g,'')); return isNaN(n)?0:n; }
+
+  function ensureCanvas(frameEl, id){
+    // Put the canvas exactly over the inner grid area (inset:12px in your HTML)
+    let cvs = frameEl.querySelector('canvas#'+id);
+    if (!cvs) {
+      cvs = document.createElement('canvas');
+      cvs.id = id;
+      Object.assign(cvs.style, {position:'absolute', inset:'12px', zIndex:'1', pointerEvents:'none'});
+      frameEl.style.position = 'relative';
+      frameEl.appendChild(cvs);
+    }
+    // Match the inner plot size (frame is 432x370 with 12px inset on each side)
+    const plotW = frameEl.clientWidth - 24;
+    const plotH = frameEl.clientHeight - 24;
+    if (cvs.width !== plotW || cvs.height !== plotH) {
+      cvs.width = plotW;
+      cvs.height = plotH;
+    }
+    return cvs.getContext('2d');
+  }
+
+  function drawGrid(ctx, w, h){
+    ctx.clearRect(0,0,w,h);
+    ctx.save();
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+
+    const xStep = w / (FREQS.length);
+    for (let i=1; i<FREQS.length; i++){
+      const x = i * xStep;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    }
+
+    const yScale = h / (Y_MAX - Y_MIN);
+    for (let yv=Y_MIN; yv<=Y_MAX; yv+=STEP){
+      // NEGATIVE at top, POSITIVE at bottom:
+      const y = (yv - Y_MIN) * yScale;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function plotSeries(ctx, data, color, symbol){
+    const w = ctx.canvas.width, h = ctx.canvas.height;
+    const xStep = w / (FREQS.length - 1);
+    const yScale = h / (Y_MAX - Y_MIN);
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    data.forEach((val, i)=>{
+      const x = i * xStep;
+      // NEGATIVE at top, POSITIVE at bottom:
+      const y = (val - Y_MIN) * yScale;
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    data.forEach((val, i)=>{
+      const x = i * xStep;
+      const y = (val - Y_MIN) * yScale;
+      if (symbol === 'o') {
+        ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI*2); ctx.fill();
+      } else if (symbol === 'x') {
+        ctx.beginPath(); ctx.moveTo(x-3, y-3); ctx.lineTo(x+3, y+3);
+        ctx.moveTo(x-3, y+3); ctx.lineTo(x+3, y-3); ctx.stroke();
+      }
+    });
+    ctx.restore();
+  }
+
+  function drawAudiogram(ctx, rightVals, leftVals){
+    drawGrid(ctx, ctx.canvas.width, ctx.canvas.height);
+    plotSeries(ctx, rightVals, '#d00', 'o');   // right = red circles
+    plotSeries(ctx, leftVals,  '#06c', 'x');   // left  = blue crosses
+  }
+
+  // ---------- readers ----------
+  function readEntryWidgetValues(widgetEl){
+    // Finds inputs like *_r_500, *_l_500 ... *_r_8000
+    function getFor(side){
+      return FREQS.map(f=>{
+        const el = widgetEl.querySelector(`input[name$="_${side}_${f}"]`);
+        return toNum(el ? el.value : 0);
+      });
+    }
+    return { right: getFor('r'), left: getFor('l') };
+  }
+
+  function readComparePanelValues(containerEl, which){ // 'a1' or 'a2'
+    function seq(side){ // 'r' or 'l'
+      return FREQS.map((_, idx)=>{
+        // match ..._a1_r1, ..._a1_r2, etc. regardless of the leading control name
+        const el = containerEl.querySelector(`input[name$="_${which}_${side}${idx+1}"]`);
+        return toNum(el ? el.value : 0);
+      });
+    }
+    return { right: seq('r'), left: seq('l') };
+  }
+
+  // ---------- mount: audiometry entry ----------
+  document.querySelectorAll('.audiometry-widget').forEach(widget=>{
+    const frame = widget.querySelector('div[style*="left:140px"][style*="top:40px"]') || widget.querySelector('div'); // fallback
+    if (!frame) return;
+    const ctx = ensureCanvas(frame, 'canvas_entry');
+
+    function redraw(){
+      const {right, left} = readEntryWidgetValues(widget);
+      drawAudiogram(ctx, right, left);
+    }
+
+    // live updates on input
+    widget.querySelectorAll('input[type="text"]').forEach(inp=>{
+      inp.addEventListener('input', redraw);
+      inp.addEventListener('change', redraw);
+    });
+
+    redraw();
+  });
+
+  // ---------- mount: audio comparison ----------
+  document.querySelectorAll('.audio-compare-widget').forEach(widget=>{
+    // bottom two chart frames (same structure you render)
+    const frames = widget.querySelectorAll('div[style*="width:432px"][style*="height:370px"]');
+    const leftChartFrame  = frames[0];
+    const rightChartFrame = frames[1];
+    if (!leftChartFrame || !rightChartFrame) return;
+
+    const ctxL = ensureCanvas(leftChartFrame,  'canvas_cmp_left');
+    const ctxR = ensureCanvas(rightChartFrame, 'canvas_cmp_right');
+
+    const leftPanel  = widget.querySelector('fieldset:nth-of-type(1)');
+    const rightPanel = widget.querySelector('fieldset:nth-of-type(2)');
+
+    function redrawCompare(){
+      // a1 -> left chart, a2 -> right chart
+      const a1 = readComparePanelValues(leftPanel,  'a1');
+      const a2 = readComparePanelValues(rightPanel, 'a2');
+      drawAudiogram(ctxL, a1.right, a1.left);
+      drawAudiogram(ctxR, a2.right, a2.left);
+    }
+
+    // If you later allow editing these fields, keep charts in sync
+    widget.querySelectorAll('input[type="text"]').forEach(inp=>{
+      inp.addEventListener('input', redrawCompare);
+      inp.addEventListener('change', redrawCompare);
+    });
+
+    // Optional: seed example values if empty (purely for demo)
+    function seedIfEmpty(panel, prefix, vals){
+      const anyFilled = !!panel.querySelector(`input[name="${prefix}1"]`)?.value;
+      if (anyFilled) return;
+      vals.forEach((v,i)=>{
+        const r = panel.querySelector(`input[name="${prefix}r${i+1}"]`);
+        const l = panel.querySelector(`input[name="${prefix}l${i+1}"]`);
+        if (r) r.value = v;
+        if (l) l.value = v;
+      });
+    }
+    seedIfEmpty(leftPanel,  'a1_', [10,15,5,10,25,40,55]);
+    seedIfEmpty(rightPanel, 'a2_', [15,20,10,15,30,45,60]);
+
+    redrawCompare();
+  });
+
+})();
+</script>
+
 {% endif %}
 {% endblock %}
