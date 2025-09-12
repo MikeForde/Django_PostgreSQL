@@ -908,7 +908,7 @@
 
 
         {# --- Right/Left/Points/Lines/Print block (452,543)-(676,607) ----------- #}
-        <fieldset style="position:absolute; left:452px; top:543px; width:224px; height:60px; padding:4px 5px;">
+        <fieldset style="position:absolute; left:452px; top:523px; width:224px; height:60px; padding:4px 5px;">
           <div style="display:grid; grid-template-columns:auto auto min-content; grid-template-rows:auto auto; column-gap:12px; row-gap:3px; align-items:center; height:100%;">
             <label><input type="checkbox" name="{{ c.name }}_show_right" checked> Right</label>
             <label><input type="checkbox" name="{{ c.name }}_show_points"> Points</label>
@@ -1505,6 +1505,86 @@
 
 })();
 </script>
+
+<script>
+(function () {
+  // thresholds as per H-grade rules
+  function getLowH(sum){ return (sum > 150) ? 4 : (sum > 84) ? 3 : (sum > 45) ? 2 : 1; }
+  function getHighH(sum){ return (sum > 210) ? 4 : (sum > 123) ? 3 : (sum > 45) ? 2 : 1; }
+  function hToLabel(h){ return (h === 4) ? 'H4/8' : ('H' + h); }
+
+  function num(v){
+    var x = parseFloat(String(v||'').replace(/[^0-9.\-]/g,'')); 
+    return isNaN(x) ? 0 : x;
+  }
+
+  // Recalculate sums & H for one audiometry widget container
+  function wireAudiometry(widget){
+    if(!widget) return;
+
+    // helper to fetch input by name suffix (since {{ c.name }} is prefixed)
+    function bySuffix(sfx){ return widget.querySelector('input[name$="'+sfx+'"]'); }
+
+    // fetchers for each ear & Hz
+    function getEarVals(prefix){
+      return {
+        v500 : num(bySuffix('_'+prefix+'_500') ?.value),
+        v1k  : num(bySuffix('_'+prefix+'_1000')?.value),
+        v2k  : num(bySuffix('_'+prefix+'_2000')?.value),
+        v3k  : num(bySuffix('_'+prefix+'_3000')?.value),
+        v4k  : num(bySuffix('_'+prefix+'_4000')?.value),
+        v6k  : num(bySuffix('_'+prefix+'_6000')?.value),
+        // 8k is not used in sums/H grade
+      };
+    }
+
+    function setIf(el, val){ if(el){ el.value = val; } }
+
+    function recompute(){
+      var R = getEarVals('r');
+      var L = getEarVals('l');
+
+      // sums (Low: 500/1k/2k, High: 3k/4k/6k)
+      var rLow  = R.v500 + R.v1k + R.v2k;
+      var rHigh = R.v3k  + R.v4k + R.v6k;
+      var lLow  = L.v500 + L.v1k + L.v2k;
+      var lHigh = L.v3k  + L.v4k + L.v6k;
+
+      setIf(bySuffix('_r_sum_low'),  rLow);
+      setIf(bySuffix('_r_sum_high'), rHigh);
+      setIf(bySuffix('_l_sum_low'),  lLow);
+      setIf(bySuffix('_l_sum_high'), lHigh);
+
+      // H grade = worse of Low/High (4 shown as H4/8)
+      var rH = Math.max(getLowH(rLow),  getHighH(rHigh));
+      var lH = Math.max(getLowH(lLow),  getHighH(lHigh));
+
+      setIf(bySuffix('_r_hgrade'), hToLabel(rH));
+      setIf(bySuffix('_l_hgrade'), hToLabel(lH));
+    }
+
+    // attach listeners to all freq fields we care about
+    ['_r_500','_r_1000','_r_2000','_r_3000','_r_4000','_r_6000',
+     '_l_500','_l_1000','_l_2000','_l_3000','_l_4000','_l_6000'
+    ].forEach(function(sfx){
+      var inp = bySuffix(sfx);
+      if(inp){
+        inp.addEventListener('input', recompute);
+        inp.addEventListener('change', recompute);
+      }
+    });
+
+    // initial compute
+    recompute();
+  }
+
+  // wire up every Audiometry widget on the page
+  window.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.audiometry-widget').forEach(wireAudiometry);
+  });
+})();
+</script>
+
 
 {% endif %}
 {% endblock %}
