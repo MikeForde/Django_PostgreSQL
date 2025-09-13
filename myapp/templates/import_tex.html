@@ -739,80 +739,83 @@
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:14px; justify-items:start;">
 
           <!-- Left chart -->
-          <div style="width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
-            <div style="position:relative; width:100%; height:100%;">
-              <div style="position:absolute; inset:12px; border:1px solid #888; background:#fff;"></div>
-              <div style="position:absolute; right:14px; top:14px; border:1px solid #666; padding:3px 6px; background:#fff; font-size:11px;">
-                <div><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>Right ear</div>
-                <div style="margin-top:2px;">
-                  <span style="display:inline-block; width:10px; height:10px; margin-right:6px; position:relative;">
-                    <span style="
-                      position:absolute;
-                      top:0; left:50%;
-                      width:2px; height:100%;
-                      background:#06c;
-                      transform:rotate(45deg);
-                      transform-origin:center;
-                    "></span>
-                    <span style="
-                      position:absolute;
-                      top:0; left:50%;
-                      width:2px; height:100%;
-                      background:#06c;
-                      transform:rotate(-45deg);
-                      transform-origin:center;
-                    "></span>
-                  </span>
-                  Left ear
-                </div>
+          <div class="audio-frame" style="position:relative; width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
+            <!-- Plot area with gutters identical to entry widget -->
+            <div class="plot-pane"
+                style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;
+                        background:#fff;
+                        border-left:3px solid #000;   /* Y axis */
+                        border-bottom:3px solid #000; /* X axis */
+                        border-top:1px solid #999; border-right:1px solid #999;"></div>
+
+            <!-- Canvas slot (your JS will size/position the canvas here) -->
+            <div class="audio-canvas-slot"
+                style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;"></div>
+
+            <!-- Legend in right gutter -->
+            <div style="position:absolute; right:14px; top:14px;
+                        background:#fff; border:1px solid #000; padding:3px 6px; font-size:11px;
+                        box-shadow:3px 3px 0 #000;">
+              <div>
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>
+                Right ear
               </div>
-              <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
-                Hearing Level (dB)
+              <div style="margin-top:2px;">
+                <span style="display:inline-block; width:8px; height:8px; margin-right:6px; position:relative;">
+                  <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(45deg);  transform-origin:center;"></span>
+                  <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(-45deg); transform-origin:center;"></span>
+                </span>
+                Left ear
               </div>
-              <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
-                Frequency (Hz)
-              </div>
+            </div>
+
+            <!-- Axis titles (left/bottom gutters) -->
+            <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
+              Hearing Level (dB)
+            </div>
+            <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
+              Frequency (Hz)
             </div>
           </div>
 
           <!-- Right chart -->
-          <div style="width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
-            <div style="position:relative; width:100%; height:100%;">
-              <div style="position:absolute; inset:12px; border:1px solid #888; background:#fff;"></div>
-              <div style="position:absolute; right:14px; top:14px; border:1px solid #666; padding:3px 6px; background:#fff; font-size:11px;">
-                <div><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>Right ear</div>
-                <div style="margin-top:2px;">
-                  <span style="display:inline-block; width:10px; height:10px; margin-right:6px; position:relative;">
-                    <span style="
-                      position:absolute;
-                      top:0; left:50%;
-                      width:2px; height:100%;
-                      background:#06c;
-                      transform:rotate(45deg);
-                      transform-origin:center;
-                    "></span>
-                    <span style="
-                      position:absolute;
-                      top:0; left:50%;
-                      width:2px; height:100%;
-                      background:#06c;
-                      transform:rotate(-45deg);
-                      transform-origin:center;
-                    "></span>
-                  </span>
-                  Left ear
-                </div>
+          <div class="audio-frame" style="position:relative; width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
+            <div class="plot-pane"
+                style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;
+                        background:#fff;
+                        border-left:3px solid #000;
+                        border-bottom:3px solid #000;
+                        border-top:1px solid #999; border-right:1px solid #999;"></div>
+
+            <div class="audio-canvas-slot"
+                style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;"></div>
+
+            <div style="position:absolute; right:14px; top:14px;
+                        background:#fff; border:1px solid #000; padding:3px 6px; font-size:11px;
+                        box-shadow:3px 3px 0 #000;">
+              <div>
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>
+                Right ear
               </div>
-              <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
-                Hearing Level (dB)
+              <div style="margin-top:2px;">
+                <span style="display:inline-block; width:8px; height:8px; margin-right:6px; position:relative;">
+                  <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(45deg);  transform-origin:center;"></span>
+                  <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(-45deg); transform-origin:center;"></span>
+                </span>
+                Left ear
               </div>
-              <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
-                Frequency (Hz)
-              </div>
+            </div>
+
+            <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
+              Hearing Level (dB)
+            </div>
+            <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
+              Frequency (Hz)
             </div>
           </div>
 
         </div>
+
 
         <div style="text-align:center; margin-top:10px;">
           <button type="button">Analyse</button>
@@ -822,35 +825,45 @@
 
       {% elif 'Audiometry' in c.type %}
       <div class="audiometry-widget" style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box;">
-
-        {# --- Graph / chart frame ----------------------------------------------- #}
+        
+        {# --- Graph / chart frame (with explicit gutters) ----------------------- #}
         <div style="position:absolute; left:140px; top:40px; width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
-          <div style="position:absolute; inset:12px; border:1px solid #888; background:#fff;"></div>
-          <div style="position:absolute; right:14px; top:14px; border:1px solid #666; padding:3px 6px; background:#fff; font-size:11px;">
-            <div><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>Right ear</div>
+
+          {# Gutter sizes to match the screenshot #}
+          {% comment %} top=12, left=56 for y-label & ticks, bottom=42 for x-label & ticks, right=110 for legend {% endcomment %}
+
+          {# Plot pane: where the canvas goes (thick left/bottom axes, thin top/right) #}
+          <div class="plot-pane"
+              style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;
+                      background:#fff;
+                      border-left:3px solid #000;      /* Y axis */
+                      border-bottom:3px solid #000;    /* X axis */
+                      border-top:1px solid #999; 
+                      border-right:1px solid #999;">
+          </div>
+
+          {# Canvas slot — ensure your JS sizes/positions the canvas to fill this slot #}
+          <div class="audio-canvas-slot"
+              style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;"></div>
+
+          {# Legend sits in the right gutter, not overlapping the plot #}
+          <div style="position:absolute; right:14px; top:14px;
+                      background:#fff; border:1px solid #000; padding:3px 6px; font-size:11px;
+                      box-shadow:3px 3px 0 #000;">
+            <div>
+              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>
+              Right ear
+            </div>
             <div style="margin-top:2px;">
-              <span style="display:inline-block; width:10px; height:10px; margin-right:6px; position:relative;">
-                <span style="
-                  position:absolute;
-                  top:0; left:50%;
-                  width:2px; height:100%;
-                  background:#06c;
-                  transform:rotate(45deg);
-                  transform-origin:center;
-                "></span>
-                <span style="
-                  position:absolute;
-                  top:0; left:50%;
-                  width:2px; height:100%;
-                  background:#06c;
-                  transform:rotate(-45deg);
-                  transform-origin:center;
-                "></span>
+              <span style="display:inline-block; width:8px; height:8px; margin-right:6px; position:relative;">
+                <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(45deg); transform-origin:center;"></span>
+                <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(-45deg); transform-origin:center;"></span>
               </span>
               Left ear
             </div>
           </div>
 
+          {# Axis titles occupy the left/bottom gutters #}
           <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
             Hearing Level (dB)
           </div>
@@ -858,6 +871,7 @@
             Frequency (Hz)
           </div>
         </div>
+
 
         {# --- Column headers (Hz) ------------------------------------------------ #}
         <div style="position:absolute; left:113px; top:430px; width:30px; text-align:center;">500Hz</div>
@@ -1391,94 +1405,174 @@
 
 <script>
 (function(){
-  // ---------- helpers ----------
+  // ---------- constants ----------
   const FREQS = ["500","1000","2000","3000","4000","6000","8000"];
   const Y_MIN = -20, Y_MAX = 130, STEP = 10;
+  const PAD_X = 6, PAD_Y = 4; // inner pad so endpoints don't clip
 
-  function toNum(v){ const n = parseFloat((v||'').toString().replace(/[^0-9.-]/g,'')); return isNaN(n)?0:n; }
+  // ---------- mapping helpers ----------
+  function xAt(index, w){ return PAD_X + (index/(FREQS.length-1)) * (w - 2*PAD_X); }
+  function yAt(db, h){
+    const t = (db - Y_MIN) / (Y_MAX - Y_MIN); // -20(top) .. 130(bottom)
+    return PAD_Y + t * (h - 2*PAD_Y);
+  }
+  const toNum = v => {
+    const n = parseFloat((v||'').toString().replace(/[^0-9.-]/g,''));
+    return isNaN(n) ? 0 : n;
+  };
 
+  // ---------- canvas placement (aligned to your plot-pane gutters) ----------
   function ensureCanvas(frameEl, id){
-    // Put the canvas exactly over the inner grid area (inset:12px in your HTML)
     let cvs = frameEl.querySelector('canvas#'+id);
     if (!cvs) {
       cvs = document.createElement('canvas');
       cvs.id = id;
-      Object.assign(cvs.style, {position:'absolute', inset:'12px', zIndex:'1', pointerEvents:'none'});
+      Object.assign(cvs.style, {
+        position: 'absolute',
+        left: '56px',   // left gutter (y-labels)
+        top: '12px',    // top gutter
+        right: '110px', // right gutter (legend)
+        bottom: '42px', // bottom gutter (x-labels)
+        zIndex: '1',
+        pointerEvents: 'none'
+      });
       frameEl.style.position = 'relative';
       frameEl.appendChild(cvs);
     }
-    // Match the inner plot size (frame is 432x370 with 12px inset on each side)
-    const plotW = frameEl.clientWidth - 24;
-    const plotH = frameEl.clientHeight - 24;
+    const plotW = frameEl.clientWidth  - (56 + 110);
+    const plotH = frameEl.clientHeight - (12 + 42);
     if (cvs.width !== plotW || cvs.height !== plotH) {
-      cvs.width = plotW;
+      cvs.width  = plotW;
       cvs.height = plotH;
     }
     return cvs.getContext('2d');
   }
 
+  // ---------- axis label layers (DOM, positioned in gutters) ----------
+  function ensureAxisLayers(frameEl){
+    let yTicks = frameEl.querySelector('.y-ticks');
+    let xTicks = frameEl.querySelector('.x-ticks');
+    if (!yTicks) {
+      yTicks = document.createElement('div');
+      yTicks.className = 'y-ticks';
+      Object.assign(yTicks.style, {
+        position:'absolute', left:'6px', top:'12px', bottom:'42px',
+        width:'48px', font:'11px Tahoma, Arial, sans-serif', color:'#333',
+        lineHeight:'1', textAlign:'right', pointerEvents:'none'
+      });
+      frameEl.appendChild(yTicks);
+    }
+    if (!xTicks) {
+      xTicks = document.createElement('div');
+      xTicks.className = 'x-ticks';
+      Object.assign(xTicks.style, {
+        position:'absolute', left:'56px', right:'110px', bottom:'6px',
+        height:'18px', font:'11px Tahoma, Arial, sans-serif', color:'#333',
+        lineHeight:'1', pointerEvents:'none'
+      });
+      frameEl.appendChild(xTicks);
+    }
+    return { yTicks, xTicks };
+  }
+
+  function renderAxisLabels(frameEl, ctx){
+    const { yTicks, xTicks } = ensureAxisLayers(frameEl);
+    const w = ctx.canvas.width, h = ctx.canvas.height;
+
+    // Y labels: -10, 0, 10, ... 120
+    yTicks.innerHTML = '';
+    for (let yv = -10; yv <= 120; yv += 10) {
+      const y = yAt(yv, h); // relative inside canvas
+      const tick = document.createElement('div');
+      Object.assign(tick.style, {
+        position:'absolute',
+        top: (12 + y - 18) + 'px', // 12px top gutter + y; center vertically ~6px
+        right:'0'
+      });
+      tick.textContent = (yv === 0 ? '0' : String(yv));
+      yTicks.appendChild(tick);
+    }
+
+    // X labels at each frequency
+    xTicks.innerHTML = '';
+    FREQS.forEach((f, i)=>{
+      const x = xAt(i, w);
+      const tick = document.createElement('div');
+      Object.assign(tick.style, {
+        position:'absolute',
+        left: (x - 16) + 'px', // 56px left gutter + x, center ~32px width
+        width:'34px',
+        textAlign:'center',
+        top: '-10px'
+      });
+      tick.textContent = f;
+      xTicks.appendChild(tick);
+    });
+  }
+
+  // ---------- grid (no labels; labels are DOM) ----------
   function drawGrid(ctx, w, h){
     ctx.clearRect(0,0,w,h);
     ctx.save();
     ctx.strokeStyle = '#e0e0e0';
     ctx.lineWidth = 1;
 
-    const xStep = w / (FREQS.length);
-    for (let i=1; i<FREQS.length; i++){
-      const x = i * xStep;
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    // verticals
+    for (let i=0; i<FREQS.length; i++){
+      const x = xAt(i, w);
+      ctx.beginPath(); ctx.moveTo(x, PAD_Y); ctx.lineTo(x, h - PAD_Y); ctx.stroke();
     }
-
-    const yScale = h / (Y_MAX - Y_MIN);
-    for (let yv=Y_MIN; yv<=Y_MAX; yv+=STEP){
-      // NEGATIVE at top, POSITIVE at bottom:
-      const y = (yv - Y_MIN) * yScale;
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    // horizontals every 10 dB
+    for (let yv = Y_MIN; yv <= Y_MAX; yv += STEP){
+      const y = yAt(yv, h);
+      ctx.beginPath(); ctx.moveTo(PAD_X, y); ctx.lineTo(w - PAD_X, y); ctx.stroke();
     }
     ctx.restore();
   }
 
-  function plotSeries(ctx, data, color, symbol){
-    const w = ctx.canvas.width, h = ctx.canvas.height;
-    const xStep = w / (FREQS.length - 1);
-    const yScale = h / (Y_MAX - Y_MIN);
-
+  // ---------- plotting ----------
+  function plotRight(ctx, w, h, arr){
     ctx.save();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    data.forEach((val, i)=>{
-      const x = i * xStep;
-      // NEGATIVE at top, POSITIVE at bottom:
-      const y = (val - Y_MIN) * yScale;
-      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-    });
-    ctx.stroke();
-
-    ctx.fillStyle = color;
-    ctx.strokeStyle = color;
-    data.forEach((val, i)=>{
-      const x = i * xStep;
-      const y = (val - Y_MIN) * yScale;
-      if (symbol === 'o') {
-        ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI*2); ctx.fill();
-      } else if (symbol === 'x') {
-        ctx.beginPath(); ctx.moveTo(x-3, y-3); ctx.lineTo(x+3, y+3);
-        ctx.moveTo(x-3, y+3); ctx.lineTo(x+3, y-3); ctx.stroke();
+    ctx.strokeStyle = '#d00';
+    ctx.fillStyle = '#d00';
+    ctx.lineWidth = 1.25;
+    for (let i=0; i<FREQS.length; i++){
+      const x = xAt(i, w), y = yAt(arr[i]||0, h);
+      ctx.beginPath(); ctx.arc(x, y, 3.2, 0, Math.PI*2); ctx.fill();
+      if (i>0){
+        const px = xAt(i-1, w), py = yAt(arr[i-1]||0, h);
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(x, y); ctx.stroke();
       }
-    });
+    }
     ctx.restore();
   }
-
+  function plotLeft(ctx, w, h, arr){
+    ctx.save();
+    ctx.strokeStyle = '#06c';
+    ctx.lineWidth = 1.25;
+    const r = 4;
+    for (let i=0; i<FREQS.length; i++){
+      const x = xAt(i, w), y = yAt(arr[i]||0, h);
+      ctx.beginPath();
+      ctx.moveTo(x - r, y - r); ctx.lineTo(x + r, y + r);
+      ctx.moveTo(x - r, y + r); ctx.lineTo(x + r, y - r);
+      ctx.stroke();
+      if (i>0){
+        const px = xAt(i-1, w), py = yAt(arr[i-1]||0, h);
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(x, y); ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
   function drawAudiogram(ctx, rightVals, leftVals){
-    drawGrid(ctx, ctx.canvas.width, ctx.canvas.height);
-    plotSeries(ctx, rightVals, '#d00', 'o');   // right = red circles
-    plotSeries(ctx, leftVals,  '#06c', 'x');   // left  = blue crosses
+    const w = ctx.canvas.width, h = ctx.canvas.height;
+    drawGrid(ctx, w, h);
+    plotRight(ctx, w, h, rightVals);
+    plotLeft(ctx,  w, h, leftVals);
   }
 
-  // ---------- readers ----------
+  // ---------- value readers ----------
   function readEntryWidgetValues(widgetEl){
-    // Finds inputs like *_r_500, *_l_500 ... *_r_8000
     function getFor(side){
       return FREQS.map(f=>{
         const el = widgetEl.querySelector(`input[name$="_${side}_${f}"]`);
@@ -1487,11 +1581,9 @@
     }
     return { right: getFor('r'), left: getFor('l') };
   }
-
   function readComparePanelValues(containerEl, which){ // 'a1' or 'a2'
-    function seq(side){ // 'r' or 'l'
+    function seq(side){
       return FREQS.map((_, idx)=>{
-        // match ..._a1_r1, ..._a1_r2, etc. regardless of the leading control name
         const el = containerEl.querySelector(`input[name$="_${which}_${side}${idx+1}"]`);
         return toNum(el ? el.value : 0);
       });
@@ -1501,27 +1593,27 @@
 
   // ---------- mount: audiometry entry ----------
   document.querySelectorAll('.audiometry-widget').forEach(widget=>{
-    const frame = widget.querySelector('div[style*="left:140px"][style*="top:40px"]') || widget.querySelector('div'); // fallback
+    const frame = widget.querySelector('div[style*="left:140px"][style*="top:40px"]') || widget.querySelector('div');
     if (!frame) return;
     const ctx = ensureCanvas(frame, 'canvas_entry');
+    renderAxisLabels(frame, ctx);
 
     function redraw(){
       const {right, left} = readEntryWidgetValues(widget);
       drawAudiogram(ctx, right, left);
+      renderAxisLabels(frame, ctx); // keep aligned on resize
     }
-
-    // live updates on input
     widget.querySelectorAll('input[type="text"]').forEach(inp=>{
       inp.addEventListener('input', redraw);
       inp.addEventListener('change', redraw);
     });
-
     redraw();
+    // optional: re-render labels on window resize
+    window.addEventListener('resize', ()=>renderAxisLabels(frame, ctx));
   });
 
   // ---------- mount: audio comparison ----------
   document.querySelectorAll('.audio-compare-widget').forEach(widget=>{
-    // bottom two chart frames (same structure you render)
     const frames = widget.querySelectorAll('div[style*="width:432px"][style*="height:370px"]');
     const leftChartFrame  = frames[0];
     const rightChartFrame = frames[1];
@@ -1529,43 +1621,35 @@
 
     const ctxL = ensureCanvas(leftChartFrame,  'canvas_cmp_left');
     const ctxR = ensureCanvas(rightChartFrame, 'canvas_cmp_right');
+    renderAxisLabels(leftChartFrame,  ctxL);
+    renderAxisLabels(rightChartFrame, ctxR);
 
     const leftPanel  = widget.querySelector('fieldset:nth-of-type(1)');
     const rightPanel = widget.querySelector('fieldset:nth-of-type(2)');
 
     function redrawCompare(){
-      // a1 -> left chart, a2 -> right chart
       const a1 = readComparePanelValues(leftPanel,  'a1');
       const a2 = readComparePanelValues(rightPanel, 'a2');
       drawAudiogram(ctxL, a1.right, a1.left);
       drawAudiogram(ctxR, a2.right, a2.left);
+      renderAxisLabels(leftChartFrame,  ctxL);
+      renderAxisLabels(rightChartFrame, ctxR);
     }
-
-    // If you later allow editing these fields, keep charts in sync
     widget.querySelectorAll('input[type="text"]').forEach(inp=>{
       inp.addEventListener('input', redrawCompare);
       inp.addEventListener('change', redrawCompare);
     });
-
-    // Optional: seed example values if empty (purely for demo)
-    function seedIfEmpty(panel, prefix, vals){
-      const anyFilled = !!panel.querySelector(`input[name="${prefix}1"]`)?.value;
-      if (anyFilled) return;
-      vals.forEach((v,i)=>{
-        const r = panel.querySelector(`input[name="${prefix}r${i+1}"]`);
-        const l = panel.querySelector(`input[name="${prefix}l${i+1}"]`);
-        if (r) r.value = v;
-        if (l) l.value = v;
-      });
-    }
-    seedIfEmpty(leftPanel,  'a1_', [10,15,5,10,25,40,55]);
-    seedIfEmpty(rightPanel, 'a2_', [15,20,10,15,30,45,60]);
-
     redrawCompare();
+    window.addEventListener('resize', ()=>{
+      renderAxisLabels(leftChartFrame,  ctxL);
+      renderAxisLabels(rightChartFrame, ctxR);
+    });
   });
 
 })();
 </script>
+
+
 
 <script>
 (function () {
