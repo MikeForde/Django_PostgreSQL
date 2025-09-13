@@ -813,13 +813,15 @@
               Frequency (Hz)
             </div>
           </div>
-
         </div>
-
 
         <div style="text-align:center; margin-top:10px;">
-          <button type="button">Analyse</button>
+          <button type="button" id="btn-comp-analysis">Analyse</button>
         </div>
+        <form id="analysis-form2" target="_blank" method="post" action="{% url 'audiogram_analysis' %}" style="display:none;">
+          {% csrf_token %}
+          <input type="hidden" name="payload" id="analysis-payload">
+        </form>
       </div>
 
 
@@ -1821,6 +1823,45 @@
                age:'54', reason:'Routine Audiometry',
                right:latest.right, left:latest.left },
       previous:{ date:'2015-09-12', age:'44', reason:'Routine Audiometry',
+                 right:previous.right, left:previous.left },
+      metrics: latestMetrics
+    };
+
+    const form = getOrCreateAnalysisForm(widget);
+    form.querySelector('.analysis-payload').value = JSON.stringify(payload);
+    form.submit();
+  });
+
+  document.getElementById('btn-comp-analysis')?.addEventListener('click', function(){
+    const widget = this.closest('.audio-compare-widget');
+    if (!widget) return;
+
+    const PREV_RIGHT_CTX2 = {{ ac_2_r|default:'[]'|safe }};
+    const PREV_LEFT_CTX2  = {{ ac_2_l|default:'[]'|safe }};
+
+    const latest = {
+      right: normalize7(PREV_RIGHT_CTX2),
+      left:  normalize7(PREV_LEFT_CTX2)
+    };
+
+    const latestMetrics = calcMetrics(latest);
+
+    // TODO: replace with real previous values when available
+    const PREV_RIGHT_CTX = {{ ac_1_r|default:'[]'|safe }};
+    const PREV_LEFT_CTX  = {{ ac_1_l|default:'[]'|safe }};
+
+    const previous = {
+      right: normalize7(PREV_RIGHT_CTX),
+      left:  normalize7(PREV_LEFT_CTX)
+    };
+
+    const payload = {
+      patient:{title:'',forenames:'Taking',surname:'TPee',gender:'Male',dob:'2/11/1980',age:'45',
+               serviceNo:'8008135',service:'Narmaf',nhsNo:'80081358008135',patientId:'42'},
+      latest:{ date:'2024-05-04',
+               age:'44', reason:'Routine Audiometry',
+               right:latest.right, left:latest.left },
+      previous:{ date:'2015-11-25', age:'35', reason:'Routine Audiometry',
                  right:previous.right, left:previous.left },
       metrics: latestMetrics
     };
