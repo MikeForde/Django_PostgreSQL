@@ -933,21 +933,21 @@
               style="position:absolute; left:413px; top:474px; width:30px; height:18px;">
 
 
-        {# --- Repeat audiogram block (482,430)-(646,517) ------------------------ #}
-        <fieldset style="position:absolute; left:482px; top:425px; width:164px; height:75px; padding:4px 5px;">
-          <div class="readcode-host"
-               data-readcodes="DMSAC009 - Repeat audiogram">
+        {# --- Repeat audiogram block (unchanged legend etc.) --- #}
+        <fieldset style="position:absolute; left:482px; top:430px; width:164px; height:75px; padding:4px 5px;">
           <legend>Is this a repeat audiogram?</legend>
           <label style="margin-right:14px;"><input type="radio" name="{{ c.name }}_repeat" value="Yes"> Yes</label>
           <label><input type="radio" name="{{ c.name }}_repeat" value="No"> No</label>
-          </div>
           <div style="margin-top:8px;margin-left: 34px;">
-            <button type="button" class="readcode-host"
-                    data-readcodes="DMSACA02 — Significant change from previous audiogram\u000ADMSACA04 — Audiogram shows acute change\u000ADMSACA05 — Audiogram shows unilateral hearing loss\u000ADMSACA06 — Audiogram shows change in H grade\u000ADMSACA07 — Audiogram is consistent with HCP pass and below the warning level\u000ADMSACA08 — Audiogram is consistent with HCP pass, but is greater than or equal to the warning level\u000ADMSACA09 — Audiogram indicates hearing loss exceeding the HCP action required level">
-              Initial Analysis
-            </button>
+            <button id="btn-initial-analysis" type="button">Initial Analysis</button>
           </div>
         </fieldset>
+
+        {# Hidden form to open analysis page in a new tab #}
+        <form id="analysis-form" target="_blank" method="post" action="{% url 'audiogram_analysis' %}" style="display:none;">
+          {% csrf_token %}
+          <input type="hidden" name="payload" id="analysis-payload">
+        </form>
 
         {# --- Sums / H grade (Right row y=544; Left row y=584) ------------------ #}
         <div style="position:absolute; left:113px; top:526px;">Sum L Freq.</div>
@@ -1726,6 +1726,105 @@
   // wire up every Audiometry widget on the page
   window.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.audiometry-widget').forEach(wireAudiometry);
+  });
+})();
+</script>
+
+<script>
+(function(){
+  const FREQS = ["500","1000","2000","3000","4000","6000","8000"];
+  const toNum = v => {
+    const n = parseFloat((v||'').toString().replace(/[^0-9.-]/g,''));
+    return isNaN(n) ? 0 : n;
+  };
+
+  const normalize7 = arr =>
+    (Array.isArray(arr) ? arr : []).slice(0,7).map(toNum).concat(Array(7).fill(0)).slice(0,7);
+
+  function getOrCreateAnalysisForm(widget){
+    // try widget-local first
+    let form = widget.querySelector('form.analysis-form');
+    if (!form) {
+      form = document.createElement('form');
+      form.className = 'analysis-form';
+      form.target = '_blank';
+      form.method = 'post';
+      form.action = "{% url 'audiogram_analysis' %}";
+      form.style.display = 'none';
+
+      // clone an existing CSRF token if present on the page
+      const csrfSrc = document.querySelector('input[name=csrfmiddlewaretoken]');
+      if (csrfSrc) {
+        const csrf = csrfSrc.cloneNode();
+        csrf.value = csrfSrc.value;
+        form.appendChild(csrf);
+      }
+
+      const payloadInput = document.createElement('input');
+      payloadInput.type = 'hidden';
+      payloadInput.name = 'payload';
+      payloadInput.className = 'analysis-payload';
+      form.appendChild(payloadInput);
+
+      // attach to the widget so multiple widgets don’t clash
+      widget.appendChild(form);
+    }
+    return form;
+  }
+
+  function collectEntryWidget(widget){
+    const getSide = (side) => FREQS.map(f=>{
+      const el = widget.querySelector(`input[name$="_${side}_${f}"]`);
+      return toNum(el ? el.value : 0);
+    });
+    return { right: getSide('r'), left: getSide('l') };
+  }
+
+  function hFromLow(sum){ return (sum>150)?4:(sum>84)?3:(sum>45)?2:1; }
+  function hFromHigh(sum){ return (sum>210)?4:(sum>123)?3:(sum>45)?2:1; }
+  function hToStr(h){ return (h===4)?'H4/8':('H'+h); }
+
+  function calcMetrics(ear){
+    const lowIdx=[0,1,2], highIdx=[3,4,5];
+    const sum = (arr, ids)=>ids.reduce((a,i)=>a+(arr[i]||0),0);
+    const rLow=sum(ear.right,lowIdx), rHigh=sum(ear.right,highIdx);
+    const lLow=sum(ear.left,lowIdx),  lHigh=sum(ear.left,highIdx);
+    const rH=Math.max(hFromLow(rLow),hFromHigh(rHigh));
+    const lH=Math.max(hFromLow(lLow),hFromHigh(lHigh));
+    return {rightLow:rLow,rightHigh:rHigh,rightH:rH,rightHStr:hToStr(rH),
+            leftLow:lLow,leftHigh:lHigh,leftH:lH,leftHStr:hToStr(lH)};
+  }
+
+  document.getElementById('btn-initial-analysis')?.addEventListener('click', function(){
+    const widget = this.closest('.audiometry-widget');
+    if (!widget) return;
+
+    const latest = collectEntryWidget(widget);
+    const latestMetrics = calcMetrics(latest);
+
+    // TODO: replace with real previous values when available
+    const PREV_RIGHT_CTX = {{ ac_1_r|default:'[]'|safe }};
+    const PREV_LEFT_CTX  = {{ ac_1_l|default:'[]'|safe }};
+
+    const previous = {
+      right: normalize7(PREV_RIGHT_CTX),
+      left:  normalize7(PREV_LEFT_CTX)
+    };
+
+    const payload = {
+      patient:{title:'',forenames:'Mike',surname:'Pee',gender:'Male',dob:'2/11/1970',age:'54',
+               serviceNo:'8008135',service:'Narmaf',nhsNo:'80081358008135',patientId:'43'},
+      latest:{ date:new Date().toISOString().slice(0,10),
+               age:'54', reason:'Routine Audiometry',
+               right:latest.right, left:latest.left },
+      previous:{ date:'2015-09-12', age:'44', reason:'Routine Audiometry',
+                 right:previous.right, left:previous.left },
+      metrics: latestMetrics
+    };
+
+    const form = getOrCreateAnalysisForm(widget);
+    form.querySelector('.analysis-payload').value = JSON.stringify(payload);
+    form.submit();
   });
 })();
 </script>

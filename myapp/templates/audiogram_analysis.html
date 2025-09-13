@@ -1,0 +1,575 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Audiogram Comparison</title>
+<h4>Note: Rough approximation only of original DMICP HTML Analysis Page</h4>
+
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-size:14px; color:#222; margin:16px;}
+  h1{font-size:20px; margin:18px 0 8px;}
+  h2{font-size:16px; margin:16px 0 8px; border-bottom:1px solid #ddd; padding-bottom:4px;}
+  table{border-collapse:collapse; width:100%; margin:10px 0;}
+  th,td{border:1px solid #ccc; padding:6px 8px; vertical-align:top;}
+  th{background:#f5f5f5; text-align:left;}
+  .patientDetailsTable td:first-child{width:180px; font-weight:600; background:#fafafa;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .chartFrame{position:relative; width:432px; height:370px; border:1px solid #bbb; background:#fafafa;}
+  .plot-pane{position:absolute; left:56px; top:12px; right:110px; bottom:42px; background:#fff;
+             border-left:3px solid #000; border-bottom:3px solid #000; border-top:1px solid #999; border-right:1px solid #999;}
+  .legend{position:absolute; right:14px; top:14px; background:#fff; border:1px solid #000; padding:3px 6px; font-size:11px; box-shadow:3px 3px 0 #000;}
+  .yLabel{position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;}
+  .xLabel{position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;}
+  .yTicks{position:absolute; left:0; top:12px; bottom:42px; width:56px; font-size:11px; color:#333;}
+  .xTicks{position:absolute; left:56px; right:110px; bottom:22px; height:20px; font-size:11px; color:#333;}
+  .legend .dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;}
+  .legend .cross{display:inline-block; width:10px; height:10px; margin-right:6px; position:relative;}
+  .legend .cross span{position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform-origin:center;}
+  .pgroup p{margin:6px 0;}
+  .center{display:flex; gap:16px; flex-wrap:wrap;}
+</style>
+</head>
+<body>
+
+<!-- Hidden payload from POST -->
+<input type="hidden" id="analysis-payload" value='{{ payload_json|safe }}'
+
+<div id="audiogramAnalysis">
+  <h1>Audiogram Comparison</h1>
+
+  <table class="patientDetailsTable">
+    <tr><td>Name:</td><td><span id="pd_name"></span></td></tr>
+    <tr><td>Gender:</td><td><span id="pd_gender"></span></td></tr>
+    <tr><td>Date of Birth:</td><td><span id="pd_dob"></span></td></tr>
+    <tr><td>Age:</td><td><span id="pd_age"></span></td></tr>
+    <tr><td>Service Number:</td><td><span id="pd_svcno"></span></td></tr>
+    <tr><td>Service:</td><td><span id="pd_service"></span></td></tr>
+    <tr><td>NHS No:</td><td><span id="pd_nhs"></span></td></tr>
+    <tr><td>DMICP Patient Id:</td><td><span id="pd_pid"></span></td></tr>
+  </table>
+</div>
+
+<div id="comparison">
+  <h1>Comparison Between Audiograms</h1>
+  <p>The two selected audiograms have been compared.</p>
+
+  <table>
+    <tr><th>Date</th><th>Age</th><th>Reason</th></tr>
+    <tr>
+      <td><span id="prev_date"></span></td>
+      <td><span id="prev_age"></span></td>
+      <td><span id="prev_reason"></span></td>
+    </tr>
+    <tr>
+      <td><span id="latest_date"></span></td>
+      <td><span id="latest_age"></span></td>
+      <td><span id="latest_reason"></span></td>
+    </tr>
+    <tr><td colspan="3"><span id="datediff"></span></td></tr>
+  </table>
+
+  <h2>Comparison</h2>
+
+  <!-- Top row: two single-date charts (Previous, Latest) -->
+  <div class="center">
+    <div>
+      <div style="text-align:center; margin-bottom:6px;"><span id="lbl_prev_date"></span></div>
+      <div class="chartFrame" id="chart_prev_both">
+        <div class="plot-pane"></div>
+        <div class="yTicks"></div>
+        <div class="xTicks"></div>
+        <div class="legend">
+          <div><span class="dot"></span>Right ear</div>
+          <div style="margin-top:2px;">
+            <span class="cross">
+              <span style="transform:rotate(45deg)"></span>
+              <span style="transform:rotate(-45deg)"></span>
+            </span>
+            Left ear
+          </div>
+        </div>
+        <div class="yLabel">Hearing Level (dB)</div>
+        <div class="xLabel">Frequency (Hz)</div>
+      </div>
+    </div>
+
+    <div>
+      <div style="text-align:center; margin-bottom:6px;"><span id="lbl_latest_date"></span></div>
+      <div class="chartFrame" id="chart_latest_both">
+        <div class="plot-pane"></div>
+        <div class="yTicks"></div>
+        <div class="xTicks"></div>
+        <div class="legend">
+          <div><span class="dot"></span>Right ear</div>
+          <div style="margin-top:2px;">
+            <span class="cross">
+              <span style="transform:rotate(45deg)"></span>
+              <span style="transform:rotate(-45deg)"></span>
+            </span>
+            Left ear
+          </div>
+        </div>
+        <div class="yLabel">Hearing Level (dB)</div>
+        <div class="xLabel">Frequency (Hz)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Second row: Right-vs-Right, Left-vs-Left (overlay) -->
+  <div class="center" style="margin-top:10px;">
+    <div>
+      <div style="text-align:center; margin-bottom:6px;">Right Ear (Previous vs Latest)</div>
+      <div class="chartFrame" id="chart_right_overlay">
+        <div class="plot-pane"></div>
+        <div class="yTicks"></div>
+        <div class="xTicks"></div>
+        <div class="legend">
+          <div><span class="dot" style="background:#900"></span>Previous Right</div>
+          <div style="margin-top:2px;"><span class="dot" style="background:#e33"></span>Latest Right</div>
+        </div>
+        <div class="yLabel">Hearing Level (dB)</div>
+        <div class="xLabel">Frequency (Hz)</div>
+      </div>
+    </div>
+
+    <div>
+      <div style="text-align:center; margin-bottom:6px;">Left Ear (Previous vs Latest)</div>
+      <div class="chartFrame" id="chart_left_overlay">
+        <div class="plot-pane"></div>
+        <div class="yTicks"></div>
+        <div class="xTicks"></div>
+        <div class="legend">
+          <div>
+            <span class="cross" style="vertical-align:-1px;">
+              <span style="transform:rotate(45deg); background:#004a9f"></span>
+              <span style="transform:rotate(-45deg); background:#004a9f"></span>
+            </span>
+            Previous Left
+          </div>
+          <div style="margin-top:2px;">
+            <span class="cross" style="vertical-align:-1px;">
+              <span style="transform:rotate(45deg); background:#06c"></span>
+              <span style="transform:rotate(-45deg); background:#06c"></span>
+            </span>
+            Latest Left
+          </div>
+        </div>
+        <div class="yLabel">Hearing Level (dB)</div>
+        <div class="xLabel">Frequency (Hz)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary tables (values + sums + H) -->
+  <h2>Values & Sums</h2>
+  <div id="valuesTables"></div>
+
+  <h2>Significant Change</h2>
+  <div id="significantChangeComments" class="pgroup"></div>
+
+  <h2>Rapid Hearing Loss</h2>
+  <div id="acuteHearingLossComments" class="pgroup"></div>
+
+  <h2>H grade</h2>
+  <div id="hGradeComments" class="pgroup"></div>
+
+  <h2>Unilateral Hearing Loss (based on audiogram from <span id="uhl_date"></span>)</h2>
+  <p>The sum of the 1, 2, 3 and 4KHz values for each ear are:</p>
+  <table class="uhlTable">
+    <tr><td>Right:</td><td><span id="uhl_right_sum"></span></td></tr>
+    <tr><td>Left:</td><td><span id="uhl_left_sum"></span></td></tr>
+  </table>
+  <div id="unilateralHearingLossComments" class="pgroup"></div>
+
+  <h2>Age and Gender Specific Assessment</h2>
+  <table>
+    <tr><th></th><th>Sum of 1, 2, 3, 4 and 6KHz values</th></tr>
+    <tr><td>Warning Level</td><td><span id="agsaWarningLevel"></span></td></tr>
+    <tr><td>Referral Level</td><td><span id="agsaReferralLevel"></span></td></tr>
+    <tr><td>Right ear</td><td><span id="agsaRightEar"></span></td></tr>
+    <tr><td>Left ear</td><td><span id="agsaLeftEar"></span></td></tr>
+  </table>
+  <div id="agsaComments" class="pgroup"></div>
+</div>
+
+<script>
+(function(){
+  // ----- constants & helpers (same scales/labels as your widgets) -----
+  const FREQS = ["500","1000","2000","3000","4000","6000","8000"];
+  const Y_MIN = -20, Y_MAX = 130, STEP = 10;
+  const PAD_X = 6, PAD_Y = 4;
+
+  const toNum = v => {
+    const n = parseFloat((v||'').toString().replace(/[^0-9.-]/g,''));
+    return isNaN(n) ? 0 : n;
+  };
+  const norm7 = arr => (Array.isArray(arr)?arr:[]).slice(0,7).map(toNum).concat(Array(7).fill(0)).slice(0,7);
+
+  function xAt(i,w){ return PAD_X + (i/(FREQS.length-1))*(w-2*PAD_X); }
+  function yAt(db,h){ const t=(db - Y_MIN)/(Y_MAX - Y_MIN); return PAD_Y + t*(h-2*PAD_Y); }
+
+  function ensureCanvas(frameEl, id){
+    let slot = frameEl.querySelector('.plot-pane');
+    let cvs = slot.querySelector('canvas#'+id);
+    if (!cvs){
+      cvs = document.createElement('canvas');
+      cvs.id = id;
+      Object.assign(cvs.style, {position:'absolute', inset:'0', pointerEvents:'none'});
+      slot.appendChild(cvs);
+    }
+    // size to slot
+    const w = slot.clientWidth, h = slot.clientHeight;
+    if (cvs.width !== w || cvs.height !== h){ cvs.width = w; cvs.height = h; }
+    return cvs.getContext('2d');
+  }
+
+  function ensureAxisLabels(frameEl, ctx){
+    const yTicks = frameEl.querySelector('.yTicks');
+    const xTicks = frameEl.querySelector('.xTicks');
+    // Y: -10..120
+    yTicks.innerHTML = '';
+    for (let yv=-10; yv<=120; yv+=10){
+      const y = yAt(yv, ctx.canvas.height);
+      const div = document.createElement('div');
+      Object.assign(div.style, {
+        position:'absolute',
+        top: (12 + y - 9) + 'px', /* align nicely */
+        right:'4px'
+      });
+      div.textContent = (yv===0 ? '0' : String(yv));
+      yTicks.appendChild(div);
+    }
+    // X: freqs
+    xTicks.innerHTML='';
+    FREQS.forEach((f,i)=>{
+      const x = xAt(i, ctx.canvas.width);
+      const div = document.createElement('div');
+      Object.assign(div.style,{
+        position:'absolute',
+        left:(x-16)+'px',
+        width:'34px',
+        textAlign:'center'
+      });
+      div.textContent = f;
+      xTicks.appendChild(div);
+    });
+  }
+
+  function drawGrid(ctx, w, h){
+    ctx.clearRect(0,0,w,h);
+    ctx.save();
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+
+    // verticals at each freq
+    for (let i=0;i<FREQS.length;i++){
+      const x = xAt(i, w);
+      ctx.beginPath(); ctx.moveTo(x, PAD_Y); ctx.lineTo(x, h-PAD_Y); ctx.stroke();
+    }
+    // horizontals every 10dB
+    for (let yv=Y_MIN; yv<=Y_MAX; yv+=10){
+      const y = yAt(yv, h);
+      ctx.beginPath(); ctx.moveTo(PAD_X, y); ctx.lineTo(w-PAD_X, y); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function plotSeries(ctx, data, color, symbol){
+    const w = ctx.canvas.width, h = ctx.canvas.height;
+    ctx.save();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    data.forEach((v,i)=>{
+      const x = xAt(i,w), y = yAt(v,h);
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+
+    ctx.fillStyle = color; ctx.strokeStyle = color;
+    data.forEach((v,i)=>{
+      const x = xAt(i,w), y = yAt(v,h);
+      if (symbol==='o'){ ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill(); }
+      else { // 'x'
+        ctx.beginPath(); ctx.moveTo(x-3,y-3); ctx.lineTo(x+3,y+3);
+        ctx.moveTo(x-3,y+3); ctx.lineTo(x+3,y-3); ctx.stroke();
+      }
+    });
+    ctx.restore();
+  }
+
+  function drawBoth(frameEl, rightVals, leftVals){
+    const ctx = ensureCanvas(frameEl, 'cvs_'+Math.random().toString(36).slice(2));
+    ensureAxisLabels(frameEl, ctx);
+    drawGrid(ctx, ctx.canvas.width, ctx.canvas.height);
+    plotSeries(ctx, norm7(rightVals), '#d00', 'o');
+    plotSeries(ctx, norm7(leftVals),  '#06c', 'x');
+  }
+
+  function drawOverlay(frameEl, seriesA, seriesB, colorA, colorB, symA, symB){
+    const ctx = ensureCanvas(frameEl, 'cvs_'+Math.random().toString(36).slice(2));
+    ensureAxisLabels(frameEl, ctx);
+    drawGrid(ctx, ctx.canvas.width, ctx.canvas.height);
+    plotSeries(ctx, norm7(seriesA), colorA, symA);
+    plotSeries(ctx, norm7(seriesB), colorB, symB);
+  }
+
+  // ----- calculations (from chasm rules) -----
+  const lowSum = arr => toNum(arr[0])+toNum(arr[1])+toNum(arr[2]);       // 500,1k,2k
+  const highSum= arr => toNum(arr[3])+toNum(arr[4])+toNum(arr[5]);       // 3k,4k,6k
+  const sum1_2_3_4_6 = arr => toNum(arr[1])+toNum(arr[2])+toNum(arr[3])+toNum(arr[4])+toNum(arr[5]); // 1k..6k
+  function Hlow(sum){ return sum>150?4 : sum>84?3 : sum>45?2 : 1; }
+  function Hhigh(sum){ return sum>210?4 : sum>123?3 : sum>45?2 : 1; }
+  const asH = h => (h===4 ? 'H4/8' : 'H'+h);
+
+  function unilateralDiff(rArr,lArr){
+    // sums of 1,2,3,4 KHz (indices 1..4)
+    const r = toNum(rArr[1])+toNum(rArr[2])+toNum(rArr[3])+toNum(rArr[4]);
+    const l = toNum(lArr[1])+toNum(lArr[2])+toNum(lArr[3])+toNum(lArr[4]);
+    return {r,l,diff: Math.abs(r-l)};
+  }
+
+  function warnRefer(gender, age){
+    // arrays from chasm code
+    const M = [51,95, 67,113, 82,132, 100,154, 121,183, 142,211, 165,240, 190,269, 217,296, 235,311];
+    const F = [46,78, 55,91, 63,105, 71,119, 80,134, 93,153, 111,176, 131,204, 157,235, 175,255];
+    const arr = (gender||'M').toUpperCase()==='M' ? M : F;
+    let a = parseInt(toNum(age),10);
+    if (isNaN(a)) a=20;
+    if (a<20) a=20; if (a>69) a=69;
+    let idx = Math.floor((a-20)/5)*2;
+    return { warn: arr[idx], refer: arr[idx+1] };
+  }
+
+  function dateDiffYears(d1, d2){
+    // expects 'YYYY-MM-DD' or ISO dates; fallback 1 year to avoid div/0
+    const A = new Date(d1), B = new Date(d2);
+    if (isNaN(A) || isNaN(B)) return 1;
+    const ms = Date.UTC(B.getFullYear(),B.getMonth(),B.getDate()) - Date.UTC(A.getFullYear(),A.getMonth(),A.getDate());
+    return Math.max( ms / (1000*60*60*24*365), 0.0001);
+  }
+
+  // ----- main -----
+  const raw = document.getElementById('analysis-payload')?.value || '{}';
+  let P = {};
+  try { P = JSON.parse(raw); } catch(e){ P={}; }
+  console.log("Payload parsed:", P);
+
+  // Normalize inputs
+  const latestR = norm7(P?.latest?.right || []);
+  const latestL = norm7(P?.latest?.left  || []);
+  const prevR   = norm7(P?.previous?.right || []);
+  const prevL   = norm7(P?.previous?.left  || []);
+  const latestDate = P?.latest?.date || '';
+  const prevDate   = P?.previous?.date || '';
+  const latestAge  = P?.latest?.age  || '';
+  const prevAge    = P?.previous?.age|| '';
+  const reasonL    = P?.latest?.reason || 'Routine Audiometry';
+  const reasonP    = P?.previous?.reason || 'Routine Audiometry';
+
+  // Header details if supplied (kept blank if not)
+  document.getElementById('pd_name').textContent   = [P?.patient?.title,P?.patient?.forenames,P?.patient?.surname].filter(Boolean).join(' ') || 'Mike TT Pee';
+  document.getElementById('pd_gender').textContent = P?.patient?.gender || 'Male';
+  document.getElementById('pd_dob').textContent    = P?.patient?.dob || '2nd Nov 1970';
+  document.getElementById('pd_age').textContent    = P?.patient?.age || latestAge || '54';
+  document.getElementById('pd_svcno').textContent  = P?.patient?.serviceNo || '8008135';
+  document.getElementById('pd_service').textContent= P?.patient?.service || 'Narmaf';
+  document.getElementById('pd_nhs').textContent    = P?.patient?.nhsNo || '80081358008135';
+  document.getElementById('pd_pid').textContent    = P?.patient?.patientId || '43';
+
+  // Comparison header
+  document.getElementById('prev_date').textContent   = prevDate;
+  document.getElementById('prev_age').textContent    = prevAge;
+  document.getElementById('prev_reason').textContent = reasonP;
+  document.getElementById('latest_date').textContent = latestDate;
+  document.getElementById('latest_age').textContent  = latestAge;
+  document.getElementById('latest_reason').textContent = reasonL;
+  document.getElementById('datediff').textContent =
+    (prevDate && latestDate) ? ('Difference: ~' + dateDiffYears(prevDate, latestDate).toFixed(1) + ' years') : '';
+
+  document.getElementById('lbl_prev_date').textContent   = prevDate || 'Previous';
+  document.getElementById('lbl_latest_date').textContent = latestDate || 'Latest';
+  document.getElementById('uhl_date').textContent        = latestDate || 'Latest';
+
+  // Draw charts
+  drawBoth(document.getElementById('chart_prev_both'),   prevR,   prevL);
+  drawBoth(document.getElementById('chart_latest_both'), latestR, latestL);
+  drawOverlay(document.getElementById('chart_right_overlay'), prevR, latestR, '#900', '#e33', 'o', 'o');
+  drawOverlay(document.getElementById('chart_left_overlay'),  prevL, latestL, '#004a9f', '#06c', 'x', 'x');
+
+  // Values & Sums table (compact, but clear)
+  function td(v){ return `<td>${v}</td>`; }
+  const tableHTML = `
+    <table>
+      <tr>
+        <th></th>
+        <th colspan="7">Right Ear dB</th>
+        <th colspan="7">Left Ear dB</th>
+      </tr>
+      <tr>
+        <th>Date</th>
+        ${FREQS.map(f=>`<th>${f}Hz</th>`).join('')}
+        ${FREQS.map(f=>`<th>${f}Hz</th>`).join('')}
+      </tr>
+      <tr>
+        <td>${prevDate||'Previous'}</td>
+        ${prevR.map(v=>td(v)).join('')}
+        ${prevL.map(v=>td(v)).join('')}
+      </tr>
+      <tr>
+        <td>${latestDate||'Latest'}</td>
+        ${latestR.map(v=>td(v)).join('')}
+        ${latestL.map(v=>td(v)).join('')}
+      </tr>
+      <tr>
+        <td>Change</td>
+        ${latestR.map((v,i)=>td((v - prevR[i] >= 0 ? '+' : '') + (v - prevR[i]))).join('')}
+        ${latestL.map((v,i)=>td((v - prevL[i] >= 0 ? '+' : '') + (v - prevL[i]))).join('')}
+      </tr>
+      <tr>
+        <th></th>
+        <th colspan="3">Sum Low</th><th colspan="3">Sum High</th><th>H</th>
+        <th colspan="3">Sum Low</th><th colspan="3">Sum High</th><th>H</th>
+      </tr>
+      <tr>
+        <td>${prevDate||'Previous'}</td>
+        <td colspan="3">${lowSum(prevR)}</td>
+        <td colspan="3">${highSum(prevR)}</td>
+        <td>${asH(Math.max(Hlow(lowSum(prevR)), Hhigh(highSum(prevR))))}</td>
+        <td colspan="3">${lowSum(prevL)}</td>
+        <td colspan="3">${highSum(prevL)}</td>
+        <td>${asH(Math.max(Hlow(lowSum(prevL)), Hhigh(highSum(prevL))))}</td>
+      </tr>
+      <tr>
+        <td>${latestDate||'Latest'}</td>
+        <td colspan="3">${lowSum(latestR)}</td>
+        <td colspan="3">${highSum(latestR)}</td>
+        <td>${asH(Math.max(Hlow(lowSum(latestR)), Hhigh(highSum(latestR))))}</td>
+        <td colspan="3">${lowSum(latestL)}</td>
+        <td colspan="3">${highSum(latestL)}</td>
+        <td>${asH(Math.max(Hlow(lowSum(latestL)), Hhigh(highSum(latestL))))}</td>
+      </tr>
+      <tr>
+        <td>Change</td>
+        <td colspan="3">${lowSum(latestR)-lowSum(prevR)}</td>
+        <td colspan="3">${highSum(latestR)-highSum(prevR)}</td>
+        <td>${
+          (() => {
+            const prevH = Math.max(Hlow(lowSum(prevR)), Hhigh(highSum(prevR)));
+            const nowH  = Math.max(Hlow(lowSum(latestR)), Hhigh(highSum(latestR)));
+            const d = nowH - prevH;
+            return (d>0?'+':'') + d;
+          })()
+        }</td>
+        <td colspan="3">${lowSum(latestL)-lowSum(prevL)}</td>
+        <td colspan="3">${highSum(latestL)-highSum(prevL)}</td>
+        <td>${
+          (() => {
+            const prevH = Math.max(Hlow(lowSum(prevL)), Hhigh(highSum(prevL)));
+            const nowH  = Math.max(Hlow(lowSum(latestL)), Hhigh(highSum(latestL)));
+            const d = nowH - prevH;
+            return (d>0?'+':'') + d;
+          })()
+        }</td>
+      </tr>
+    </table>`;
+  document.getElementById('valuesTables').innerHTML = tableHTML;
+
+  // Unilateral HL (latest)
+  const U = unilateralDiff(latestR, latestL);
+  document.getElementById('uhl_right_sum').textContent = U.r;
+  document.getElementById('uhl_left_sum').textContent  = U.l;
+  const uhlDiv = document.getElementById('unilateralHearingLossComments');
+  uhlDiv.innerHTML = '';
+  uhlDiv.appendChild(p(U.diff > 40
+    ? "Audiogram shows a unilateral hearing loss, refer to the Medical Officer or an occupationally qualified nurse."
+    : "There is no indication of unilateral hearing loss."));
+  uhlDiv.appendChild(p(`Calculation: RIGHT Sum(1,2,3,4 KHz) = ${U.r}, LEFT Sum(1,2,3,4 KHz) = ${U.l}, Difference = ${U.diff}, Threshold > 40`));
+
+  // Age/Gender thresholds & assessment (latest)
+  const g   = (P?.patient?.gender || 'M').toString().toUpperCase();
+  const a   = P?.patient?.age || latestAge || 20;
+  const thr = warnRefer(g, a);
+  const rSum = sum1_2_3_4_6(latestR);
+  const lSum = sum1_2_3_4_6(latestL);
+  byId('agsaWarningLevel', thr.warn);
+  byId('agsaReferralLevel', thr.refer);
+  byId('agsaRightEar', rSum);
+  byId('agsaLeftEar',  lSum);
+  const agsa = document.getElementById('agsaComments'); agsa.innerHTML = '';
+  if (rSum >= thr.refer || lSum >= thr.refer){
+    agsa.appendChild(p("Referral required. Sum of 1, 2, 3, 4 and 6 KHz is greater or equal to Referral level."));
+    agsa.appendChild(p("The individual is to be referred to an approved audiology service for clinical audiometry and ORL opinion. Inform patient and line manager and place an annual HCP recall. Consistent with HCP action required. Referral to OM should be considered depending on the final outcome."));
+  } else if (rSum >= thr.warn || lSum >= thr.warn){
+    agsa.appendChild(p("Warning. Sum of 1, 2, 3, 4 and 6 KHz is greater or equal to Warning level, but below Referral level. Inform patient and line manager and place an annual HCP recall. Consistent with HCP pass."));
+  } else {
+    agsa.appendChild(p("Normal. Sum of 1, 2, 3, 4 and 6 KHz is lower than Warning level. No action required. Remain on current HCP recall frequency. Consistent with HCP pass."));
+  }
+
+  // Significant change (compare prev vs latest) – threshold 25 on low and high sums separately, both ears
+  function sigChangeReport(){
+    const Llow = lowSum(latestL), Rlow = lowSum(latestR);
+    const Lhi  = highSum(latestL), Rhi  = highSum(latestR);
+    const PlowL= lowSum(prevL),   PlowR= lowSum(prevR);
+    const PhiL = highSum(prevL),  PhiR = highSum(prevR);
+    const dLL = Math.abs(Llow-PlowL), dRL = Math.abs(Rlow-PlowR);
+    const dLH = Math.abs(Lhi-PhiL),   dRH = Math.abs(Rhi-PhiR);
+    const ok = (dLL<25 && dLH<25 && dRL<25 && dRH<25);
+    const out = document.getElementById('significantChangeComments'); out.innerHTML='';
+    if (ok){
+      out.appendChild(p(`There is no significant difference between the two audiograms.`));
+    } else {
+      out.appendChild(p(`There is a significant difference between the two audiograms.`));
+      out.appendChild(p(`If this is a first test, then repeat the audiogram… If this is already the repeat audiogram and a significant difference persists, then refer to the Medical Officer or an occupationally qualified nurse.`));
+    }
+    out.appendChild(p(
+      `Calculation (Difference Threshold for all is ≥25):
+       RIGHT LOW Δ=${dRL}, LEFT LOW Δ=${dLL}, RIGHT HIGH Δ=${dRH}, LEFT HIGH Δ=${dLH}`
+    ));
+  }
+  sigChangeReport();
+
+  // Rapid hearing loss (high sums / date interval)
+  function rapidLossReport(){
+    const yrs = dateDiffYears(prevDate, latestDate);
+    const dL = (highSum(latestL) - highSum(prevL)) / yrs;
+    const dR = (highSum(latestR) - highSum(prevR)) / yrs;
+    const out = document.getElementById('acuteHearingLossComments'); out.innerHTML='';
+    if (dL > 9 || dR > 9){
+      out.appendChild(p("There is an indication of rapid hearing loss: refer to ORL (ENT) and/or Occupational Medicine."));
+    } else {
+      out.appendChild(p("No indication of rapid hearing loss."));
+    }
+    out.appendChild(p(
+      `Calculation: Date Interval (years) ≈ ${yrs.toFixed(1)}. RIGHT Δ/yr=${dR.toFixed(1)}, LEFT Δ/yr=${dL.toFixed(1)} (threshold > 9)`
+    ));
+  }
+  rapidLossReport();
+
+  // H-grade changes (overall = worse of low/high)
+  function hGrades(){
+    const prevR_H = Math.max(Hlow(lowSum(prevR)),   Hhigh(highSum(prevR)));
+    const prevL_H = Math.max(Hlow(lowSum(prevL)),   Hhigh(highSum(prevL)));
+    const nowR_H  = Math.max(Hlow(lowSum(latestR)), Hhigh(highSum(latestR)));
+    const nowL_H  = Math.max(Hlow(lowSum(latestL)), Hhigh(highSum(latestL)));
+    const out = document.getElementById('hGradeComments'); out.innerHTML='';
+    if (prevR_H===nowR_H && prevL_H===nowL_H){
+      out.appendChild(p("No change in H grade noted."));
+    } else {
+      out.appendChild(p("H grade has changed: refer to the Medical Officer or an occupationally qualified nurse. Inform employee of ways to minimise or prevent further loss."));
+    }
+    out.appendChild(p(
+      `This Grade R${asH(nowR_H)} L${asH(nowL_H)} — Previous Grade R${asH(prevR_H)} L${asH(prevL_H)}.`
+    ));
+  }
+  hGrades();
+
+  // tiny helpers
+  function byId(id, val){ const el=document.getElementById(id); if (el) el.textContent = val; }
+  function p(txt){ const el=document.createElement('p'); el.innerHTML = txt; return el; }
+
+})();
+</script>
+</body>
+</html>

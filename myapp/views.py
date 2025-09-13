@@ -6,6 +6,25 @@ from .tex_parser import parse_tex
 from django.http import JsonResponse
 from collections import OrderedDict
 
+# app/views.py
+import json
+from django.http import HttpResponseBadRequest
+
+def audiogram_analysis(request):
+    if request.method != 'POST':
+        return HttpResponseBadRequest('POST only')
+    payload = request.POST.get('payload', '')
+    try:
+        data = json.loads(payload)
+    except Exception:
+        return HttpResponseBadRequest('Invalid payload')
+
+    # Pass raw arrays to the template; calculations & drawing done client-side
+    return render(request, 'audiogram_analysis.html', {
+        'payload_json': json.dumps(data),  # safe JSON for the page
+    })
+
+
 def home_view(request):
     """
     Displays the landing page.
