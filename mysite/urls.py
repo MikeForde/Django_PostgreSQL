@@ -30,4 +30,5 @@ urlpatterns = [
     path("import-tex/submit/", views.submit_tex_form, name="submit_tex_form"),
     path('dental/', views.dental, name='dental'),
     path('audiogram/analysis/', views.audiogram_analysis, name='audiogram_analysis'),
+    path("audio/", views.audio_poc, name="audio_poc"),
 ]

@@ -10,6 +10,9 @@ from collections import OrderedDict
 import json
 from django.http import HttpResponseBadRequest
 
+def audio_poc(request):
+    return render(request, "audio_poc.html")
+
 def audiogram_analysis(request):
     if request.method != 'POST':
         return HttpResponseBadRequest('POST only')

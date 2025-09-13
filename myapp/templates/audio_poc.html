@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Audio POC | TT-Mick-P{% endblock %}
+
+{% block content %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Audio POC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="{% static 'myapp/js/audio_poc.css' %}">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+  <main class="page layout">
+  <!-- LEFT COLUMN -->
+  <section class="left-col">
+    <!-- Controls (compact inline) -->
+    <section class="controls controls--compact">
+      <label>Gender
+        <select data-id="txtGender" onchange="fnCalcWarnReferLevels();updateAudio('canvas')">
+          <option value="M" selected>Male</option>
+          <option value="F">Female</option>
+        </select>
+      </label>
+
+      <label>Age
+        <input type="number" data-id="txtAge" value="35" min="18" max="80"
+               oninput="fnCalcWarnReferLevels();updateAudio('canvas')" />
+      </label>
+
+      <label>Current
+        <input type="date" data-id="dtCurrent" />
+        </label>
+
+        <label>Previous
+            <input type="date" data-id="dtPrevious" value="2019-11-02" onchange="updateAudio('canvas')" />
+        </label>
+
+      <div class="btns">
+        <button type="button" onclick="setRandom('canvas')">Random (Current)</button>
+        <button type="button" onclick="setRandom('canvas2')">Random (Previous)</button>
+        <button type="button" onclick="updateAudio('canvas')">Update</button>
+      </div>
+    </section>
+
+    <!-- Inputs (Current vs Previous horizontally) -->
+    <section class="inputs inputs--rows">
+        <!-- CURRENT -->
+        <div class="inputs-col">
+            <h3>Current</h3>
+
+            <!-- header: blank cell for "Right/Left" label, then the 7 freqs -->
+            <div class="freq-header">
+            <span></span>
+            <span>500Hz</span><span>1k</span><span>2k</span><span>3k</span><span>4k</span><span>6k</span><span>8k</span>
+            </div>
+
+            <!-- RIGHT row -->
+            <div class="io-row">
+            <span class="ear-label">Right</span>
+            <input data-id="TextBoxR1" value="0" oninput="updateAudio('canvas')" />
+            <input data-id="TextBoxR2" value="0" oninput="updateAudio('canvas')" />
+            <input data-id="TextBoxR3" value="0" oninput="updateAudio('canvas')" />
+            <input data-id="TextBoxR4" value="0" oninput="updateAudio('canvas')" />
+            <input data-id="TextBoxR5" value="0" oninput="updateAudio('canvas')" />
+            <input data-id="TextBoxR6" value="0" oninput="updateAudio('canvas')" />
+            <input data-id="TextBoxR7" value="0" oninput="updateAudio('canvas')" />
+            </div>
+
+            <!-- LEFT row -->
+            <div class="io-row">
+            <span class="ear-label">Left</span>
+            <input data-id="TextBoxL1" value="0" oninput="updateAudio('canvas')" />
+            <input data-id="TextBoxL2" value="0" oninput="updateAudio('canvas')" />
+            <input data-id="TextBoxL3" value="0" oninput="updateAudio('canvas')" />
+            <input data-id="TextBoxL4" value="0" oninput="updateAudio('canvas')" />
+            <input data-id="TextBoxL5" value="0" oninput="updateAudio('canvas')" />
+            <input data-id="TextBoxL6" value="0" oninput="updateAudio('canvas')" />
+            <input data-id="TextBoxL7" value="0" oninput="updateAudio('canvas')" />
+            </div>
+        </div>
+
+        <!-- PREVIOUS -->
+        <div class="inputs-col">
+            <h3>Previous</h3>
+
+            <div class="freq-header">
+            <span></span>
+            <span>500Hz</span><span>1k</span><span>2k</span><span>3k</span><span>4k</span><span>6k</span><span>8k</span>
+            </div>
+
+            <!-- RIGHT row -->
+            <div class="io-row">
+            <span class="ear-label">Right</span>
+            <input data-id="TextBoxRC1" value="0" oninput="updateAudio('canvas2')" />
+            <input data-id="TextBoxRC2" value="0" oninput="updateAudio('canvas2')" />
+            <input data-id="TextBoxRC3" value="0" oninput="updateAudio('canvas2')" />
+            <input data-id="TextBoxRC4" value="0" oninput="updateAudio('canvas2')" />
+            <input data-id="TextBoxRC5" value="0" oninput="updateAudio('canvas2')" />
+            <input data-id="TextBoxRC6" value="0" oninput="updateAudio('canvas2')" />
+            <input data-id="TextBoxRC7" value="0" oninput="updateAudio('canvas2')" />
+            </div>
+
+            <!-- LEFT row -->
+            <div class="io-row">
+            <span class="ear-label">Left</span>
+            <input data-id="TextBoxLC1" value="0" oninput="updateAudio('canvas2')" />
+            <input data-id="TextBoxLC2" value="0" oninput="updateAudio('canvas2')" />
+            <input data-id="TextBoxLC3" value="0" oninput="updateAudio('canvas2')" />
+            <input data-id="TextBoxLC4" value="0" oninput="updateAudio('canvas2')" />
+            <input data-id="TextBoxLC5" value="0" oninput="updateAudio('canvas2')" />
+            <input data-id="TextBoxLC6" value="0" oninput="updateAudio('canvas2')" />
+            <input data-id="TextBoxLC7" value="0" oninput="updateAudio('canvas2')" />
+            </div>
+        </div>
+        </section>
+
+
+    <!-- Charts -->
+    <section id="audio-root" class="eformsPage charts-grid">
+      <canvas id="canvas"  width="480" height="320"></canvas>
+      <canvas id="canvas2" width="480" height="320"></canvas>
+      <canvas id="canvas3" width="480" height="320"></canvas>
+      <canvas id="canvas4" width="480" height="320"></canvas>
+    </section>
+  </section>
+
+  <!-- RIGHT COLUMN (stacked vertically) -->
+  <aside class="right-col analysis-stack">
+    <div class="card">
+      <h3>Current Audiogram</h3>
+      <div data-id="lblAnalysis"><div></div></div>
+    </div>
+    <div class="card">
+      <h3>Previous Audiogram</h3>
+      <div data-id="lblAnalysis2"><div></div></div>
+    </div>
+    <div class="card">
+      <h3>Automated Analysis</h3>
+      <label>Unilateral Loss
+        <textarea data-id="txtULH" readonly></textarea>
+      </label>
+      <label>HCP Warning/Referral
+        <textarea data-id="txtHCP" readonly></textarea>
+      </label>
+      <label>Significant Difference
+        <textarea data-id="txtSigDiff" readonly></textarea>
+      </label>
+      <label>Rapid Hearing Loss
+        <textarea data-id="txtRapid" readonly></textarea>
+      </label>
+      <label>H Grade Change
+        <textarea data-id="txtHGrade" readonly></textarea>
+      </label>
+    </div>
+  </aside>
+</main>
+
+  <script src="{% static 'myapp/js/audio_poc.js' %}"></script>
+</body>
+</html>
+{% endblock %}
