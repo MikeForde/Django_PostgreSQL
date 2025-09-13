@@ -935,12 +935,15 @@
 
         {# --- Repeat audiogram block (unchanged legend etc.) --- #}
         <fieldset style="position:absolute; left:482px; top:430px; width:164px; height:75px; padding:4px 5px;">
-          <legend>Is this a repeat audiogram?</legend>
-          <label style="margin-right:14px;"><input type="radio" name="{{ c.name }}_repeat" value="Yes"> Yes</label>
-          <label><input type="radio" name="{{ c.name }}_repeat" value="No"> No</label>
-          <div style="margin-top:8px;margin-left: 34px;">
-            <button id="btn-initial-analysis" type="button">Initial Analysis</button>
-          </div>
+          <div class="readcode-host" data-readcodes="DMSAC009 - Repeat audiogram">
+            <legend>Is this a repeat audiogram?</legend>
+            <label style="margin-right:14px;"><input type="radio" name="{{ c.name }}_repeat" value="Yes"> Yes</label>
+            <label><input type="radio" name="{{ c.name }}_repeat" value="No"> No</label>
+            </div>
+            <div style="margin-top:8px;margin-left: 34px;">
+              <button id="btn-initial-analysis" type="button" class="readcode-host"
+                    data-readcodes="DMSACA02 — Significant change from previous audiogram\u000ADMSACA04 — Audiogram shows acute change\u000ADMSACA05 — Audiogram shows unilateral hearing loss\u000ADMSACA06 — Audiogram shows change in H grade\u000ADMSACA07 — Audiogram is consistent with HCP pass and below the warning level\u000ADMSACA08 — Audiogram is consistent with HCP pass, but is greater than or equal to the warning level\u000ADMSACA09 — Audiogram indicates hearing loss exceeding the HCP action required level">Initial Analysis</button>
+            </div>
         </fieldset>
 
         {# Hidden form to open analysis page in a new tab #}
