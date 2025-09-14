@@ -431,7 +431,11 @@ $(document).ready(function () {
             graphic: 'missing',
             lineColor: '#666666',
             backgroundColor: '#FFFFFF',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '100203D',
+            snodent_description: 'Tooth absent (finding)',
+            snomed_code: '234948008'
+
         },
         {
             code: 'EMISD_AC4',
@@ -442,7 +446,10 @@ $(document).ready(function () {
             graphic: 'closed',
             lineColor: '#555555',
             backgroundColor: '#FFFFFF',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '100203D',
+            snodent_description: 'Tooth absent (finding)',
+            snomed_code: '234948008'
         },
         {
             code: 'EMISD_AN1L',
@@ -452,7 +459,10 @@ $(document).ready(function () {
             subtype: 'Graphic',
             graphic: 'arrowLeft', // Reference to the arrow graphic
             lineColor: '#BBBBBB',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '212094D',
+            snodent_description: 'Displaced tooth (morphologic abnormality)',
+            snomed_code: '133845002'
         },
         {
             code: 'EMISD_AN1R',
@@ -462,7 +472,10 @@ $(document).ready(function () {
             subtype: 'Graphic',
             graphic: 'arrowRight', // Reference to the arrow graphic
             lineColor: '#BBBBBB',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '212094D',
+            snodent_description: 'Displaced tooth (morphologic abnormality)',
+            snomed_code: '133845002'
         },
         {
             code: 'EMISD_AN1U',
@@ -472,7 +485,10 @@ $(document).ready(function () {
             subtype: 'Graphic',
             graphic: 'arrowUp', // Reference to the arrow graphic
             lineColor: '#BBBBBB',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '212094D',
+            snodent_description: 'Displaced tooth (morphologic abnormality)',
+            snomed_code: '133845002'
         },
         {
             code: 'EMISD_AN1D',
@@ -482,7 +498,10 @@ $(document).ready(function () {
             subtype: 'Graphic',
             graphic: 'arrowDown', // Reference to the arrow graphic
             lineColor: '#BBBBBB',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '212094D',
+            snodent_description: 'Displaced tooth (morphologic abnormality)',
+            snomed_code: '133845002'
         },
         {
             code: 'EMISD_RO6',
@@ -492,7 +511,10 @@ $(document).ready(function () {
             subtype: 'Graphic',
             graphic: 'rotateClockwise',
             lineColor: '#444444',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '121005D',
+            snodent_description: 'Rotation of tooth (disorder)',
+            snomed_code: '38089000'
         },
         {
             code: 'EMISD_RO5',
@@ -502,7 +524,10 @@ $(document).ready(function () {
             subtype: 'Graphic',
             graphic: 'rotateAntiClockwise',
             lineColor: '#444444',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '121005D',
+            snodent_description: 'Rotation of tooth (disorder)',
+            snomed_code: '38089000'
         },
         {
             code: 'DMSD016',
@@ -512,7 +537,10 @@ $(document).ready(function () {
             text: '#',
             color: '#FF0000',
             shape: 'character',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '124655D + 116506D',
+            snodent_description: 'Fracture of tooth (disorder) + Treatment required for (contextual qualifier)',
+            snomed_code: '36202009 + 3890004'
         },
         {
             code: 'EMISD_FR4',
@@ -522,7 +550,10 @@ $(document).ready(function () {
             text: '#',
             color: '#999999',
             shape: 'character',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '124655D + None',
+            snodent_description: 'Fracture of tooth (disorder) + ? Intermittent observation (regime/therapy)',
+            snomed_code: '36202009 + ? 225417009'
         },
         {
             code: 'EMISD_NO1',
@@ -532,7 +563,10 @@ $(document).ready(function () {
             subtype: 'Chars',
             text: 'NV',
             color: '#888888',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '101698D',
+            snodent_description: 'Necrosis of the pulp (disorder)',
+            snomed_code: '42711005'
         },
         {
             code: 'DMSD017',
@@ -542,7 +576,10 @@ $(document).ready(function () {
             text: 'TSL',
             color: '#888888',
             shape: 'character',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: 'None',
+            snodent_description: 'Tooth surface loss (disorder)',
+            snomed_code: '234977009'
         },
         {
             code: 'EMISD_TO13',
@@ -552,7 +589,10 @@ $(document).ready(function () {
             subtype: 'Chars',
             text: 'UE',
             color: '#888888',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '110573D',
+            snodent_description: 'Tooth unerupted (finding)',
+            snomed_code: '278658009'
         },
         {
             code: 'EMISD_TO12',
@@ -562,7 +602,10 @@ $(document).ready(function () {
             subtype: 'Chars',
             text: 'PE',
             color: '#888888',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '118759D',
+            snodent_description: 'Tooth partially erupted (finding)',
+            snomed_code: '278660006'
         },
         {
             code: 'DMSD648',
@@ -572,7 +615,10 @@ $(document).ready(function () {
             subtype: 'Chars',
             text: 'NR',
             color: '#222222',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: 'None',
+            snodent_description: '? Not recorded (qualifier value)',
+            snomed_code: '1220561009'
         },
         {
             code: 'EMISD_DE29',
@@ -582,7 +628,10 @@ $(document).ready(function () {
             fillColor: '#FFFFFF',
             strokeColor: '#FF0000',
             shape: 'circle',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '118065D + 116506D',
+            snodent_description: 'Dental caries (disorder) + Treatment required for (contextual qualifier)',
+            snomed_code: '80967001 + 3890004'
         },
         {
             code: 'EMISD_TO26',
@@ -592,7 +641,10 @@ $(document).ready(function () {
             fillColor: '#FFFFFF',
             strokeColor: '#666666',
             shape: 'circle',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '118065D + None',
+            snodent_description: 'Dental caries (disorder) + ? Intermittent observation (regime/therapy)',
+            snomed_code: '80967001 + ? 225417009'
         },
         {
             code: 'DMSD013',
@@ -602,7 +654,10 @@ $(document).ready(function () {
             text: 'W',
             color: '#FF0000',
             shape: 'character',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: 'None',
+            snodent_description: 'Intermittent observation (regime/therapy)',
+            snomed_code: '225417009'
         },
         {
             code: 'DMSD018',
@@ -612,7 +667,10 @@ $(document).ready(function () {
             text: 'R1',
             color: '#888888',
             shape: 'character',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '209904D',
+            snodent_description: 'Primary dental caries extending into outer half of enamel (disorder)',
+            snomed_code: '1287576005'
         },
         {
             code: 'DMSD019',
@@ -622,7 +680,10 @@ $(document).ready(function () {
             text: 'R2',
             color: '#888888',
             shape: 'character',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '209913D',
+            snodent_description: 'Primary active dental caries extending into inner half of enamel (disorder)',
+            snomed_code: '733940003'
         },
         {
             code: 'DMSD020',
@@ -632,7 +693,10 @@ $(document).ready(function () {
             text: 'R3',
             color: '#888888',
             shape: 'character',
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '161653D',
+            snodent_description: 'Dental caries extending into dentin (disorder)',
+            snomed_code: '442551007'
         },
         {
             code: 'EMISD_RE54',
@@ -643,7 +707,10 @@ $(document).ready(function () {
             color: '#999999',
             shape: 'character',
             replace: true,
-            tab: 'Observations'
+            tab: 'Observations',
+            snodent_code: '122100D',
+            snodent_description: 'Retained dental root (disorder)',
+            snomed_code: '66569006'
         },
         {
             code: 'EMISD_DE54',
@@ -653,7 +720,10 @@ $(document).ready(function () {
             fillColor: '#666666',
             strokeColor: '#666666',
             shape: 'circle',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '177942D',
+            snodent_description: 'Dental amalgam filling present (finding)',
+            snomed_code: '278555002'
         },
         {
             code: 'EMISD_DE55',
@@ -663,7 +733,10 @@ $(document).ready(function () {
             fillColor: '#0000FF',
             strokeColor: '#0000FF',
             shape: 'circle',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '178245D',
+            snodent_description: 'Dental composite filling present (finding)',
+            snomed_code: '278556001'
         },
         {
             code: 'EMISD_DE56',
@@ -673,7 +746,10 @@ $(document).ready(function () {
             fillColor: '#33FF00',
             strokeColor: '#33FF00',
             shape: 'circle',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '178459D',
+            snodent_description: 'Dental glass-ionomer filling present (finding)',
+            snomed_code: '278557005'
         },
         {
             code: 'DMSD780',
@@ -683,7 +759,10 @@ $(document).ready(function () {
             fillColor: '#FFCC00',
             strokeColor: '#FFCC00',
             shape: 'circle',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'None',
+            snomed_code: 'None'
         },
         {
             code: 'EMISD_FI14',
@@ -693,7 +772,10 @@ $(document).ready(function () {
             text: 'FS',
             color: '#888888',
             shape: 'character',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Fissure sealant material (substance)',
+            snomed_code: '256455008'
         },
         {
             code: 'EMISD_PA14',
@@ -704,7 +786,10 @@ $(document).ready(function () {
             graphic: 'acrylicDenture',
             lineColor: '#666666',
             backgroundColor: '#FF99CC',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Acrylic dental material (substance)',
+            snomed_code: '256511000'
         },
         {
             code: 'EMISD_PA13',
@@ -1204,21 +1289,21 @@ $(document).ready(function () {
     ];
 
     function problemToRow(problem) {
-        // Lookup metadata
         const meta = problemCodes.find(p => p.code === problem.code);
         const label = meta ? (meta.short || meta.description || problem.code) : problem.code;
 
-        // Build fields
         let target = '';
         if (problem.tooth) target = problem.tooth;
         if (problem.teeth) target = problem.teeth.join('–');
 
         const area = problem.dentalArea || '';
-
         const instances = typeof problem.instances === 'number' ? problem.instances : '';
 
-        return { label, code: problem.code, target, area, instances };
-    }
+        const snodent_code = meta && meta.snodent_code ? meta.snodent_code : '';
+        const snodent_description = meta && meta.snodent_description ? meta.snodent_description : '';
+
+        return { label, code: problem.code, target, area, instances, snodent_code, snodent_description };
+        }
 
     function updatePanel() {
         const panel = document.getElementById('problemsPanel');
@@ -1240,19 +1325,20 @@ $(document).ready(function () {
         }
 
         let html = '<table><thead><tr>' +
-            '<th>Item</th><th>Code</th><th>Tooth/Teeth</th><th>Area</th><th>×</th>' +
-            '</tr></thead><tbody>';
-
+        '<th>Item</th><th>Code</th><th>SNODENT Code</th><th>SNO-Term</th><th>Tooth/ Teeth</th><th>Area</th><th>×</th>' +
+        '</tr></thead><tbody>';
 
         for (const p of sorted) {
-            const row = problemToRow(p);
-            html += `<tr>
-                <td>${row.label}</td>
-                <td>${row.code}</td>
-                <td>${row.target || ''}</td>
-                <td>${row.area || ''}</td>
-                <td style="text-align:center">${row.instances || ''}</td>
-            </tr>`;
+        const row = problemToRow(p);
+        html += `<tr>
+            <td>${row.label}</td>
+            <td>${row.code}</td>
+            <td>${row.snodent_code || ''}</td>
+            <td>${row.snodent_description || ''}</td>
+            <td>${row.target || ''}</td>
+            <td>${row.area || ''}</td>
+            <td style="text-align:center">${row.instances || ''}</td>
+        </tr>`;
         }
         html += '</tbody></table>';
 
@@ -1267,13 +1353,22 @@ $(document).ready(function () {
         });
         $('#copyJsonBtn').on('click', async function () {
             try {
-                const txt = JSON.stringify(dentalProblems, null, 2);
+                const exportData = dentalProblems.map(p => {
+                const meta = problemCodes.find(pc => pc.code === p.code) || {};
+                return {
+                    ...p,
+                    snodent_code: meta.snodent_code || '',
+                    snodent_description: meta.snodent_description || '',
+                    snomed_code: meta.snomed_code || ''
+                };
+                });
+
+                const txt = JSON.stringify(exportData, null, 2);
                 if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(txt);
-                    alert('Selections copied to clipboard as JSON.');
+                await navigator.clipboard.writeText(txt);
+                alert('Selections copied to clipboard as JSON.');
                 } else {
-                    // Fallback: open in a prompt
-                    window.prompt('Copy JSON:', txt);
+                window.prompt('Copy JSON:', txt);
                 }
             } catch (e) {
                 console.error(e);
@@ -1312,7 +1407,18 @@ $(document).ready(function () {
         );
 
         if (match) {
-            tip.textContent = `${match.label} — ${match.code}`;
+            const sCode = match.snodent_code ? `SNODENT: ${match.snodent_code}` : '';
+            const sDesc = match.snodent_description ? `SNO-Term: ${match.snodent_description}` : '';
+            const sSNOMED = match.snomed_code ? `SNOMED: ${match.snomed_code}` : '';
+            Object.assign(tip.style, {
+            /* existing styles... */
+            whiteSpace: 'pre-line'
+            });
+            tip.textContent = [
+                `${match.description} — ${match.code}`,
+                `${sDesc}`,
+                `${sCode} ${sSNOMED}`,
+                ].filter(Boolean).join('\n');
             tip.style.left = (event.clientX + 10) + 'px';
             tip.style.top = (event.clientY + 12) + 'px';
             tip.style.display = 'block';
@@ -1594,7 +1700,11 @@ $(document).ready(function () {
                 w: textWidth,
                 h: itemSize,
                 code: item.code,
-                label: item.short   // ← ADDED
+                label: item.short,
+                description: item.description,
+                snodent_code: item.snodent_code || '',
+                snodent_description: item.snodent_description || '',
+                snomed_code: item.snomed_code || ''
             });
 
             // existing ICON region
@@ -1604,7 +1714,11 @@ $(document).ready(function () {
                 w: itemSize,
                 h: itemSize,
                 code: item.code,
-                label: item.short   // ← ADDED
+                label: item.short,
+                description: item.description,
+                snodent_code: item.snodent_code || '',
+                snodent_description: item.snodent_description || '',
+                snomed_code: item.snomed_code || ''
             });
         });
         hoverTooltip = hoverRegions;
