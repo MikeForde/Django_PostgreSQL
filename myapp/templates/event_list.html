@@ -18,6 +18,7 @@
             <th>Consultation ID</th>
             <th>Assigned Date</th>
             <th>Display Term</th>
+            <th>Descriptive Text</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -29,6 +30,7 @@
             <td>{{ event.consultation_id }}</td>
             <td>{{ event.assigned_date }}</td>
             <td>{{ event.display_term }}</td>
+            <td>{{ event.descriptive_text }}</td>
             <td><a href="{% url 'event_detail' event.id %}">View</a></td>
         </tr>
         {% empty %}
