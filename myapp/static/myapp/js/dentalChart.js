@@ -788,8 +788,8 @@ $(document).ready(function () {
             backgroundColor: '#FF99CC',
             tab: 'Existing Restorations',
             snodent_code: 'None',
-            snodent_description: 'Acrylic dental material (substance)',
-            snomed_code: '256511000'
+            snodent_description: 'Partial denture (physical object) + Acrylic dental material (substance)',
+            snomed_code: '272256008 + 256511000'
         },
         {
             code: 'EMISD_PA13',
@@ -800,7 +800,10 @@ $(document).ready(function () {
             graphic: 'acrylicDenture',
             lineColor: '#666666',
             backgroundColor: '#CCCCCC',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Partial denture (physical object) + Cast metal (substance)',
+            snomed_code: '272256008 + 261342005'
         },
         {
             code: 'DMSD688',
@@ -811,7 +814,10 @@ $(document).ready(function () {
             graphic: 'acrylicDenture',
             lineColor: '#666666',
             backgroundColor: '#FF99CC',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Overdenture (physical object) + Acrylic dental material (substance)',
+            snomed_code: '278117003 + 256511000'
         },
         {
             code: 'DMSD687',
@@ -822,7 +828,10 @@ $(document).ready(function () {
             graphic: 'acrylicDenture',
             lineColor: '#666666',
             backgroundColor: '#CCCCCC',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Overdenture (physical object) + Cast metal (substance)',
+            snomed_code: '278117003 + 261342005'
         },
         {
             code: 'EMISD_LO6',
@@ -833,7 +842,10 @@ $(document).ready(function () {
             graphic: 'extracted',
             lineColor: '#000000',
             backgroundColor: '#FFFFFF',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '123433D',
+            snodent_description: 'Loss of teeth due to extraction (disorder)',
+            snomed_code: '44402007'
         },
         {
             code: 'EMISD_TE4',
@@ -843,7 +855,10 @@ $(document).ready(function () {
             fillColor: '#FF0000',
             strokeColor: '#FF0000',
             shape: 'circle',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Temporary dental filling material (physical object)',
+            snomed_code: '466867002'
         },
         {
             code: 'EMISD_DE50',
@@ -852,7 +867,10 @@ $(document).ready(function () {
             type: 'Whole',
             subtype: 'Colour',
             fillColor: '#66CCFF',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Bonded crown (physical object)',
+            snomed_code: '272294008'
         },
         {
             code: 'EMISD_DE52',
@@ -861,7 +879,10 @@ $(document).ready(function () {
             type: 'Whole',
             subtype: 'Colour',
             fillColor: '#CC99CC',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Dental crown, ceramic (physical object)',
+            snomed_code: '468254001'
         },
         {
             code: 'EMISD_DE51',
@@ -870,7 +891,10 @@ $(document).ready(function () {
             type: 'Whole',
             subtype: 'Colour',
             fillColor: '#FFCC00',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Full gold crown (physical object)',
+            snomed_code: '272291000'
         },
         {
             code: 'EMISD_DE97',
@@ -879,7 +903,10 @@ $(document).ready(function () {
             type: 'Whole',
             subtype: 'Colour',
             fillColor: '#CCCCCC',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Stainless steel dental crown (physical object)',
+            snomed_code: '306740006'
         },
         {
             code: 'DMSD649',
@@ -888,7 +915,10 @@ $(document).ready(function () {
             type: 'BMPDO-All',
             fillColor: '#0000FF',
             strokeColor: '#0000FF',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '178638D',
+            snodent_description: 'Dental inlay present (finding)',
+            snomed_code: '278551006'
         },
         {
             code: 'EMISD_DE58',
@@ -897,7 +927,10 @@ $(document).ready(function () {
             type: 'BMPDO-All',
             fillColor: '#CC99CC',
             strokeColor: '#CC99CC',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '178638D',
+            snodent_description: 'Dental inlay present (finding)',
+            snomed_code: '278551006'
         },
         {
             code: 'EMISD_DE57',
@@ -906,7 +939,10 @@ $(document).ready(function () {
             type: 'BMPDO-All',
             fillColor: '#FFCC00',
             strokeColor: '#FFCC00',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '178638D',
+            snodent_description: 'Dental inlay present (finding)',
+            snomed_code: '278551006'
         },
         {
             code: 'EMISD_DE130',
@@ -915,7 +951,10 @@ $(document).ready(function () {
             type: 'BMPDO-All',
             fillColor: '#0000FF',
             strokeColor: '#0000FF',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '178284D',
+            snodent_description: 'Dental veneer present (finding)',
+            snomed_code: '278553009'
         },
         {
             code: 'EMISD_PO4',
@@ -924,7 +963,10 @@ $(document).ready(function () {
             type: 'BMPDO-All',
             fillColor: '#CC99CC',
             strokeColor: '#CC99CC',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '178284D',
+            snodent_description: 'Dental veneer present (finding)',
+            snomed_code: '278553009'
         },
         {
             code: 'EMISD_DE131',
@@ -933,7 +975,10 @@ $(document).ready(function () {
             type: 'BMPDO-All',
             fillColor: '#999999',
             strokeColor: '#999999',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '178284D',
+            snodent_description: 'Dental veneer present (finding)',
+            snomed_code: '278553009'
         },
         {
             code: 'EMISD_DE94',
@@ -942,7 +987,10 @@ $(document).ready(function () {
             type: 'BMPDO-All',
             fillColor: '#336666',
             strokeColor: '#336666',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '178136D',
+            snodent_description: 'Dental bridge present (finding)',
+            snomed_code: '278554003'
         },
         {
             code: 'EMISD_DE42',
@@ -953,7 +1001,10 @@ $(document).ready(function () {
             text: 'Pon',
             color: '#666666',
             backgroundColor: '#CCCCCC',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Dental bridge pontic (physical object)',
+            snomed_code: '718055002'
         },
         {
             code: 'DMSD027',
@@ -961,7 +1012,10 @@ $(document).ready(function () {
             short: 'Connector',
             type: 'Connector',
             color: '#000000',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'None',
+            snomed_code: 'None'
         },
         {
             code: 'EMISD_DE114',
@@ -971,7 +1025,10 @@ $(document).ready(function () {
             text: 'T',
             color: '#000000',
             shape: 'character',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '133984D',
+            snodent_description: 'Dental pin, device (physical object)',
+            snomed_code: '109226007'
         },
         {
             code: 'EMISD_DE110',
@@ -981,7 +1038,10 @@ $(document).ready(function () {
             rootType: 'halfscrew',
             lineColor: '#000000',
             fillColor: '#3300FF',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '133984D',
+            snodent_description: 'Dental pin, device (physical object)',
+            snomed_code: '109226007'
         },
         {
             code: 'EMISD_IM1',
