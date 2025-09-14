@@ -4,11 +4,18 @@
 
 {% block content %}
 <h1>Events</h1>
+<p>This is the main table used to store clinical data entries - be it consultation data, numerical data, allergies or even alerts</p>
+<p>The only difference between data entered in a consultation and data entered outside is that the event has a consultation id</p>
+<p>For this demo there is only one consultation - which has the id 1 - and that was for the patient with id 9000001</p>
+<p>Thus only events below for patient id 9000001 and which have a consultation id of 1 will be associated with the demo consultation</p>
+<p><i>Note 1: Where the event has a consultation id, the assigned datetime of the event is actually the datetime stamp of the consultation - hence why is always the same - but the actual datetime entered is also in the data - Click on 'View'</i></p>
+<p><i>Note 2: The consultation was filed/saved several times for the purposes of the demo and each time has resulted in a separate "Fit for Full Duties within current MES" - it is unclear if this a 'bug' or a feature!</i></p>
 <table>
     <thead>
         <tr>
             <th>ID</th>
             <th>Patient ID</th>
+            <th>Consultation ID</th>
             <th>Assigned Date</th>
             <th>Display Term</th>
             <th>Actions</th>
@@ -19,6 +26,7 @@
         <tr>
             <td>{{ event.id }}</td>
             <td>{{ event.patient_id }}</td>
+            <td>{{ event.consultation_id }}</td>
             <td>{{ event.assigned_date }}</td>
             <td>{{ event.display_term }}</td>
             <td><a href="{% url 'event_detail' event.id %}">View</a></td>
