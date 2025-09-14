@@ -2,6 +2,12 @@ from django.db import models, connection
 from django.utils.safestring import mark_safe
 import uuid
 
+class TexSnapshot(models.Model):
+    session_key = models.CharField(max_length=64, db_index=True)
+    qualified_name = models.CharField(max_length=200, blank=True)  # e.g. 'Audiometry_Widget'
+    blob = models.TextField()  # the raw TEX or your normalized JSON
+    updated_at = models.DateTimeField(auto_now=True)
+
 class MrEvent(models.Model):
     id = models.IntegerField(primary_key=True)
     patient_id = models.IntegerField()

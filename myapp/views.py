@@ -1,10 +1,13 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import MrEvent
 from .models import MrConsultation
+from .models import TexSnapshot
 from .forms import TexUploadForm
 from .tex_parser import parse_tex
 from django.http import JsonResponse
 from collections import OrderedDict
+from django.utils import timezone
+
 
 # app/views.py
 import json
@@ -78,63 +81,97 @@ def consultation_combined_view(request, consultation_id):
         'events': events
     })
 
+def _ensure_session_key(request):
+    """Guarantee we have a session_key (needed to key the snapshot)."""
+    if not request.session.session_key:
+        request.session.save()
+    return request.session.session_key
+
+
+def _build_context(controls, canvas):
+    """Your existing aggregation logic, factored to reuse for POST/GET restore."""
+    all_read_codes = []
+    diary_read_codes = []
+
+    # aggregate codes + build per-control hover strings
+    for c in controls:
+        per_ctrl = []
+
+        # TEmisReadCode
+        if getattr(c, "is_readcode", False) and getattr(c, "rc_code", None):
+            label = c.rc_term or c.rc_prompt or c.name
+            all_read_codes.append({"code": c.rc_code, "label": label})
+            per_ctrl.append(f"{c.rc_code} — {label}")
+
+            if getattr(c, "rc_is_question", False) and getattr(c, "rc_has_negation", False):
+                neg_code = f"Negation-{c.rc_code}"
+                neg_label = f"Not - {label}"
+                all_read_codes.append({"code": neg_code, "label": neg_label})
+                per_ctrl.append(f"{neg_code} — {neg_label}")
+
+        # TEmisReadList
+        if getattr(c, "is_readlist", False) and getattr(c, "options", None):
+            for opt in c.options:
+                if opt.code:
+                    all_read_codes.append({"code": opt.code, "label": opt.label})
+                    per_ctrl.append(f"{opt.code} — {opt.label}")
+
+        # Diary (keep separate)
+        if getattr(c, "is_diary", False) and getattr(c, "diary_readcode", None):
+            label = c.diary_prompt or c.name
+            diary_read_codes.append({"code": c.diary_readcode, "label": label})
+            per_ctrl.append(f"{c.diary_readcode} — {label}")
+
+        # attach for hover
+        setattr(c, "hover_codes", "\n".join(per_ctrl))
+
+    # de-dup
+    all_read_codes   = _uniq_by_code(all_read_codes)
+    diary_read_codes = _uniq_by_code(diary_read_codes)
+
+    # canvas size (fallback)
+    if controls:
+        canvas["width"]  = max((c.x + c.width)  for c in controls) + 10
+        canvas["height"] = max((c.y + c.height) for c in controls) + 10
+
+    return all_read_codes, diary_read_codes, canvas
+
 
 def import_tex_view(request):
-    """Upload and render an EMIS PCS template."""
+    """Upload and render an EMIS PCS template, persisting the last TEX in a per-session snapshot."""
     form = TexUploadForm(request.POST or None, request.FILES or None)
     controls = []
     canvas = {"width": 0, "height": 0}
-    all_read_codes = []     # across ReadCode + ReadList
-    diary_read_codes = []   # from DiaryEntry only
+
+    # Try restore first (so even invalid POST still shows the last good render)
+    snap = None
+    last_id = request.session.get("last_tex_id")
+    if last_id:
+        snap = TexSnapshot.objects.filter(id=last_id).first()
 
     if request.method == "POST" and form.is_valid():
+        # New upload -> save snapshot and render
         tex_file = form.cleaned_data["tex_file"]
         content = tex_file.read().decode("latin-1")
+
+        session_key = _ensure_session_key(request)
+        snap, _created = TexSnapshot.objects.update_or_create(
+            session_key=session_key,
+            defaults={
+                "qualified_name": "",   # populate if you parse it elsewhere
+                "blob": content,
+            }
+        )
+        request.session["last_tex_id"] = snap.id
+        request.session.modified = True
+
         controls, canvas = parse_tex(content)
+    elif snap:
+        # GET (or invalid POST) with existing snapshot -> re-render from saved blob
+        controls, canvas = parse_tex(snap.blob)
 
-        # aggregate codes + build per-control hover strings
-        for c in controls:
-            per_ctrl = []
-
-            # TEmisReadCode
-            if getattr(c, "is_readcode", False) and c.rc_code:
-                label = c.rc_term or c.rc_prompt or c.name
-                all_read_codes.append({"code": c.rc_code, "label": label})
-                per_ctrl.append(f"{c.rc_code} — {label}")
-
-                # also include negation form if applicable
-                if getattr(c, "rc_is_question", False) and getattr(c, "rc_has_negation", False):
-                    neg_code = f"Negation-{c.rc_code}"
-                    neg_label = f"Not - {label}"
-                    all_read_codes.append({"code": neg_code, "label": neg_label})
-                    per_ctrl.append(f"{neg_code} — {neg_label}")
-
-
-            # TEmisReadList
-            if getattr(c, "is_readlist", False) and c.options:
-                for opt in c.options:
-                    if opt.code:
-                        all_read_codes.append({"code": opt.code, "label": opt.label})
-                        per_ctrl.append(f"{opt.code} — {opt.label}")
-
-            if getattr(c, "is_diary", False) and c.diary_readcode:
-                label = c.diary_prompt or c.name
-                diary_read_codes.append({"code": c.diary_readcode, "label": label})
-                # NOTE: do NOT add diary codes to all_read_codes anymore
-                per_ctrl.append(f"{c.diary_readcode} — {label}")
-
-            # attach a data string for hover (can be empty)
-            codes_text = "\n".join(per_ctrl)
-            # safe: even if dataclass, adding attrs is fine at runtime
-            setattr(c, "hover_codes", codes_text)
-
-        # de-dup by code, keep first occurrence
-        all_read_codes   = _uniq_by_code(all_read_codes)
-        diary_read_codes = _uniq_by_code(diary_read_codes)
-
-        if controls:
-            canvas["width"] = max(c.x + c.width for c in controls) + 10
-            canvas["height"] = max(c.y + c.height for c in controls) + 10
+    # Build aggregated code lists and canvas size
+    all_read_codes, diary_read_codes, canvas = _build_context(controls, canvas)
 
     context = {
         "form": form,
@@ -142,10 +179,11 @@ def import_tex_view(request):
         "canvas": canvas,
         "all_read_codes": all_read_codes,
         "diary_read_codes": diary_read_codes,
-        "ac_1_r" : [10, 15, 5, 10, 25, 40, 55],
-        "ac_1_l" : [5, 5, 15, 10, 20, 25, 15],
-        "ac_2_r" : [5,15,5,-5,5,0,-5],
-        "ac_2_l" : [5,0,15,5,10,5,15],
+        # demo values already in your context (used by comparison/analysis bits)
+        "ac_1_r": [10, 15, 5, 10, 25, 40, 55],
+        "ac_1_l": [5, 5, 15, 10, 20, 25, 15],
+        "ac_2_r": [5, 15, 5, -5, 5, 0, -5],
+        "ac_2_l": [5, 0, 15, 5, 10, 5, 15],
     }
     return render(request, "import_tex.html", context)
 
@@ -159,6 +197,7 @@ def submit_tex_form(request):
             continue
         posted[key] = values if len(values) > 1 else values[0]
     return render(request, "import_tex_result.html", {"data": posted})
+
 
 # utils for de-dup
 
