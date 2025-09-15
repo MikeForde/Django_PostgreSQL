@@ -7,11 +7,13 @@ from .tex_parser import parse_tex
 from django.http import JsonResponse
 from collections import OrderedDict
 from django.utils import timezone
+from django.conf import settings
 
 
 # app/views.py
 import json
 from django.http import HttpResponseBadRequest
+from pathlib import Path
 
 def audio_poc(request):
     return render(request, "audio_poc.html")
@@ -138,39 +140,67 @@ def _build_context(controls, canvas):
 
 
 def import_tex_view(request):
-    """Upload and render an EMIS PCS template, persisting the last TEX in a per-session snapshot."""
+    """Upload or load a library TEX; persist last render in a per-session snapshot."""
     form = TexUploadForm(request.POST or None, request.FILES or None)
+
+    # Rebuild library choices on each request so newly added files appear.
+    if hasattr(form.fields["library_choice"], "choices"):
+        folder = getattr(settings, "TEX_LIBRARY_DIR", None)
+        choices = [("", "— choose a sample —")]
+        if folder:
+            files = [p for p in Path(folder).glob("*.tex") if p.is_file()]
+            choices += [(p.name, p.name) for p in sorted(files)]
+        form.fields["library_choice"].choices = choices
+
     controls = []
     canvas = {"width": 0, "height": 0}
 
-    # Try restore first (so even invalid POST still shows the last good render)
+    # Try to restore prior snapshot
     snap = None
     last_id = request.session.get("last_tex_id")
     if last_id:
         snap = TexSnapshot.objects.filter(id=last_id).first()
 
+    content = None
+    src_name = None
+
     if request.method == "POST" and form.is_valid():
-        # New upload -> save snapshot and render
-        tex_file = form.cleaned_data["tex_file"]
-        content = tex_file.read().decode("latin-1")
+        # Prefer library selection if provided
+        lib_choice = form.cleaned_data.get("library_choice") or ""
+        if lib_choice:
+            # sanitize to basename; prevent traversal
+            lib_file = Path(getattr(settings, "TEX_LIBRARY_DIR", "")) / Path(lib_choice).name
+            if lib_file.is_file() and lib_file.suffix.lower() == ".tex":
+                content = lib_file.read_text(encoding="latin-1", errors="ignore")
+                src_name = lib_file.name
+            else:
+                return HttpResponseBadRequest("Invalid library selection.")
+        elif form.cleaned_data.get("tex_file"):
+            # Regular upload
+            tex_file = form.cleaned_data["tex_file"]
+            content = tex_file.read().decode("latin-1", errors="ignore")
+            src_name = getattr(tex_file, "name", "upload.tex")
 
-        session_key = _ensure_session_key(request)
-        snap, _created = TexSnapshot.objects.update_or_create(
-            session_key=session_key,
-            defaults={
-                "qualified_name": "",   # populate if you parse it elsewhere
-                "blob": content,
-            }
-        )
-        request.session["last_tex_id"] = snap.id
-        request.session.modified = True
-
-        controls, canvas = parse_tex(content)
+        if content is not None:
+            session_key = _ensure_session_key(request)
+            snap, _ = TexSnapshot.objects.update_or_create(
+                session_key=session_key,
+                defaults={
+                    "qualified_name": src_name or "",
+                    "blob": content,
+                }
+            )
+            request.session["last_tex_id"] = snap.id
+            request.session.modified = True
+            controls, canvas = parse_tex(content)
+        elif snap:
+            # valid POST but nothing provided; fall back to last snapshot if any
+            controls, canvas = parse_tex(snap.blob)
     elif snap:
-        # GET (or invalid POST) with existing snapshot -> re-render from saved blob
+        # GET: restore most recent render
         controls, canvas = parse_tex(snap.blob)
 
-    # Build aggregated code lists and canvas size
+    # Aggregate codes + build context (your helper)
     all_read_codes, diary_read_codes, canvas = _build_context(controls, canvas)
 
     context = {
@@ -179,7 +209,7 @@ def import_tex_view(request):
         "canvas": canvas,
         "all_read_codes": all_read_codes,
         "diary_read_codes": diary_read_codes,
-        # demo values already in your context (used by comparison/analysis bits)
+        # demo arrays still available
         "ac_1_r": [10, 15, 5, 10, 25, 40, 55],
         "ac_1_l": [5, 5, 15, 10, 20, 25, 15],
         "ac_2_r": [5, 15, 5, -5, 5, 0, -5],

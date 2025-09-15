@@ -4,9 +4,19 @@
 {% block title %}Templates | TT-Mick-P{% endblock %}
 {% block content %}
 
-<form method="post" enctype="multipart/form-data" style="display:flex; align-items:center;">
+<form method="post" enctype="multipart/form-data" style="display: fixed ; align-items:center;">
   {% csrf_token %}
-  {{ form.as_p }}
+  <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:12px;">
+    <div>
+      <label for="{{ form.tex_file.id_for_label }}"><strong>Upload TEX</strong></label><br>
+      {{ form.tex_file }}
+    </div>
+
+    <div>
+      <label for="{{ form.library_choice.id_for_label }}"><strong>Or pick from library</strong></label><br>
+      {{ form.library_choice }}
+    </div>
+
   <button type="submit">Render</button>
 </form>
 
