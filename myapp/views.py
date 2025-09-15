@@ -149,7 +149,12 @@ def import_tex_view(request):
         choices = [("", "— choose a sample —")]
         if folder:
             files = [p for p in Path(folder).glob("*.tex") if p.is_file()]
-            choices += [(p.name, p.name) for p in sorted(files)]
+            for p in sorted(files):
+                # base filename without extension
+                base = p.stem
+                # human label: replace "_" with " ", keep nice casing
+                label = base.replace("_", " ")
+                choices.append((p.name, label))
         form.fields["library_choice"].choices = choices
 
     controls = []
