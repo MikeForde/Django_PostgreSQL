@@ -1073,6 +1073,35 @@
     .badge--miss{ background:#ffffff; border-color:#ffffff; color:#ffffff; }
     .badge--loose{ background:#fb9295; border-color:#e8e8e8; color:#ffffff; }
   </style>
+
+  <style>
+    .rc-decision{ position: relative; cursor: help; display:inline-block; }
+
+    .rc-decision[data-tip]:hover::after{
+      content: attr(data-tip);
+      position:absolute;
+      left: 100%;
+      top: 50%;
+      width: 150px;
+      transform: translate(8px,-50%);
+      background:#111; color:#fff; font-size:12px; line-height:1.25;
+      padding:4px 6px; border-radius:4px; white-space:pre-line;
+      z-index:1000; box-shadow:0 2px 6px rgba(0,0,0,.25);
+      max-width: 260px;
+      pointer-events: none;             
+    }
+    .rc-decision[data-tip]:hover::before{
+      content:"";
+      position:absolute; left: calc(100% + 2px); top:50%;
+      transform: translateY(-50%);
+      border:6px solid transparent; border-right-color:#111;
+      pointer-events: none; 
+    }
+
+    /* keep tooltip from being clipped */
+    aside[style*="overflow"]{ overflow: visible !important; }
+  </style>
+
 </div>
 
 </form>
@@ -1958,24 +1987,30 @@
 
         if (!badge) return;
 
-        if (!hit){
-          badge.textContent = '✗'; // cross
+        if (!hit) {
+          badge.textContent = '✗';
           badge.className = 'rc-decision badge badge--miss';
+          badge.removeAttribute('title');
+          badge.setAttribute('data-tip', 'Not found');
         } else {
           const decision = hit.decision || '—';
-          let symbol = '•';
+          const desc = hit.description || '';
+          const info = hit.info || '';
 
-          if (decision === 'DMSCreate') {
-            symbol = '✔'; // tick
-          } else if (decision === 'ManualMap' || decision === 'APIMap') {
-            symbol = '↔'; // two-way arrow
-          } else if (decision === 'Inactivate') {
-            symbol = '✗'; // cross
-          }
+          // Symbol selection (as you already had)
+          let symbol = '•';
+          if (decision === 'DMSCreate') symbol = '✔';
+          else if (decision === 'ManualMap' || decision === 'APIMap') symbol = '↔';
+          else if (decision === 'Inactivate') symbol = '✗';
 
           badge.textContent = symbol;
-          badge.title = hit.description ? `${decision} • ${hit.description}` : decision;
           badge.className = 'rc-decision ' + classFor(decision);
+
+          // Tooltip: Decision • Description \n info (if present)
+          const parts = [decision, desc].filter(Boolean).join(' • ');
+          const tip = info ? `${parts}\n${info}` : (parts || decision);
+          badge.setAttribute('data-tip', tip);
+          badge.removeAttribute('title'); // disable native delay
         }
       });
     })
