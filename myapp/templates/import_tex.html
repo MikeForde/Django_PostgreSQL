@@ -202,7 +202,6 @@
 
       {# DiaryEntry (unchanged) #}
       {% elif 'DiaryEntry' in c.type %}
-        {# ... your existing DiaryEntry branch exactly as-is ... #}
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:nowrap; white-space:nowrap; width:100%;">
           <label for="{{ c.name }}_date" style="font-weight:600; margin-right:6px; white-space:nowrap;">
             {{ c.diary_prompt }}
@@ -747,7 +746,7 @@
 
         </div>
 
-        <!-- Bottom: charts EXACTLY like the Audiometry widget (same frame & legend) -->
+        <!-- Bottom -->
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:14px; justify-items:start;">
 
           <!-- Left chart -->
@@ -760,7 +759,7 @@
                         border-bottom:3px solid #000; /* X axis */
                         border-top:1px solid #999; border-right:1px solid #999;"></div>
 
-            <!-- Canvas slot (your JS will size/position the canvas here) -->
+            <!-- Canvas slot (JS will size/position the canvas here) -->
             <div class="audio-canvas-slot"
                 style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;"></div>
 
@@ -856,7 +855,7 @@
                       border-right:1px solid #999;">
           </div>
 
-          {# Canvas slot — ensure your JS sizes/positions the canvas to fill this slot #}
+          {# Canvas slot — ensure JS sizes/positions the canvas to fill this slot #}
           <div class="audio-canvas-slot"
               style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;"></div>
 
@@ -1149,7 +1148,7 @@
       function updateLabel() {
         var checked = panel.querySelectorAll('input[type=checkbox]:checked');
         if (checked.length === 0) {
-          label.textContent = defaultCaption;           // CHANGED
+          label.textContent = defaultCaption; 
         } else if (checked.length === 1) {
           var t = checked[0].closest('label');
           label.textContent = t ? t.textContent.trim() : defaultCaption;
@@ -1182,7 +1181,7 @@
     }
     document.querySelectorAll('.rc-chk').forEach(function (chk) {
       chk.addEventListener('change', function () { toggleTarget(chk); });
-      toggleTarget(chk); // init
+      toggleTarget(chk);
     });
 
     // --- Yes/No pairs (QuestionReadCode): mutually exclusive; optional text enabled by YES
