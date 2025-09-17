@@ -1033,36 +1033,42 @@
   </div>
 
   {# Sidebar (right) #}
-  <aside id="readcodes-sidebar" style="width:320px; max-height:{% autoescape off %}{{ canvas.height }}{% endautoescape %}px; overflow:auto; border:1px solid #ddd; padding:8px; background:#fafafa; font-size:12px;">
-    <h3 style="margin:0 0 8px;">Data Entry Read codes in form</h3>
+  <aside id="readcodes-sidebar"
+        style="width:320px; border:1px solid #ddd; padding:8px; background:#fafafa;
+                font-size:12px; position:relative; overflow:auto;">
 
-    {% if all_read_codes %}
-      <ul id="readcode-list" style="margin:0 0 12px; padding-left:18px;">
-        {% for rc in all_read_codes %}
-          <li class="rc-row" data-read-code="{{ rc.code }}">
-            <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
-            <span class="rc-decision badge badge--pending" title="Decision">checking…</span>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p style="margin:0 0 12px; color:#666;">None detected.</p>
-    {% endif %}
+    <div style="max-height:{{ canvas.height }}px; overflow:auto; padding-right:4px;">
+      <h3 style="margin:0 0 8px;">Data Entry Read codes in form</h3>
 
-    <h4 style="margin:0 0 8px;">Diary entry codes</h4>
-    {% if diary_read_codes %}
-      <ul id="diarycode-list" style="margin:0; padding-left:18px;">
-        {% for rc in diary_read_codes %}
-          <li class="rc-row" data-read-code="{{ rc.code }}">
-            <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
-            <span class="rc-decision badge badge--pending" title="Decision">checking…</span>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p style="margin:0; color:#666;">None detected.</p>
-    {% endif %}
+      {% if all_read_codes %}
+        <ul id="readcode-list" style="margin:0 0 12px; padding-left:18px;">
+          {% for rc in all_read_codes %}
+            <li class="rc-row" data-read-code="{{ rc.code }}">
+              <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
+              <span class="rc-decision badge badge--pending" title="Decision">checking…</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p style="margin:0 0 12px; color:#666;">None detected.</p>
+      {% endif %}
+
+      <h4 style="margin:0 0 8px;">Diary entry codes</h4>
+      {% if diary_read_codes %}
+        <ul id="diarycode-list" style="margin:0; padding-left:18px;">
+          {% for rc in diary_read_codes %}
+            <li class="rc-row" data-read-code="{{ rc.code }}">
+              <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
+              <span class="rc-decision badge badge--pending" title="Decision">checking…</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p style="margin:0; color:#666;">None detected.</p>
+      {% endif %}
+    </div>
   </aside>
+
 
   <style>
     .badge{ margin-left:8px; padding:1px 6px; border-radius:4px; font-size:11px; border:1px solid transparent; }
@@ -1075,31 +1081,21 @@
   </style>
 
   <style>
-    .rc-decision{ position: relative; cursor: help; display:inline-block; }
-
-    .rc-decision[data-tip]:hover::after{
-      content: attr(data-tip);
-      position:absolute;
-      left: 100%;
-      top: 50%;
-      width: 150px;
-      transform: translate(8px,-50%);
-      background:#111; color:#fff; font-size:12px; line-height:1.25;
-      padding:4px 6px; border-radius:4px; white-space:pre-line;
-      z-index:1000; box-shadow:0 2px 6px rgba(0,0,0,.25);
-      max-width: 260px;
-      pointer-events: none;             
+    #rc-tooltip{
+      position:fixed;
+      z-index:99999;
+      display:none;
+      max-width:260px;
+      background:#111;
+      color:#fff;
+      font-size:12px;
+      line-height:1.25;
+      padding:6px 8px;
+      border-radius:4px;
+      box-shadow:0 2px 8px rgba(0,0,0,.35);
+      white-space:pre-line;
+      pointer-events:none; /* don’t steal hover */
     }
-    .rc-decision[data-tip]:hover::before{
-      content:"";
-      position:absolute; left: calc(100% + 2px); top:50%;
-      transform: translateY(-50%);
-      border:6px solid transparent; border-right-color:#111;
-      pointer-events: none; 
-    }
-
-    /* keep tooltip from being clipped */
-    aside[style*="overflow"]{ overflow: visible !important; }
   </style>
 
 </div>
@@ -2022,6 +2018,69 @@
       });
     });
   })();
+</script>
+
+<script>
+(function(){
+  // Create one floating tooltip rooted at <body>
+  let tip = document.getElementById('rc-tooltip');
+  if(!tip){
+    tip = document.createElement('div');
+    tip.id = 'rc-tooltip';
+    document.body.appendChild(tip);
+  }
+
+  const sidebar = document.getElementById('readcodes-sidebar');
+
+  function positionTip(target){
+    const rect = target.getBoundingClientRect();
+    // Prefer right-of the badge; clamp to viewport; flip left if needed
+    const pad = 8;
+    // Show first to get size
+    tip.style.display = 'block';
+    const vw = window.innerWidth, vh = window.innerHeight;
+    let left = rect.right + pad;
+    let top  = rect.top + rect.height/2 - tip.offsetHeight/2;
+
+    // Flip to left if overflowing right
+    if (left + tip.offsetWidth + pad > vw){
+      left = rect.left - tip.offsetWidth - pad;
+    }
+    // Clamp vertically
+    if (top < pad) top = pad;
+    const maxTop = vh - tip.offsetHeight - pad;
+    if (top > maxTop) top = maxTop;
+
+    tip.style.left = left + 'px';
+    tip.style.top  = top  + 'px';
+  }
+
+  function show(target){
+    const txt = target.getAttribute('data-tip') || target.title || '';
+    if (!txt.trim()){ hide(); return; }
+    tip.textContent = txt;   // safe: plain text
+    positionTip(target);
+  }
+  function hide(){ tip.style.display = 'none'; }
+
+  if (sidebar){
+    // Use pointer events so it works on touchpads too
+    sidebar.addEventListener('pointerenter', e=>{
+      const el = e.target.closest('.rc-decision');
+      if (el) show(el);
+    }, true);
+
+    sidebar.addEventListener('pointermove', e=>{
+      const el = e.target.closest('.rc-decision');
+      if (el) positionTip(el);
+    }, true);
+
+    sidebar.addEventListener('pointerleave', e=>{
+      const el = e.target.closest('.rc-decision');
+      if (el) hide();
+    }, true);
+  }
+})();
 </script>
 
 {% endif %}
