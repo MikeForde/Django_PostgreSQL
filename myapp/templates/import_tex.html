@@ -547,7 +547,7 @@
               <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
                 <input type="text" name="{{ c.name }}_left_U" readonly style="width:12px; text-align:center;"
                       class="readcode-host"
-                      data-readcodes="RAFPUEL3 — Eul1\u000ARAFPUEL4 — Eul2\u000ARAFPUEL5 — Eul3\u000ARAFPUEL6 — Eul4\u000ARAFPUEL7 — Eul5\u000ARAFPUEL8 — Eul6\u000ARAFPUEL9 — Eul7\u000ARFPUEU1 — Eul8">
+                      data-readcodes="RAFPUEL3 — Eul1\u000ARAFPUEL4 — Eul2\u000ARAFPUEL5 — Eul3\u000ARAFPUEL6 — Eul4\u000ARAFPUEL7 — Eul5\u000ARAFPUEL8 — Eul6\u000ARAFPUEL9 — Eul7\u000ARAFPUEU1 — Eul8">
                 <input type="text" name="{{ c.name }}_left_C" readonly style="width:12px; text-align:center;"
                       class="readcode-host"
                       data-readcodes="RAFPUEC1 — Ecl1\u000ARAFPUEC10 — Ecl2\u000ARAFPUEC11 — Ecl3\u000ARAFPUEC12 — Ecl4\u000ARAFPUEC13 — Ecl5\u000ARAFPUEC14 — Ecl6\u000ARAFPUEC15 — Ecl7\u000ARAFPUEC16 — Ecl8">
@@ -1959,11 +1959,21 @@
         if (!badge) return;
 
         if (!hit){
-          badge.textContent = 'x';
+          badge.textContent = '✗'; // cross
           badge.className = 'rc-decision badge badge--miss';
         } else {
           const decision = hit.decision || '—';
-          badge.textContent = decision;
+          let symbol = '•';
+
+          if (decision === 'DMSCreate') {
+            symbol = '✔'; // tick
+          } else if (decision === 'ManualMap' || decision === 'APIMap') {
+            symbol = '↔'; // two-way arrow
+          } else if (decision === 'Inactivate') {
+            symbol = '✗'; // cross
+          }
+
+          badge.textContent = symbol;
           badge.title = hit.description ? `${decision} • ${hit.description}` : decision;
           badge.className = 'rc-decision ' + classFor(decision);
         }
