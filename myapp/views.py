@@ -219,6 +219,7 @@ def import_tex_view(request):
         "ac_1_l": [5, 5, 15, 10, 20, 25, 15],
         "ac_2_r": [5, 15, 5, -5, 5, 0, -5],
         "ac_2_l": [5, 0, 15, 5, 10, 5, 15],
+        "snowfusion_url": settings.SNOWFUSION_BASE_URL,
     }
     return render(request, "import_tex.html", context)
 

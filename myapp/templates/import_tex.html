@@ -949,7 +949,7 @@
 
         {# --- Repeat audiogram block (unchanged legend etc.) --- #}
         <fieldset style="position:absolute; left:482px; top:430px; width:164px; height:75px; padding:4px 5px;">
-          <div class="readcode-host" data-readcodes="DMSAC009 - Repeat audiogram">
+          <div class="readcode-host" data-readcodes="DMSAC009 — Repeat audiogram">
             <legend>Is this a repeat audiogram?</legend>
             <label style="margin-right:14px;"><input type="radio" name="{{ c.name }}_repeat" value="Yes"> Yes</label>
             <label><input type="radio" name="{{ c.name }}_repeat" value="No"> No</label>
@@ -980,7 +980,7 @@
             name="{{ c.name }}_r_sum_high" type="text" readonly
             style="position:absolute; left:180px; top:544px; width:30px; height:18px;">
 
-      <input class="readcode-host" data-readcodes="RAFPUH11 - Hr1\u000ARAFPUH21 - Hr2\u000ARAFPUH31 - Hr3\u000ARAFPUHR1 - Hr4\u000ARAFPUHR2 - Hr8"
+      <input class="readcode-host" data-readcodes="RAFPUH11 — Hr1\u000ARAFPUH21 — Hr2\u000ARAFPUH31 — Hr3\u000ARAFPUHR1 — Hr4\u000ARAFPUHR2 — Hr8"
             name="{{ c.name }}_r_hgrade"   type="text" readonly
             style="position:absolute; left:250px; top:544px; width:30px; height:18px;">
 
@@ -994,7 +994,7 @@
             name="{{ c.name }}_l_sum_high" type="text" readonly
             style="position:absolute; left:180px; top:570px; width:30px; height:18px;">
 
-      <input class="readcode-host" data-readcodes="RAFPUHL1 - Hl1\u000ARAFPUHL2 - Hl2\u000ARAFPUHL3 - Hl3\u000ARAFPUHL4 - Hl4\u000ARAFPUHL5 - Hl8"
+      <input class="readcode-host" data-readcodes="RAFPUHL1 — Hl1\u000ARAFPUHL2 — Hl2\u000ARAFPUHL3 — Hl3\u000ARAFPUHL4 — Hl4\u000ARAFPUHL5 — Hl8"
             name="{{ c.name }}_l_hgrade"   type="text" readonly
             style="position:absolute; left:250px; top:570px; width:30px; height:18px;">
 
@@ -1033,12 +1033,16 @@
   </div>
 
   {# Sidebar (right) #}
-  <aside style="width:320px; max-height:{{ canvas.height }}px; overflow:auto; border:1px solid #ddd; padding:8px; background:#fafafa; font-size: 12px;">
+  <aside id="readcodes-sidebar" style="width:320px; max-height:{% autoescape off %}{{ canvas.height }}{% endautoescape %}px; overflow:auto; border:1px solid #ddd; padding:8px; background:#fafafa; font-size:12px;">
     <h3 style="margin:0 0 8px;">Data Entry Read codes in form</h3>
+
     {% if all_read_codes %}
-      <ul style="margin:0 0 12px; padding-left:18px;">
+      <ul id="readcode-list" style="margin:0 0 12px; padding-left:18px;">
         {% for rc in all_read_codes %}
-          <li><code>{{ rc.code }}</code> — {{ rc.label }}</li>
+          <li class="rc-row" data-read-code="{{ rc.code }}">
+            <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
+            <span class="rc-decision badge badge--pending" title="Decision">checking…</span>
+          </li>
         {% endfor %}
       </ul>
     {% else %}
@@ -1047,15 +1051,28 @@
 
     <h4 style="margin:0 0 8px;">Diary entry codes</h4>
     {% if diary_read_codes %}
-      <ul style="margin:0; padding-left:18px;">
+      <ul id="diarycode-list" style="margin:0; padding-left:18px;">
         {% for rc in diary_read_codes %}
-          <li><code>{{ rc.code }}</code> — {{ rc.label }}</li>
+          <li class="rc-row" data-read-code="{{ rc.code }}">
+            <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
+            <span class="rc-decision badge badge--pending" title="Decision">checking…</span>
+          </li>
         {% endfor %}
       </ul>
     {% else %}
       <p style="margin:0; color:#666;">None detected.</p>
     {% endif %}
   </aside>
+
+  <style>
+    .badge{ margin-left:8px; padding:1px 6px; border-radius:4px; font-size:11px; border:1px solid transparent; }
+    .badge--pending{ background:#eee; color:#666; }
+    .badge--create{ background:#c9fcd6; border-color:#91d5ff; color:#055118; }
+    .badge--ok{ background:#e6f7ff; border-color:#91d5ff; color:#096dd9; }
+    .badge--warn{ background:#fffbe6; border-color:#ffe58f; color:#ad6800; }
+    .badge--miss{ background:#ffffff; border-color:#ffffff; color:#ffffff; }
+    .badge--loose{ background:#fb9295; border-color:#e8e8e8; color:#ffffff; }
+  </style>
 </div>
 
 </form>
@@ -1885,6 +1902,82 @@
 })();
 </script>
 
+<script>
+(function(){
+  const API = "{{ snowfusion_url }}/review/decisions";
+
+  const sidebar = document.getElementById('readcodes-sidebar');
+  if (!sidebar) return;
+
+  // Collect all codes from the rendered list items (take text inside <code>)
+  const items = Array.from(sidebar.querySelectorAll('ul li'));
+  console.log("Items for SnowFusion lookup:", items);
+  const codes = [...new Set(
+    items.map(li => {
+      let code = (li.querySelector('code')?.textContent || '').trim();
+      return code.replace(/^Last Entry for\s+/i, '');
+    }).filter(Boolean)
+  )];
+
+  console.log('SnowFusion lookup for codes:', codes);
+
+  if (!codes.length) return;
+
+  // Ensure each <li> has a decision badge we can fill
+  items.forEach(li => {
+    if (!li.querySelector('.rc-decision')) {
+      const badge = document.createElement('span');
+      badge.className = 'rc-decision badge';
+      badge.style.marginLeft = '6px';
+      badge.textContent = '…';
+      li.appendChild(badge);
+    }
+  });
+
+  function classFor(decision){
+    if (!decision) return 'badge--miss';
+    const d = String(decision).toLowerCase();
+    if (d.includes('dms')) return 'badge--create';
+    if (d.includes('inactivate')) return 'badge--loose';
+    if (d.includes('manual')) return 'badge--warn';
+    if (d.includes('api') || d.includes('exact') || d.includes('auto')) return 'badge--ok';
+    return 'badge--ok';
+  }
+
+  fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ codes })
+    })
+    .then(r => r.ok ? r.json() : Promise.reject(r.statusText))
+    .then(({ results } = { results:{} }) => {
+      items.forEach(li => {
+        const code = (li.querySelector('code')?.textContent || '').trim();
+        const badge = li.querySelector('.rc-decision');
+        const hit = results && results[code];
+
+        if (!badge) return;
+
+        if (!hit){
+          badge.textContent = 'x';
+          badge.className = 'rc-decision badge badge--miss';
+        } else {
+          const decision = hit.decision || '—';
+          badge.textContent = decision;
+          badge.title = hit.description ? `${decision} • ${hit.description}` : decision;
+          badge.className = 'rc-decision ' + classFor(decision);
+        }
+      });
+    })
+    .catch(err => {
+      console.error('SnowFusion lookup failed:', err);
+      items.forEach(li => {
+        const b = li.querySelector('.rc-decision');
+        if (b){ b.textContent = 'unavailable'; b.className = 'rc-decision badge badge--miss'; }
+      });
+    });
+  })();
+</script>
 
 {% endif %}
 {% endblock %}
