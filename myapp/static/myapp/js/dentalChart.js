@@ -19,7 +19,7 @@ $(document).ready(function () {
 
     // const canvasWidth = (totalTeeth * (toothWidth + gap)) + gap;
     // const chartHeight = (1.8 * (toothHeight + rootHeight + rootToothGap + gap)) + (4 * gap) + adjustment;
-    const itemsHeight = 200;
+    const itemsHeight = 210;
 
     const DESIGN = {
         width: (totalTeeth * (toothWidth + gap)) + gap + (2 * margin),       // original design width
@@ -1051,7 +1051,10 @@ $(document).ready(function () {
             rootType: 'fullscrew',
             lineColor: '#666666',
             fillColor: '#CCCCCC',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: '190237D',
+            snodent_description: 'Dental implant prosthetic screw (physical object)',
+            snomed_code: '713712007'
         },
         {
             code: 'EMISD_EN3',
@@ -1061,7 +1064,10 @@ $(document).ready(function () {
             rootType: 'rootfill',
             lineColor: '#DD77AA',
             fillColor: '#DD77AA',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Root canal filling material (substance)',
+            snomed_code: '256532008'
         },
         {
             code: 'DMSD650',
@@ -1071,7 +1077,10 @@ $(document).ready(function () {
             rootType: 'rootfill',
             lineColor: '#999999',
             fillColor: '#FFFFFF',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Root canal dressings (substance)',
+            snomed_code: '256558008'
         },
         {
             code: 'EMISD_EN3D', // Note also uses code: EMISD_EN3 so made up code
@@ -1081,7 +1090,10 @@ $(document).ready(function () {
             rootType: 'rootfill',
             lineColor: '#33FF33',
             fillColor: '#33FF33',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'None',
+            snomed_code: 'None'
         },
         {
             code: 'EMISD_TE2',
@@ -1090,7 +1102,10 @@ $(document).ready(function () {
             type: 'Whole',
             subtype: 'Colour',
             fillColor: '#FF0000',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'Temporary crown (physical object)',
+            snomed_code: '285065008'
         },
         {
             code: 'EMISD_FL5',
@@ -1100,17 +1115,23 @@ $(document).ready(function () {
             fillColor: '#FF66CC',
             strokeColor: '#FF66CC',
             shape: 'circle',
-            tab: 'Existing Restorations'
+            tab: 'Existing Restorations',
+            snodent_code: 'None',
+            snodent_description: 'None',
+            snomed_code: 'None'
         },
         {
             code: 'EMISD_FI9',
-            description: 'Fissure sealant present',
+            description: 'Fissure sealant required',
             short: 'Sealant',
             type: 'BMPDO',
             text: 'FS',
             color: '#FF0000',
             shape: 'character',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Fissure sealant material (substance) + Planned (qualifier value)',
+            snomed_code: '256455008 + 397943006'
         },
         {
             code: 'EMISD_PA10',
@@ -1120,7 +1141,10 @@ $(document).ready(function () {
             subtype: 'Graphic',
             graphic: 'acrylicDenture',
             lineColor: '#FF0000',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + ? + 212572D',
+            snodent_description: 'Partial denture (physical object) + Acrylic dental material (substance) + Planned (qualifier value)',
+            snomed_code: '272256008 + 256511000 + 397943006'
         },
         {
             code: 'EMISD_PA11',
@@ -1130,7 +1154,10 @@ $(document).ready(function () {
             subtype: 'Graphic',
             graphic: 'acrylicDenture',
             lineColor: '#FF0000',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + ? + 212572D',
+            snodent_description: 'Partial denture (physical object) + Cast metal (substance) + Planned (qualifier value)',
+            snomed_code: '272256008 + 261342005 + 397943006'
         },
         {
             code: 'EMISD_TO9',
@@ -1140,7 +1167,10 @@ $(document).ready(function () {
             subtype: 'Graphic',
             graphic: 'extracted2',
             lineColor: '#FF0000',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '169507D + 212572D',
+            snodent_description: 'Tooth extraction (procedure) + Planned (qualifier value)',
+            snomed_code: '55162003 + 397943006'
         },
         {
             code: 'EMISD_DE28',
@@ -1150,7 +1180,10 @@ $(document).ready(function () {
             subtype: 'Graphic',
             graphic: 'circle',
             lineColor: '#FF0000',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Fitting of dental crown to tooth (procedure) + Planned (qualifier value)',
+            snomed_code: '426222000 + 397943006'
         },
         {
             code: 'EMISD_DE98',
@@ -1160,7 +1193,10 @@ $(document).ready(function () {
             subtype: 'Graphic',
             graphic: 'circle',
             lineColor: '#FF0000',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + ? + 212572D',
+            snodent_description: 'Fitting of dental crown to tooth (procedure) + Stainless steel dental crown (physical object) + Planned (qualifier value)',
+            snomed_code: '426222000 + 306740006 + 397943006'
         },
         {
             code: 'EMISD_DE30',
@@ -1169,7 +1205,10 @@ $(document).ready(function () {
             type: 'BMPDO-All',
             fillColor: '#FFFFFF',
             strokeColor: '#FF0000',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Insertion of inlay to tooth (procedure) + Planned (qualifier value)',
+            snomed_code: '1269339008 + 397943006'
         },
         {
             code: 'EMISD_DE31',
@@ -1178,7 +1217,10 @@ $(document).ready(function () {
             type: 'BMPDO-All',
             fillColor: '#FFFFFF',
             strokeColor: '#FF0000',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Insertion of veneer onto tooth (procedure) + Planned (qualifier value)',
+            snomed_code: '1269407000 + 397943006'
         },
         {
             code: 'EMISD_DE87',
@@ -1187,7 +1229,10 @@ $(document).ready(function () {
             type: 'BMPDO-All',
             fillColor: '#666666',
             strokeColor: '#FF0000',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Fixation of dental bridge (procedure) + Planned (qualifier value)',
+            snomed_code: '234799009 + 397943006'
         },
         {
             code: 'EMISD_DE79',
@@ -1198,7 +1243,10 @@ $(document).ready(function () {
             text: 'Pon',
             color: '#FF0000',
             graphic: 'circle',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: ' Insertion of dental bridge with base metal pontic onto tooth (procedure) + Planned (qualifier value)',
+            snomed_code: '? + 397943006'
         },
         {
             code: 'DMSD047',
@@ -1206,7 +1254,10 @@ $(document).ready(function () {
             short: 'Connector',
             type: 'Connector',
             color: '#FF0000',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: '? + Planned (qualifier value)',
+            snomed_code: '? + 397943006'
         },
         {
             code: 'EMISD_PO2',
@@ -1216,7 +1267,10 @@ $(document).ready(function () {
             rootType: 'halfscrew',
             lineColor: '#FF0000',
             fillColor: '#FFFF33',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Fitting of post core to tooth (procedure) + Planned (qualifier value)',
+            snomed_code: '1284878006 + 397943006'
         },
         {
             code: 'DMSD053',
@@ -1227,7 +1281,10 @@ $(document).ready(function () {
             lineColor: '#FF0000',
             fillColor: '#FFFFFF',
             leave: true,
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Implantation of dental endosseous implant (procedure) + Planned (qualifier value)',
+            snomed_code: '1156981009 + 397943006'
         },
         {
             code: 'EMISD_RF1',
@@ -1237,7 +1294,10 @@ $(document).ready(function () {
             rootType: 'rootfill',
             lineColor: '#FF0000',
             fillColor: '#FF3333',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Root canal obturation (procedure) + Planned (qualifier value)',
+            snomed_code: '234712004 + 397943006'
         },
         {
             code: 'EMISD_FL4',
@@ -1247,7 +1307,10 @@ $(document).ready(function () {
             fillColor: '#FF77DD',
             strokeColor: '#FF0000',
             shape: 'circle',
-            tab: 'Planned Restorations'
+            tab: 'Planned Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Dental fluoride treatment (procedure) + Planned (qualifier value)',
+            snomed_code: '68071007 + 397943006'
         },
         {
             code: 'DMSD048',
@@ -1257,7 +1320,10 @@ $(document).ready(function () {
             fillColor: '#666666',
             strokeColor: '#FF0000',
             shape: 'circle',
-            tab: 'Replace Restorations'
+            tab: 'Replace Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Insertion of amalgam restoration into tooth (procedure) + Planned (qualifier value)',
+            snomed_code: '234787002 + 397943006'
         },
         {
             code: 'DMSD049',
@@ -1267,7 +1333,10 @@ $(document).ready(function () {
             fillColor: '#0000FF',
             strokeColor: '#FF0000',
             shape: 'circle',
-            tab: 'Replace Restorations'
+            tab: 'Replace Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Insertion of composite restoration into tooth (procedure) + Planned (qualifier value)',
+            snomed_code: '234789004 + 397943006'
         },
         {
             code: 'DMSD050',
@@ -1277,7 +1346,10 @@ $(document).ready(function () {
             fillColor: '#00FF00',
             strokeColor: '#FF0000',
             shape: 'circle',
-            tab: 'Replace Restorations'
+            tab: 'Replace Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Insertion of glass-ionomer restoration into tooth (procedure) + Planned (qualifier value)',
+            snomed_code: '277554000 + 397943006'
         },
         {
             code: 'DMSD051',
@@ -1287,7 +1359,10 @@ $(document).ready(function () {
             fillColor: '#FFCC00',
             strokeColor: '#FF0000',
             shape: 'circle',
-            tab: 'Replace Restorations'
+            tab: 'Replace Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Restoration, gold foil (procedure) + Planned (qualifier value)',
+            snomed_code: '69864007 + 397943006'
         },
         {
             code: 'DMSD655',
@@ -1297,7 +1372,10 @@ $(document).ready(function () {
             text: 'FS',
             color: '#FF9900',
             shape: 'character',
-            tab: 'Replace Restorations'
+            tab: 'Replace Restorations',
+            snodent_code: '? + 212572D + ?',
+            snodent_description: 'Fissure sealant material (substance) + Planned (qualifier value) + Replacement procedure (procedure)',
+            snomed_code: '256455008 + 397943006 + 373188003'
         },
         {
             code: 'DMSD657',
@@ -1306,7 +1384,10 @@ $(document).ready(function () {
             type: 'BMPDO-All',
             fillColor: '#336666',
             strokeColor: '#FF0000',
-            tab: 'Replace Restorations'
+            tab: 'Replace Restorations',
+            snodent_code: '? + 212572D + ?',
+            snodent_description: 'Fixation of dental bridge (procedure) + Planned (qualifier value) + Replacement procedure (procedure)',
+            snomed_code: '234799009 + 397943006 + 373188003'
         },
         {
             code: 'DMSD750',
@@ -1314,7 +1395,10 @@ $(document).ready(function () {
             short: 'Connector',
             type: 'Connector',
             color: '#FF9900',
-            tab: 'Replace Restorations'
+            tab: 'Replace Restorations',
+            snodent_code: '? + 212572D + ?',
+            snodent_description: '? + Planned (qualifier value) + Replacement procedure (procedure)',
+            snomed_code: '? + 397943006 + 373188003'
         },
         {
             code: 'DMSD748',
@@ -1324,7 +1408,10 @@ $(document).ready(function () {
             rootType: 'halfscrew',
             lineColor: '#FF0000',
             fillColor: '#339933',
-            tab: 'Replace Restorations'
+            tab: 'Replace Restorations',
+            snodent_code: '? + 212572D + ?',
+            snodent_description: 'Fitting of post core to tooth (procedure) + Planned (qualifier value) + Replacement procedure (procedure)',
+            snomed_code: '1284878006 + 397943006 + 373188003'
         },
         {
             code: 'DMSD054',
@@ -1334,7 +1421,10 @@ $(document).ready(function () {
             rootType: 'fullscrew',
             lineColor: '#FF0000',
             fillColor: '#999999',
-            tab: 'Replace Restorations'
+            tab: 'Replace Restorations',
+            snodent_code: '? + 212572D + ?',
+            snodent_description: 'Implantation of dental endosseous implant (procedure) + Planned (qualifier value) + Replacement procedure (procedure)',
+            snomed_code: '1156981009 + 397943006 + 373188003'
         },
         {
             code: 'DMSD656',
@@ -1344,7 +1434,10 @@ $(document).ready(function () {
             rootType: 'rootfill',
             lineColor: '#FF9900',
             fillColor: '#FF9900',
-            tab: 'Replace Restorations'
+            tab: 'Replace Restorations',
+            snodent_code: '? + 212572D',
+            snodent_description: 'Root canal obturation (procedure) + Planned (qualifier value) + Replacement procedure (procedure)',
+            snomed_code: '234712004 + 397943006 + 373188003'
         }
     ];
 
