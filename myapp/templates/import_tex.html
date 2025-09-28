@@ -1378,10 +1378,27 @@
       if (seen.has(code)) return;
 
       var li = document.createElement('li');
-      var c  = document.createElement('code');
+      li.className = 'rc-row';
+      li.setAttribute('data-read-code', code);
+
+      var c = document.createElement('code');
+      c.className = 'rc-code';
       c.textContent = code;
       li.appendChild(c);
-      if (label) li.appendChild(document.createTextNode(' — ' + label));
+
+      // separator + label span (to mirror templated markup)
+      li.appendChild(document.createTextNode(' — '));
+      var lbl = document.createElement('span');
+      lbl.className = 'rc-label';
+      lbl.textContent = label || '';
+      li.appendChild(lbl);
+
+      // decision badge placeholder (so lookup + hover work uniformly)
+      var badge = document.createElement('span');
+      badge.className = 'rc-decision badge badge--pending';
+      badge.textContent = 'checking…';
+      li.appendChild(badge);
+
       ul.appendChild(li);
       seen.add(code);
 
@@ -2117,51 +2134,104 @@
     const sidebar = document.getElementById('readcodes-sidebar');
     if (!sidebar) return;
 
-    // Keep markers and trailing dots; just normalise case/whitespace and remove noise.
+    // ---- utils ------------------------------------------------------------
     function normalizeCode(s){
       return (s || '')
-        .replace(/^Last Entry for\s+/i, '')     // strip lead-in phrase
+        .replace(/^Last Entry for\s+/i, '')
         .toUpperCase()
-        .replace(/[^A-Z0-9./-]/g, '');          // keep letters/digits/./-/slashes
+        .replace(/[^A-Z0-9./-]/g, '');
     }
 
     function extractCodeToken(s){
-      // Work with left side before em-dash or " - "
       const left = String(s || '')
         .replace(/^Last Entry for\s+/i, '')
         .split('—')[0]
         .split(' - ')[0];
-
-      // Optional marker + code + optional /segment + optional trailing dots (e.g. 611..)
       const m = left.match(/^(?:UNCERTAIN-|NEGATION-)?[A-Z0-9]+(?:[./][A-Z0-9]+)?\.{0,10}/i);
       return m ? normalizeCode(m[0]) : '';
     }
 
-    function parseCodesFromHost(el){
+    function parseCodesFromHostAttr(el){
       let raw = el.getAttribute('data-readcodes') || '';
-
-      // Turn literal "\u000A" into real newline and normalise mdash entities.
-      raw = raw
-        .replace(/\\u000A/gi, '\n')
-        .replace(/&mdash;|&#8212;/gi, '—');
-
-      // Split on newlines, CR, commas, semicolons, pipes, or tabs
+      raw = raw.replace(/\\u000A/gi, '\n').replace(/&mdash;|&#8212;/gi, '—');
       return raw
         .split(/[\n\r,;|\t]+/g)
-        .map(s => extractCodeToken(s))
+        .map(extractCodeToken)
         .filter(Boolean);
     }
 
+    // Return all codes associated with an element:
+    // - data-readcodes / data-rc-code / data-rc-codes on the element
+    // - any child element with those attributes
+    // - any OPTION values inside SELECTs
+    function getCodesOn(el){
+      const out = new Set();
+
+      const add = (c) => { const t = normalizeCode(c); if (t) out.add(t); };
+      const pullFrom = (node) => {
+        if (node.hasAttribute && node.hasAttribute('data-readcodes')) {
+          parseCodesFromHostAttr(node).forEach(add);
+        }
+        const single = node.getAttribute && node.getAttribute('data-rc-code');
+        if (single) add(single);
+        const multi = node.getAttribute && node.getAttribute('data-rc-codes');
+        if (multi) multi.split(/[\s,;|]+/).forEach(add);
+      };
+
+      // self
+      pullFrom(el);
+
+      // descendants with metadata
+      el.querySelectorAll?.('[data-readcodes],[data-rc-code],[data-rc-codes]').forEach(pullFrom);
+
+      // all OPTION values under this element (covers read lists)
+      el.querySelectorAll?.('option').forEach(opt => {
+        if (opt.value) add(opt.value);
+        // Some lists embed code in text too, keep it conservative
+      });
+
+      return Array.from(out);
+    }
+
+    // Prefer exact matches; only if none, fall back to base (strip NEGATION-/UNCERTAIN-)
     function findHostsFor(code){
       const needle = normalizeCode(code);
       if (!needle) return [];
-      const hosts = document.querySelectorAll('.readcode-host,[data-readcodes]');
-      const matches = [];
-      hosts.forEach(el => {
-        const codes = parseCodesFromHost(el); // tokens include markers & trailing dots
-        if (codes.includes(needle)) matches.push(el);
+
+      const baseNeedle = needle.replace(/^(NEGATION-|UNCERTAIN-)/, '');
+
+      // Candidate containers: anything that might hold read-code metadata or inputs
+      const candidates = document.querySelectorAll(
+        '.readcode-host,[data-readcodes],[data-rc-code],[data-rc-codes],select,input,textarea,label,div'
+      );
+
+      const exact = [];
+      const loose = [];
+
+      candidates.forEach(el => {
+        const codes = getCodesOn(el);
+        if (!codes.length) return;
+
+        // If a specific OPTION holds the code, highlight the SELECT (options can't be styled consistently)
+        const isSelectChildExact =
+          el.matches('select') &&
+          Array.from(el.querySelectorAll('option')).some(o => normalizeCode(o.value) === needle);
+
+        const isSelectChildLoose =
+          baseNeedle !== needle &&
+          el.matches('select') &&
+          Array.from(el.querySelectorAll('option')).some(o => normalizeCode(o.value) === baseNeedle);
+
+        if (codes.includes(needle) || isSelectChildExact) {
+          exact.push(el.matches('option') ? el.closest('select') || el : el);
+        } else if (baseNeedle && (codes.includes(baseNeedle) || isSelectChildLoose)) {
+          loose.push(el.matches('option') ? el.closest('select') || el : el);
+        }
       });
-      return matches;
+
+      // De-dup keeps DOM order
+      const dedup = (arr) => Array.from(new Set(arr));
+      return exact.length ? dedup(exact) : dedup(loose);
     }
 
     let current = [];
@@ -2170,27 +2240,23 @@
       current = [];
     }
 
-    // Hover -> highlight hosts that carry THIS exact token (including markers / trailing dots)
-    sidebar.addEventListener('mouseover', (e) => {
-      const row = e.target.closest('.rc-row');
-      if (!row) return;
-      if (e.target.closest('.rc-decision')) return; // ignore icon hover
-
-      const code = row.getAttribute('data-read-code');
-      const targets = findHostsFor(code);
-
-      clearHighlight();
-      targets.forEach(el => el.classList.add('readcode-highlight'));
-      current = targets;
-    });
-
-    sidebar.addEventListener('mouseout', (e) => {
-      const row = e.target.closest('.rc-row');
-      if (!row || row.contains(e.relatedTarget)) return;
-      clearHighlight();
+    // Use mouseenter/mouseleave on each row to avoid flicker/clipping issues
+    sidebar.querySelectorAll('.rc-row').forEach(row => {
+      row.addEventListener('mouseenter', (e) => {
+        if (e.target.closest('.rc-decision')) return; // ignore icon hover
+        const code = row.getAttribute('data-read-code');
+        const targets = findHostsFor(code);
+        clearHighlight();
+        targets.forEach(el => el.classList.add('readcode-highlight'));
+        current = targets;
+      });
+      row.addEventListener('mouseleave', () => {
+        clearHighlight();
+      });
     });
   })();
 </script>
+
 
 
 {% endif %}
