@@ -2193,6 +2193,28 @@
       return Array.from(out);
     }
 
+    function getCodesOn2(el){
+      const out = new Set();
+      const add = (c) => { const t = normalizeCode(c); if (t) out.add(t); };
+
+      // codes on *this* element
+      if (el.hasAttribute?.('data-readcodes')) {
+        parseCodesFromHostAttr(el).forEach(add);
+      }
+      const single = el.getAttribute?.('data-rc-code');
+      if (single) add(single);
+
+      const multi = el.getAttribute?.('data-rc-codes');
+      if (multi) multi.split(/[\s,;|]+/).forEach(add);
+
+      // if this is a SELECT, allow codes coming from its OPTION values
+      if (el.matches?.('select')) {
+        el.querySelectorAll('option').forEach(opt => { if (opt.value) add(opt.value); });
+      }
+
+      return Array.from(out);
+    }
+
     // Prefer exact matches; only if none, fall back to base (strip NEGATION-/UNCERTAIN-)
     function findHostsFor(code){
       const needle = normalizeCode(code);
@@ -2202,14 +2224,14 @@
 
       // Candidate containers: anything that might hold read-code metadata or inputs
       const candidates = document.querySelectorAll(
-        '.readcode-host,[data-readcodes],[data-rc-code],[data-rc-codes],select,input,textarea,label,div'
+        '.readcode-host,[data-readcodes],[data-rc-code],[data-rc-codes],select,input,textarea,label'
       );
 
       const exact = [];
       const loose = [];
 
       candidates.forEach(el => {
-        const codes = getCodesOn(el);
+        const codes = getCodesOn2(el);
         if (!codes.length) return;
 
         // If a specific OPTION holds the code, highlight the SELECT (options can't be styled consistently)
