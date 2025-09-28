@@ -1077,6 +1077,7 @@
     .badge--warn{ background:#fffbe6; border-color:#ffe58f; color:#ad6800; }
     .badge--miss{ background:#ffffff; border-color:#ffffff; color:#ffffff; }
     .badge--loose{ background:#fb9295; border-color:#e8e8e8; color:#ffffff; }
+    .rc-decision{ cursor:pointer; } 
   </style>
 
   <style>
@@ -2080,6 +2081,29 @@
     }, true);
   }
 })();
+</script>
+
+<script>
+  (function(){
+    const SNOWFUSION_REVIEW_BASE =
+      'https://snowfusion-d2s-uksc-medsnomed-medsno.apps.ocp1.azure.dso.digital.mod.uk/review/';
+
+    const sidebar = document.getElementById('readcodes-sidebar');
+    if (!sidebar) return;
+
+    sidebar.addEventListener('click', (e) => {
+      const badge = e.target.closest('.rc-decision');
+      if (!badge) return;
+
+      const row = badge.closest('.rc-row');
+      let code = row?.getAttribute('data-read-code') || '';
+      // Strip leading “Last Entry for ” if present
+      code = code.replace(/^Last Entry for\s+/i, '').trim();
+      if (!code) return;
+
+      window.open(SNOWFUSION_REVIEW_BASE + encodeURIComponent(code), '_blank', 'noopener');
+    });
+  })();
 </script>
 
 {% endif %}
