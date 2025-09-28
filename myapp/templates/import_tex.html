@@ -2138,7 +2138,6 @@
     function normalizeCode(s){
       return (s || '')
         .replace(/^Last Entry for\s+/i, '')
-        .toUpperCase()
         .replace(/[^A-Z0-9./-]/g, '');
     }
 
