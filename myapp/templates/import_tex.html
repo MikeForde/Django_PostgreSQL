@@ -56,7 +56,7 @@
     </div>
     <div>
       <strong>Then render:</strong>
-      <span id="selected-tex-label" style="font-weight:600;">no tex file selected</span><br>
+      <span id="selected-tex-label" style="font-weight:800;">no tex file selected</span><br>
       <button type="submit">Render</button>
     </div>
 </form>
@@ -2606,7 +2606,7 @@
   const paneSearch = document.getElementById('lib-pane-search');
   const paneTree   = document.getElementById('lib-pane-tree');
   const modeInputs = trigger.querySelectorAll('input[name="libmode"]');
-  const modeHidden = document.getElementById('libmode-hidden'); // from earlier step that persists mode
+  const modeHidden = document.getElementById('libmode-hidden');
 
   let hideTimer = null;
 
@@ -2615,36 +2615,37 @@
     return checked ? checked.value : 'list';
   }
 
-  function setModeUI(mode){
-    // Persist for POST
+  // keep flyout hidden unless explicitly asked to show (hover/switch)
+  function setModeUI(mode, showNow = false){
     if (modeHidden) modeHidden.value = mode;
 
-    // Show inline list only in 'list' mode; use flyout otherwise
     if (mode === 'list') {
       paneList.style.display   = '';
       flyout.style.display     = 'none';
       paneSearch.style.display = 'none';
       paneTree.style.display   = 'none';
-    } else if (mode === 'search') {
-      paneList.style.display   = 'none';
-      flyout.style.display     = 'block';
-      paneSearch.style.display = 'block';
-      paneTree.style.display   = 'none';
-      // focus search box
+      return;
+    }
+
+    // search/tree share the flyout; keep inline list hidden
+    paneList.style.display   = 'none';
+    paneSearch.style.display = (mode === 'search') ? 'block' : 'none';
+    paneTree.style.display   = (mode === 'tree')   ? 'block'  : 'none';
+
+    // only open the flyout when explicitly requested
+    flyout.style.display = showNow ? 'block' : 'none';
+
+    if (showNow && mode === 'search') {
       setTimeout(() => document.getElementById('lib-search-input')?.focus(), 0);
-    } else if (mode === 'tree') {
-      paneList.style.display   = 'none';
-      flyout.style.display     = 'block';
-      paneSearch.style.display = 'none';
-      paneTree.style.display   = 'block';
     }
   }
 
-  // Initialize to saved or checked mode
-  setModeUI(modeHidden?.value || currentMode());
+  // ---- init: keep flyout hidden after render/page-load ----
+  setModeUI(modeHidden?.value || currentMode(), /*showNow*/ false);
 
+  // switching modes via radios should open flyout immediately for search/tree
   modeInputs.forEach(r => {
-    r.addEventListener('change', () => setModeUI(currentMode()));
+    r.addEventListener('change', () => setModeUI(currentMode(), /*showNow*/ true));
   });
 
   // ---- Hover show/hide for the flyout (only for search/tree) ----
@@ -2661,29 +2662,20 @@
       }
     }, 140);
   }
-  function cancelHide(){
-    clearTimeout(hideTimer);
-  }
+  function cancelHide(){ clearTimeout(hideTimer); }
 
-  // Show when entering trigger area; hide when leaving both trigger & flyout
   trigger.addEventListener('mouseenter', () => { cancelHide(); maybeShow(); });
   trigger.addEventListener('mouseleave', scheduleHide);
   flyout.addEventListener('mouseenter', cancelHide);
   flyout.addEventListener('mouseleave', scheduleHide);
-
-  // Keep open when focusing inputs inside flyout (keyboard users)
-  flyout.addEventListener('focusin', cancelHide);
+  flyout.addEventListener('focusin',  cancelHide);
   flyout.addEventListener('focusout', scheduleHide);
 
-  // Re-show flyout if user clicks trigger labels while in search/tree
-  trigger.addEventListener('click', () => { if (currentMode() !== 'list') maybeShow(); });
-
-  // Recompute position on window resize (keeps it aligned)
-  window.addEventListener('resize', () => {
-    // (flyout is anchored to trigger with absolute positioning; nothing to recompute)
-  });
+  // don’t force-open on click; only hover or mode-change should open
+  // (remove any previous trigger click handler that showed it)
 })();
 </script>
+
 
 
 
