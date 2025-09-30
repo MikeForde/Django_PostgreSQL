@@ -15,28 +15,43 @@
     <div>
       <label><strong>Or pick from library</strong></label><br>
 
-      <!-- mode switch -->
-      <div style="display:flex; gap:8px; margin:4px 0 6px;">
-        <label><input type="radio" name="libmode" value="list"   {% if libmode == 'list' %}checked{% endif %}> List</label>
-        <label><input type="radio" name="libmode" value="search" {% if libmode == 'search' %}checked{% endif %}> Search</label>
-        <label><input type="radio" name="libmode" value="tree"   {% if libmode == 'tree' %}checked{% endif %}> Tree</label>
+      <!-- Hover trigger + radios -->
+      <div id="lib-trigger" style="display:inline-flex; gap:8px; align-items:center; position:relative;">
+        <label style="margin:0;">
+          <input type="radio" name="libmode" value="list" {% if request.POST.libmode == 'list' or not request.POST.libmode %}checked{% endif %}>
+          List
+        </label>
+        <label style="margin:0;">
+          <input type="radio" name="libmode" value="search" {% if request.POST.libmode == 'search' %}checked{% endif %}>
+          Search
+        </label>
+        <label style="margin:0;">
+          <input type="radio" name="libmode" value="tree" {% if request.POST.libmode == 'tree' %}checked{% endif %}>
+          Tree
+        </label>
+
+        <!-- Flyout panel (only used for search/tree) -->
+        <div id="lib-flyout" style="display:none;">
+          <!-- Mode 2: search as you type -->
+          <div id="lib-pane-search" style="display:none; max-width:480px;">
+            <input id="lib-search-input" type="text" placeholder="Search by name, filename, or TARGETPATH…"
+                  style="width:100%; box-sizing:border-box; padding:4px 6px; font-size:12px;">
+            <div id="lib-search-results"
+                style="margin-top:6px; max-height:220px; overflow:auto; border:1px solid #ddd; font-size:12px; line-height:1.3;"></div>
+          </div>
+
+          <!-- Mode 3: tree / folder view -->
+          <div id="lib-pane-tree"
+              style="display:none; max-width:480px; border:1px solid #ddd; padding:6px; max-height:260px; overflow:auto;
+                      font-size:12px; line-height:1.3;">
+            <div id="lib-tree"></div>
+          </div>
+        </div>
       </div>
 
-      <!-- Mode 1: the original long list (uses your existing form field) -->
-      <div id="lib-pane-list">
+      <!-- Mode 1: the original long list (remains inline) -->
+      <div id="lib-pane-list" style="margin-top:6px;">
         {{ form.library_choice }}
-      </div>
-
-      <!-- Mode 2: search as you type -->
-      <div id="lib-pane-search" style="display:none; max-width:460px;">
-        <input id="lib-search-input" type="text" placeholder="Search by name, filename, or TARGETPATH…"
-              style="width:100%; box-sizing:border-box; padding:6px;">
-        <div id="lib-search-results" style="margin-top:6px; max-height:180px; overflow:auto; border:1px solid #ddd;"></div>
-      </div>
-
-      <!-- Mode 3: tree / folder view (from TARGETPATH) -->
-      <div id="lib-pane-tree" style="display:none; max-width:460px; border:1px solid #ddd; padding:6px; max-height:220px; overflow:auto;">
-        <div id="lib-tree"></div>
       </div>
     </div>
     <div>
@@ -1130,34 +1145,55 @@
   </style>
 
   <style>
-  #lib-pane-search input {
-    font-size: 12px;
-    padding: 4px 6px;
-  }
-  #lib-search-results {
-    font-size: 12px;
-    line-height: 1.3;
-  }
-  #lib-search-results div {
-    padding: 2px 4px;
-    cursor: pointer;
-  }
-  #lib-search-results div:hover {
-    background: #eef;
-  }
+    #lib-pane-search input {
+      font-size: 12px;
+      padding: 4px 6px;
+    }
+    #lib-search-results {
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    #lib-search-results div {
+      padding: 2px 4px;
+      cursor: pointer;
+    }
+    #lib-search-results div:hover {
+      background: #eef;
+    }
 
-  #lib-pane-tree {
-    font-size: 12px;
-    line-height: 1.3;
-  }
-  #lib-pane-tree div {
-    margin: 1px 0;
-    cursor: pointer;
-  }
-  #lib-pane-tree div:hover {
-    background: #eef;
-  }
-</style>
+    #lib-pane-tree {
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    #lib-pane-tree div {
+      margin: 1px 0;
+      cursor: pointer;
+    }
+    #lib-pane-tree div:hover {
+      background: #eef;
+    }
+  </style>
+
+  <style>
+    #lib-trigger { position: relative; }
+    #lib-flyout {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 2000;
+      background: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 0 6px 16px rgba(0,0,0,.15);
+      padding: 8px;
+      min-width: 340px;
+      max-width: 520px;
+      border-radius: 4px;
+    }
+    /* compact visuals inside results/tree */
+    #lib-search-results div { padding: 2px 4px; cursor: pointer; }
+    #lib-search-results div:hover,
+    #lib-pane-tree div:hover { background: #eef; }
+  </style>
 
 </div>
 
@@ -2562,6 +2598,92 @@
   })();
 </script>
 
+<script>
+(function(){
+  const trigger = document.getElementById('lib-trigger');
+  const flyout  = document.getElementById('lib-flyout');
+  const paneList   = document.getElementById('lib-pane-list');
+  const paneSearch = document.getElementById('lib-pane-search');
+  const paneTree   = document.getElementById('lib-pane-tree');
+  const modeInputs = trigger.querySelectorAll('input[name="libmode"]');
+  const modeHidden = document.getElementById('libmode-hidden'); // from earlier step that persists mode
+
+  let hideTimer = null;
+
+  function currentMode(){
+    const checked = Array.from(modeInputs).find(i => i.checked);
+    return checked ? checked.value : 'list';
+  }
+
+  function setModeUI(mode){
+    // Persist for POST
+    if (modeHidden) modeHidden.value = mode;
+
+    // Show inline list only in 'list' mode; use flyout otherwise
+    if (mode === 'list') {
+      paneList.style.display   = '';
+      flyout.style.display     = 'none';
+      paneSearch.style.display = 'none';
+      paneTree.style.display   = 'none';
+    } else if (mode === 'search') {
+      paneList.style.display   = 'none';
+      flyout.style.display     = 'block';
+      paneSearch.style.display = 'block';
+      paneTree.style.display   = 'none';
+      // focus search box
+      setTimeout(() => document.getElementById('lib-search-input')?.focus(), 0);
+    } else if (mode === 'tree') {
+      paneList.style.display   = 'none';
+      flyout.style.display     = 'block';
+      paneSearch.style.display = 'none';
+      paneTree.style.display   = 'block';
+    }
+  }
+
+  // Initialize to saved or checked mode
+  setModeUI(modeHidden?.value || currentMode());
+
+  modeInputs.forEach(r => {
+    r.addEventListener('change', () => setModeUI(currentMode()));
+  });
+
+  // ---- Hover show/hide for the flyout (only for search/tree) ----
+  function maybeShow(){
+    if (currentMode() !== 'list') {
+      flyout.style.display = 'block';
+    }
+  }
+  function scheduleHide(){
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => {
+      if (currentMode() !== 'list') {
+        flyout.style.display = 'none';
+      }
+    }, 140);
+  }
+  function cancelHide(){
+    clearTimeout(hideTimer);
+  }
+
+  // Show when entering trigger area; hide when leaving both trigger & flyout
+  trigger.addEventListener('mouseenter', () => { cancelHide(); maybeShow(); });
+  trigger.addEventListener('mouseleave', scheduleHide);
+  flyout.addEventListener('mouseenter', cancelHide);
+  flyout.addEventListener('mouseleave', scheduleHide);
+
+  // Keep open when focusing inputs inside flyout (keyboard users)
+  flyout.addEventListener('focusin', cancelHide);
+  flyout.addEventListener('focusout', scheduleHide);
+
+  // Re-show flyout if user clicks trigger labels while in search/tree
+  trigger.addEventListener('click', () => { if (currentMode() !== 'list') maybeShow(); });
+
+  // Recompute position on window resize (keeps it aligned)
+  window.addEventListener('resize', () => {
+    // (flyout is anchored to trigger with absolute positioning; nothing to recompute)
+  });
+})();
+</script>
 
 
 

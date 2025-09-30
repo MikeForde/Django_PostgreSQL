@@ -206,7 +206,7 @@ def import_tex_view(request):
     library_index = []
     if hasattr(form.fields["library_choice"], "choices"):
         folder = getattr(settings, "TEX_LIBRARY_DIR", None)
-        choices = [("", "— choose a sample —")]
+        choices = [("", "— choose a TEX file —")]
         if folder:
             library_index = _scan_tex_library(folder)
             for d in library_index:
