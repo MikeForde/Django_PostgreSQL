@@ -28,6 +28,7 @@ urlpatterns = [
     path('consultations/<int:consultation_id>/events/', views.consultation_combined_view, name='consultation_combined'),
     path('import-tex/', views.import_tex_view, name='import_tex'),
     path("import-tex/submit/", views.submit_tex_form, name="submit_tex_form"),
+    path('tex-library.json', views.tex_library_json, name='tex_library_json'),
     path('dental/', views.dental, name='dental'),
     path('audiogram/analysis/', views.audiogram_analysis, name='audiogram_analysis'),
     path("audio/", views.audio_poc, name="audio_poc"),

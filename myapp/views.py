@@ -11,9 +11,68 @@ from django.conf import settings
 
 
 # app/views.py
+import re
 import json
 from django.http import HttpResponseBadRequest
 from pathlib import Path
+from django.views.decorators.http import require_GET
+
+TARGETPATH_RE = re.compile(r'^TARGETPATH\s*=\s*(.*)\s*$', re.IGNORECASE | re.MULTILINE)
+
+def _read_targetpath_from_content(text):
+    """
+    Find TARGETPATH=... inside the TEX header. Returns a cleaned path string or ''.
+    """
+    if not text:
+        return ''
+    m = TARGETPATH_RE.search(text)
+    if not m:
+        return ''
+    # normalize: strip surrounding slashes/backslashes, collapse repeated slashes
+    raw = m.group(1).strip()
+    raw = raw.strip('\\/ ')
+    # Convert Windows-style backslashes to forward slashes for consistency
+    return re.sub(r'[\\/]+', '/', raw)
+
+def _scan_tex_library(folder: str):
+    """
+    Returns a list of dicts describing each .tex in the library:
+      - filename: actual filename (for posting back)
+      - label: human label (underscores -> spaces)
+      - targetpath: normalized TARGETPATH ('' if none)
+      - parts: list of path segments (for building the tree on the client)
+    """
+    out = []
+    if not folder:
+        return out
+    root = Path(folder)
+    for p in sorted(root.glob('*.tex')):
+        try:
+            # Only read the first ~16KB — headers are tiny
+            snippet = p.read_text(encoding='latin-1', errors='ignore')[:16384]
+        except Exception:
+            snippet = ''
+        target = _read_targetpath_from_content(snippet)
+        parts = [seg for seg in target.split('/') if seg] if target else []
+        out.append({
+            'filename': p.name,
+            'label': p.stem.replace('_', ' '),
+            'targetpath': target,
+            'parts': parts,
+        })
+    return out
+
+@require_GET
+def tex_library_json(request):
+    folder = getattr(settings, "TEX_LIBRARY_DIR", None)
+    data = _scan_tex_library(folder)
+    q = (request.GET.get('q') or '').strip().lower()
+    if q:
+        data = [d for d in data
+                if q in d['label'].lower()
+                or q in d['filename'].lower()
+                or q in d['targetpath'].lower()]
+    return JsonResponse({'items': data})
 
 def audio_poc(request):
     return render(request, "audio_poc.html")
@@ -144,21 +203,20 @@ def import_tex_view(request):
     form = TexUploadForm(request.POST or None, request.FILES or None)
 
     # Rebuild library choices on each request so newly added files appear.
+    library_index = []
     if hasattr(form.fields["library_choice"], "choices"):
         folder = getattr(settings, "TEX_LIBRARY_DIR", None)
         choices = [("", "— choose a sample —")]
         if folder:
-            files = [p for p in Path(folder).glob("*.tex") if p.is_file()]
-            for p in sorted(files):
-                # base filename without extension
-                base = p.stem
-                # human label: replace "_" with " ", keep nice casing
-                label = base.replace("_", " ")
-                choices.append((p.name, label))
+            library_index = _scan_tex_library(folder)
+            for d in library_index:
+                choices.append((d['filename'], d['label']))
         form.fields["library_choice"].choices = choices
 
     controls = []
     canvas = {"width": 0, "height": 0}
+
+    lib_mode = request.POST.get("libmode") or request.session.get("libmode", "list")
 
     # Try to restore prior snapshot
     snap = None
@@ -201,6 +259,9 @@ def import_tex_view(request):
         elif snap:
             # valid POST but nothing provided; fall back to last snapshot if any
             controls, canvas = parse_tex(snap.blob)
+
+        request.session["libmode"] = lib_mode
+        request.session.modified = True
     elif snap:
         # GET: restore most recent render
         controls, canvas = parse_tex(snap.blob)
@@ -220,6 +281,8 @@ def import_tex_view(request):
         "ac_2_r": [5, 15, 5, -5, 5, 0, -5],
         "ac_2_l": [5, 0, 15, 5, 10, 5, 15],
         "snowfusion_url": settings.SNOWFUSION_BASE_URL,
+        "tex_library_index_json": json.dumps(library_index),
+        "libmode": lib_mode,
     }
     return render(request, "import_tex.html", context)
 

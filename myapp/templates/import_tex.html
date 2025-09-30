@@ -13,12 +13,36 @@
     </div>
 
     <div>
-      <label for="{{ form.library_choice.id_for_label }}"><strong>Or pick from library</strong></label><br>
-      {{ form.library_choice }}
+      <label><strong>Or pick from library</strong></label><br>
+
+      <!-- mode switch -->
+      <div style="display:flex; gap:8px; margin:4px 0 6px;">
+        <label><input type="radio" name="libmode" value="list"   {% if libmode == 'list' %}checked{% endif %}> List</label>
+        <label><input type="radio" name="libmode" value="search" {% if libmode == 'search' %}checked{% endif %}> Search</label>
+        <label><input type="radio" name="libmode" value="tree"   {% if libmode == 'tree' %}checked{% endif %}> Tree</label>
+      </div>
+
+      <!-- Mode 1: the original long list (uses your existing form field) -->
+      <div id="lib-pane-list">
+        {{ form.library_choice }}
+      </div>
+
+      <!-- Mode 2: search as you type -->
+      <div id="lib-pane-search" style="display:none; max-width:460px;">
+        <input id="lib-search-input" type="text" placeholder="Search by name, filename, or TARGETPATH…"
+              style="width:100%; box-sizing:border-box; padding:6px;">
+        <div id="lib-search-results" style="margin-top:6px; max-height:180px; overflow:auto; border:1px solid #ddd;"></div>
+      </div>
+
+      <!-- Mode 3: tree / folder view (from TARGETPATH) -->
+      <div id="lib-pane-tree" style="display:none; max-width:460px; border:1px solid #ddd; padding:6px; max-height:220px; overflow:auto;">
+        <div id="lib-tree"></div>
+      </div>
     </div>
     <div>
-      <strong>Then render the eForm</strong><br>
-    <button type="submit">Render</button>
+      <strong>Then render:</strong>
+      <span id="selected-tex-label" style="font-weight:600;">no tex file selected</span><br>
+      <button type="submit">Render</button>
     </div>
 </form>
 
@@ -1084,6 +1108,7 @@
       background-color: rgba(255,191,71,.08);
       transition: background-color .15s ease, box-shadow .15s ease, outline-color .15s ease;
     }
+    .lib-selected { background:#e6f7ff; outline:1px solid #91d5ff; }
   </style>
 
   <style>
@@ -1103,6 +1128,36 @@
       pointer-events:none; /* don’t steal hover */
     }
   </style>
+
+  <style>
+  #lib-pane-search input {
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+  #lib-search-results {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  #lib-search-results div {
+    padding: 2px 4px;
+    cursor: pointer;
+  }
+  #lib-search-results div:hover {
+    background: #eef;
+  }
+
+  #lib-pane-tree {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  #lib-pane-tree div {
+    margin: 1px 0;
+    cursor: pointer;
+  }
+  #lib-pane-tree div:hover {
+    background: #eef;
+  }
+</style>
 
 </div>
 
@@ -2277,6 +2332,236 @@
     });
   })();
 </script>
+
+<script>
+  (function(){
+    // Source data from the view
+    const LIB = {{ tex_library_index_json|safe }};
+
+    // Elements
+    const paneList   = document.getElementById('lib-pane-list');
+    const paneSearch = document.getElementById('lib-pane-search');
+    const paneTree   = document.getElementById('lib-pane-tree');
+    const modeRadios = document.querySelectorAll('input[name="libmode"]');
+
+    // Existing <select> for POST
+    const selectList = paneList.querySelector('select');
+
+    // NEW: universal selected label
+    const selectedLabel = document.getElementById('selected-tex-label');
+
+    // NEW: keep refs to highlight the selected row in search/tree
+    let lastSearchRow = null;
+    let lastTreeRow = null;
+
+    // Helper: set the visible “selected” text
+    function setSelectedText(filename){
+      if (!selectedLabel) return;
+      if (!filename) {
+        selectedLabel.textContent = 'no tex file selected';
+        return;
+      }
+      selectedLabel.textContent = filename;
+    }
+
+    // Helper: set selected file (syncs the real select so POST keeps working)
+    function chooseFile(filename, opts = {}){
+      if (!filename) return;
+
+      // update native select (list mode)
+      if (selectList) {
+        selectList.value = filename;
+        if (selectList.value !== filename) {
+          const opt = document.createElement('option');
+          opt.value = filename;
+          opt.textContent = filename.replace(/\.tex$/i,'').replace(/_/g,' ');
+          opt.selected = true;
+          selectList.appendChild(opt);
+        }
+      }
+
+      // update universal label
+      setSelectedText(filename);
+
+      // update visual selection in search/tree (if provided)
+      if (opts.searchRow) {
+        if (lastSearchRow) lastSearchRow.classList.remove('lib-selected');
+        opts.searchRow.classList.add('lib-selected');
+        lastSearchRow = opts.searchRow;
+      }
+      if (opts.treeRow) {
+        if (lastTreeRow) lastTreeRow.classList.remove('lib-selected');
+        opts.treeRow.classList.add('lib-selected');
+        lastTreeRow = opts.treeRow;
+      }
+    }
+
+    // ---------- Mode switching ----------
+    function show(mode){
+      paneList.style.display   = (mode === 'list')   ? '' : 'none';
+      paneSearch.style.display = (mode === 'search') ? '' : 'none';
+      paneTree.style.display   = (mode === 'tree')   ? '' : 'none';
+    }
+    modeRadios.forEach(r => r.addEventListener('change', () => show(r.value)));
+    show('{{ libmode|default:"list" }}');
+
+    // ---------- Search mode ----------
+    const qInput = document.getElementById('lib-search-input');
+    const results = document.getElementById('lib-search-results');
+
+    function renderSearch(list){
+      results.innerHTML = '';
+      if (!list.length){
+        results.textContent = 'No matches.';
+        return;
+      }
+      list.forEach(item => {
+        const row = document.createElement('div');
+        row.style.padding = '6px 8px';
+        row.style.cursor = 'pointer';
+        row.style.borderBottom = '1px solid #eee';
+        row.innerHTML = `<div><strong>${item.label}</strong></div>
+                        <div style="font-size:10px; color:#666;">${item.targetpath || '(no folder)'}</div>`;
+        row.addEventListener('click', () => chooseFile(item.filename, { searchRow: row }));
+        results.appendChild(row);
+      });
+    }
+
+    function filterLocal(q){
+      const s = q.trim().toLowerCase();
+      if (!s) return LIB.slice(0, 200);
+      return LIB.filter(d =>
+        d.label.toLowerCase().includes(s) ||
+        d.filename.toLowerCase().includes(s) ||
+        (d.targetpath || '').toLowerCase().includes(s)
+      );
+    }
+
+    let t;
+    qInput.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(() => renderSearch(filterLocal(qInput.value)), 120);
+    });
+    renderSearch(LIB.slice(0, 50));
+
+    // ---------- Tree mode ----------
+    function buildTree(items){
+      const root = {};
+      items.forEach(it => {
+        const parts = Array.isArray(it.parts) ? it.parts : [];
+        let node = root;
+        parts.forEach(seg => {
+          node.children = node.children || {};
+          node.children[seg] = node.children[seg] || {};
+          node = node.children[seg];
+        });
+        node.files = node.files || [];
+        node.files.push(it);
+      });
+      return root;
+    }
+
+    function renderNode(node, name){
+      const el = document.createElement('div');
+      el.style.marginLeft = '10px';
+
+      if (name != null){
+        const head = document.createElement('div');
+        head.style.cursor = 'pointer';
+        head.style.userSelect = 'none';
+        head.innerHTML = `<span style="display:inline-block; width:14px;">▸</span><strong>${name}</strong>`;
+        const arrow = head.firstChild;
+        const body = document.createElement('div');
+        body.style.display = 'none';
+        body.style.marginTop = '4px';
+
+        head.addEventListener('click', () => {
+          const open = (body.style.display !== 'none');
+          body.style.display = open ? 'none' : 'block';
+          arrow.textContent = open ? '▸' : '▾';
+        });
+        el.appendChild(head);
+        el.appendChild(body);
+
+        if (node.children){
+          Object.keys(node.children).sort().forEach(k => {
+            body.appendChild(renderNode(node.children[k], k));
+          });
+        }
+        if (node.files){
+          node.files.forEach(f => {
+            const frow = document.createElement('div');
+            frow.style.padding = '4px 0 4px 18px';
+            frow.style.cursor = 'pointer';
+            frow.textContent = f.label;
+            frow.title = f.targetpath ? `${f.targetpath}/${f.filename}` : f.filename;
+            frow.addEventListener('click', () => chooseFile(f.filename, { treeRow: frow }));
+            body.appendChild(frow);
+          });
+        }
+      } else {
+        if (node.children){
+          Object.keys(node.children).sort().forEach(k => {
+            el.appendChild(renderNode(node.children[k], k));
+          });
+        }
+        if (node.files){
+          node.files.forEach(f => {
+            const frow = document.createElement('div');
+            frow.style.padding = '4px 0';
+            frow.style.cursor = 'pointer';
+            frow.textContent = f.label;
+            frow.title = f.filename;
+            frow.addEventListener('click', () => chooseFile(f.filename, { treeRow: frow }));
+            el.appendChild(frow);
+          });
+        }
+      }
+      return el;
+    }
+
+    const treeRoot = buildTree(LIB);
+    const treeMount = document.getElementById('lib-tree');
+    treeMount.innerHTML = '';
+    treeMount.appendChild(renderNode(treeRoot, null));
+
+    // ---------- Also watch: native list select & file uploads ----------
+    if (selectList){
+      selectList.addEventListener('change', () => {
+        if (selectList.value) {
+          setSelectedText(selectList.value);
+          // clear any highlighted search/tree rows
+          if (lastSearchRow) lastSearchRow.classList.remove('lib-selected');
+          if (lastTreeRow)   lastTreeRow.classList.remove('lib-selected');
+          lastSearchRow = lastTreeRow = null;
+        } else {
+          setSelectedText('');
+        }
+      });
+    }
+
+    // File upload: when a user picks a file, show its name in the universal label
+    const fileInput = document.querySelector('input[type="file"][name="{{ form.tex_file.name }}"]') ||
+                      document.querySelector('#{{ form.tex_file.id_for_label }}') ||
+                      document.querySelector('input[type="file"]');
+    if (fileInput){
+      fileInput.addEventListener('change', () => {
+        const fname = fileInput.files && fileInput.files[0] ? fileInput.files[0].name : '';
+        setSelectedText(fname || '');
+        // clear library selection highlights (since upload takes precedence)
+        if (selectList) selectList.value = '';
+        if (lastSearchRow) lastSearchRow.classList.remove('lib-selected');
+        if (lastTreeRow)   lastTreeRow.classList.remove('lib-selected');
+        lastSearchRow = lastTreeRow = null;
+      });
+    }
+
+    // Initialize label from any preselected value
+    const initial = (selectList && selectList.value) ? selectList.value : '';
+    setSelectedText(initial || '');
+  })();
+</script>
+
 
 
 
