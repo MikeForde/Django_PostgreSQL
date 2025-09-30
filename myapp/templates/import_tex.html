@@ -2481,85 +2481,143 @@
     renderSearch(LIB.slice(0, 50));
 
     // ---------- Tree mode ----------
-    function buildTree(items){
-      const root = {};
-      items.forEach(it => {
-        const parts = Array.isArray(it.parts) ? it.parts : [];
-        let node = root;
-        parts.forEach(seg => {
-          node.children = node.children || {};
-          node.children[seg] = node.children[seg] || {};
-          node = node.children[seg];
+    (function(){
+      // simple storage helpers
+      const LS_EXPANDED = 'texlib.tree.expanded';
+      const LS_SCROLL   = 'texlib.tree.scroll';
+      const expandedSet = new Set(JSON.parse(localStorage.getItem(LS_EXPANDED) || '[]'));
+      const saveExpanded = () =>
+        localStorage.setItem(LS_EXPANDED, JSON.stringify(Array.from(expandedSet)));
+
+      function buildTree(items){
+        const root = {};
+        items.forEach(it => {
+          const parts = Array.isArray(it.parts) ? it.parts : [];
+          let node = root;
+          parts.forEach(seg => {
+            node.children = node.children || {};
+            node.children[seg] = node.children[seg] || {};
+            node = node.children[seg];
+          });
+          node.files = node.files || [];
+          node.files.push(it);
         });
-        node.files = node.files || [];
-        node.files.push(it);
-      });
-      return root;
-    }
-
-    function renderNode(node, name){
-      const el = document.createElement('div');
-      el.style.marginLeft = '10px';
-
-      if (name != null){
-        const head = document.createElement('div');
-        head.style.cursor = 'pointer';
-        head.style.userSelect = 'none';
-        head.innerHTML = `<span style="display:inline-block; width:14px;">▸</span><strong>${name}</strong>`;
-        const arrow = head.firstChild;
-        const body = document.createElement('div');
-        body.style.display = 'none';
-        body.style.marginTop = '4px';
-
-        head.addEventListener('click', () => {
-          const open = (body.style.display !== 'none');
-          body.style.display = open ? 'none' : 'block';
-          arrow.textContent = open ? '▸' : '▾';
-        });
-        el.appendChild(head);
-        el.appendChild(body);
-
-        if (node.children){
-          Object.keys(node.children).sort().forEach(k => {
-            body.appendChild(renderNode(node.children[k], k));
-          });
-        }
-        if (node.files){
-          node.files.forEach(f => {
-            const frow = document.createElement('div');
-            frow.style.padding = '4px 0 4px 18px';
-            frow.style.cursor = 'pointer';
-            frow.textContent = f.label;
-            frow.title = f.targetpath ? `${f.targetpath}/${f.filename}` : f.filename;
-            frow.addEventListener('click', () => chooseFile(f.filename, { treeRow: frow }));
-            body.appendChild(frow);
-          });
-        }
-      } else {
-        if (node.children){
-          Object.keys(node.children).sort().forEach(k => {
-            el.appendChild(renderNode(node.children[k], k));
-          });
-        }
-        if (node.files){
-          node.files.forEach(f => {
-            const frow = document.createElement('div');
-            frow.style.padding = '4px 0';
-            frow.style.cursor = 'pointer';
-            frow.textContent = f.label;
-            frow.title = f.filename;
-            frow.addEventListener('click', () => chooseFile(f.filename, { treeRow: frow }));
-            el.appendChild(frow);
-          });
-        }
+        return root;
       }
-      return el;
-    }
 
-    const treeRoot = buildTree(LIB);
-    const treeMount = document.getElementById('lib-tree');
-    treeMount.innerHTML = '';
-    treeMount.appendChild(renderNode(treeRoot, null));
+      // pathKey is used to remember which folders are open
+      function pathKey(pathArr){ return pathArr.join(' / '); }
+
+      // Recursively render a node. `path` is an array of folder names to here.
+      function renderNode(node, name, path){
+        const el = document.createElement('div');
+        el.style.marginLeft = '10px';
+
+        if (name != null){
+          const curPath = path.concat(name);
+          const key = pathKey(curPath);
+
+          const head = document.createElement('div');
+          head.style.cursor = 'pointer';
+          head.style.userSelect = 'none';
+          head.style.display = 'flex';
+          head.style.alignItems = 'center';
+          head.style.gap = '4px';
+
+          const arrow = document.createElement('span');
+          arrow.style.display = 'inline-block';
+          arrow.style.width = '14px';
+          arrow.textContent = expandedSet.has(key) ? '▾' : '▸';
+
+          const label = document.createElement('strong');
+          label.textContent = name;
+
+          head.appendChild(arrow);
+          head.appendChild(label);
+
+          const body = document.createElement('div');
+          body.style.display = expandedSet.has(key) ? 'block' : 'none';
+          body.style.marginTop = '4px';
+
+          head.addEventListener('click', () => {
+            const open = body.style.display !== 'none';
+            if (open){
+              body.style.display = 'none';
+              arrow.textContent = '▸';
+              expandedSet.delete(key);
+            } else {
+              body.style.display = 'block';
+              arrow.textContent = '▾';
+              expandedSet.add(key);
+            }
+            saveExpanded();
+          });
+
+          el.appendChild(head);
+          el.appendChild(body);
+
+          if (node.children){
+            Object.keys(node.children).sort().forEach(k => {
+              body.appendChild(renderNode(node.children[k], k, curPath));
+            });
+          }
+          if (node.files){
+            node.files.forEach(f => {
+              const frow = document.createElement('div');
+              frow.style.padding = '4px 0 4px 18px';
+              frow.style.cursor = 'pointer';
+              frow.textContent = f.label;
+              frow.title = f.targetpath ? `${f.targetpath}/${f.filename}` : f.filename;
+              frow.addEventListener('click', () => {
+                // ensure all ancestors for this file are marked expanded
+                for (let i = 1; i <= curPath.length; i++){
+                  expandedSet.add(pathKey(curPath.slice(0,i)));
+                }
+                saveExpanded();
+                chooseFile(f.filename, { treeRow: frow });
+              });
+              body.appendChild(frow);
+            });
+          }
+        } else {
+          // root
+          if (node.children){
+            Object.keys(node.children).sort().forEach(k => {
+              el.appendChild(renderNode(node.children[k], k, []));
+            });
+          }
+          if (node.files){
+            node.files.forEach(f => {
+              const frow = document.createElement('div');
+              frow.style.padding = '4px 0';
+              frow.style.cursor = 'pointer';
+              frow.textContent = f.label;
+              frow.title = f.filename;
+              frow.addEventListener('click', () => chooseFile(f.filename, { treeRow: frow }));
+              el.appendChild(frow);
+            });
+          }
+        }
+        return el;
+      }
+
+      const treeRoot  = buildTree(LIB);
+      const treeMount = document.getElementById('lib-tree');
+      treeMount.innerHTML = '';
+      treeMount.appendChild(renderNode(treeRoot, null, []));
+
+      // restore and persist scroll position within the tree flyout
+      const savedScroll = parseInt(localStorage.getItem(LS_SCROLL) || '0', 10);
+      if (!isNaN(savedScroll)) treeMount.scrollTop = savedScroll;
+
+      let stTimer = null;
+      treeMount.addEventListener('scroll', () => {
+        clearTimeout(stTimer);
+        stTimer = setTimeout(() => {
+          localStorage.setItem(LS_SCROLL, String(treeMount.scrollTop));
+        }, 100);
+      });
+    })();
 
     // ---------- Also watch: native list select & file uploads ----------
     if (selectList){
@@ -2670,14 +2728,8 @@
   flyout.addEventListener('mouseleave', scheduleHide);
   flyout.addEventListener('focusin',  cancelHide);
   flyout.addEventListener('focusout', scheduleHide);
-
-  // don’t force-open on click; only hover or mode-change should open
-  // (remove any previous trigger click handler that showed it)
 })();
 </script>
-
-
-
 
 {% endif %}
 {% endblock %}
