@@ -80,12 +80,17 @@ class Control:
     rc_is_question: bool = False
     rc_has_negation: bool = False
     rc_neg_label: str = "No"
-    rc_neg_prefix: str = "Negation-"
+    rc_neg_prefix: str = "NEGATION-"
 
     # TTplLastEntry (read-only date showing "last entry")
     is_lastentry: bool = False
     le_code: Optional[str] = None
     le_term: Optional[str] = None
+
+    # NEW: expose qualifier flags/content to the template
+    rc_qual_present: bool = False           # maps bQualPresent
+    rc_qualifiers: str = ""                 # raw Qualifiers string (e.g. 'no�no�Negation�')
+    rc_qual_newline: bool = False           # maps bQualNewLine
 
 FORM_HEADER_RE = re.compile(
     r"#FORM~(?P<name>[^~]+)~(?P<title>[^~]+)~(?P<geom>\d+,\d+,\d+,\d+)"
@@ -189,14 +194,14 @@ def _parse_readlist_str(data: str) -> Tuple[str, List[ReadListItem]]:
 
 def _parse_qualifiers(val: Optional[str]) -> tuple[bool, str, str]:
     """
-    Example: 'no�no�Negation�'  -> (True, 'No', 'Negation-')
+    Example: 'no�no�Negation�'  -> (True, 'No', 'NEGATION-')
     Returns: (has_neg, neg_label, neg_prefix)
     """
     if not val:
-        return (False, "No", "Negation-")
+        return (False, "No", "NEGATION-")
     parts = [p for p in val.split("�") if p != ""]
     if not parts:
-        return (False, "No", "Negation-")
+        return (False, "No", "NEGATION-")
     # First token usually display text for the 'No' qualifier
     label = parts[0].strip() or "No"
     # Find a token that looks like the prefix keyword, default to 'Negation'
@@ -206,7 +211,7 @@ def _parse_qualifiers(val: Optional[str]) -> tuple[bool, str, str]:
         if t:
             prefix_token = t
             break
-    prefix = (prefix_token or "Negation") + "-"
+    prefix = "NEGATION-"
     return (True, label.capitalize(), prefix)
 
 
@@ -312,9 +317,14 @@ def parse_tex(content: str):
                 except ValueError:
                     c.rc_prompt_width_ch = None
 
+                # NEW: Qualifier flags exposed to template
+                c.rc_qual_present = (props.get("bQualPresent", "False") == "True")
+                c.rc_qualifiers = props.get("Qualifiers", "") or ""
+                c.rc_qual_newline = (props.get("bQualNewLine", "False") == "True")
+
                 # Qualifiers -> Negation support for QuestionReadCode
-                has_neg, neg_label, neg_prefix = _parse_qualifiers(props.get("Qualifiers"))
-                if c.rc_is_question and has_neg:
+                has_neg, neg_label, neg_prefix = _parse_qualifiers(c.rc_qualifiers)
+                if has_neg:
                     c.rc_has_negation = True
                     c.rc_neg_label = neg_label
                     c.rc_neg_prefix = neg_prefix

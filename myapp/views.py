@@ -165,7 +165,7 @@ def _build_context(controls, canvas):
             per_ctrl.append(f"{c.rc_code} — {label}")
 
             if getattr(c, "rc_is_question", False) and getattr(c, "rc_has_negation", False):
-                neg_code = f"Negation-{c.rc_code}"
+                neg_code = f"NEGATION-{c.rc_code}"
                 neg_label = f"Not - {label}"
                 all_read_codes.append({"code": neg_code, "label": neg_label})
                 per_ctrl.append(f"{neg_code} — {neg_label}")
