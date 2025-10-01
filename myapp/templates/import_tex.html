@@ -82,7 +82,7 @@
                       {% if c.font_name %}font-family:{% if ' ' in c.font_name %}'{{ c.font_name }}'{% else %}{{ c.font_name }}{% endif %}, sans-serif;{% endif %}
                       {% if c.font_size_pt %}font-size:{{ c.font_size_pt|add:-1 }}pt;{% endif %}
                       {% if c.font_color %}color:{{ c.font_color }};{% endif %}
-                      font-weight:{% if c.is_bold %}700{% else %}400{% endif %};">
+                      font-weight:{% if c.is_bold %}700{% else %}400{% endif %};background-color:#fff;">
           {{ c.caption|default:c.name }}
         </label>
 
@@ -326,8 +326,8 @@
 
       {# TTplAvgBP: fixed read-only average blood pressure #}
       {% elif 'AvgBP' in c.type %}
-      <span class="tpl-avgbp" style="font-size: 10.5px;">
-        125/85
+      <span class="tpl-avgbp" style="font-size: 10.5px;padding-left: 10px">
+          125/85
       </span>
 
       {# --- TTplIdealWeight ---------------------------------------------------- #}
