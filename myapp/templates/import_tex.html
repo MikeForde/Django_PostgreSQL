@@ -185,7 +185,7 @@
                     type="text"
                     {% if c.rc_required %}required{% endif %}
                     disabled
-                    style="width:{% if c.rc_prompt_width_ch %}{{ c.rc_prompt_width_ch|add:-1 }}ch{% else %}100px{% endif %}; vertical-align:middle;">
+                    style="width:{% if c.rc_prompt_width_ch %}{{ c.rc_prompt_width_ch|add:-2 }}ch{% else %}100px{% endif %}; vertical-align:middle;">
             {% endif %}
 
           {# --- CASE B: Pure value-only ReadCode (no checkbox; enabled by default) - #}
@@ -241,7 +241,7 @@
                     type="text"
                     {% if c.rc_required %}required{% endif %}
                     disabled
-                    style="width:{% if c.rc_prompt_width_ch %}{{ c.rc_prompt_width_ch|add:-1 }}ch{% else %}100px{% endif %}; vertical-align:middle;">
+                    style="width:{% if c.rc_prompt_width_ch %}{{ c.rc_prompt_width_ch|add:-2 }}ch{% else %}100px{% endif %}; vertical-align:middle;">
             {% endif %}
 
             {% if c.rc_has_value %}
