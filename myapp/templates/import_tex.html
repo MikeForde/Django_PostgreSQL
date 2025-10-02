@@ -165,7 +165,8 @@
                       type="checkbox"
                       value="{{ c.rc_code|default:'' }}"
                       tabindex="{{ c.props.TabOrder|default:'0' }}"
-                      style="vertical-align:middle;">
+                      style="vertical-align:middle;"
+                      {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
                 yes
               </label>
 
@@ -177,7 +178,8 @@
                       type="checkbox"
                       value="{% if c.rc_code %}{{ c.rc_neg_prefix }}{{ c.rc_code }}{% endif %}"
                       tabindex="{{ c.props.TabOrder|default:'0' }}"
-                      style="vertical-align:middle;">
+                      style="vertical-align:middle;"
+                      {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
                 no
               </label>
 
@@ -187,7 +189,8 @@
                       type="text"
                       {% if c.rc_required %}required{% endif %}
                       disabled
-                      style="width:{% if c.rc_prompt_width_ch %}{% widthratio c.rc_prompt_width_ch 10 8 %}ch{% else %}100px{% endif %}; vertical-align:middle;">
+                      value="{{ c.props.TextPrompt|default:'' }}"
+                      style="width:{% if c.rc_prompt_width_ch %}{% widthratio c.rc_prompt_width_ch 10 8 %}ch{% else %}100px{% endif %}; vertical-align:middle; font-size:85%;">
               {% endif %}
 
             {# --- CASE B: Pure value-only ReadCode (no checkbox; enabled by default) - #}
@@ -211,7 +214,8 @@
                         type="checkbox"
                         value="{{ c.rc_code|default:'' }}"
                         tabindex="{{ c.props.TabOrder|default:'0' }}"
-                        style="vertical-align:middle;">
+                        style="vertical-align:middle;"
+                        {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
                   <span class="sr-only">yes</span>  {# keep for logic; not visible #}
                 </label>
 
@@ -223,7 +227,8 @@
                         type="checkbox"
                         value="{% if c.rc_code %}{{ c.rc_neg_prefix }}{{ c.rc_code }}{% endif %}"
                         tabindex="{{ c.props.TabOrder|default:'0' }}"
-                        style="vertical-align:middle;">
+                        style="vertical-align:middle;"
+                        {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
                   no
                 </label>
               {% else %}
@@ -234,7 +239,8 @@
                       name="{{ c.name }}_checked"
                       type="checkbox"
                       tabindex="{{ c.props.TabOrder|default:'0' }}"
-                      style="vertical-align:middle;">
+                      style="vertical-align:middle;"
+                      {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
               {% endif %}
 
               {% if c.rc_has_text %}
@@ -243,6 +249,7 @@
                       type="text"
                       {% if c.rc_required %}required{% endif %}
                       disabled
+                      value="{{ c.props.TextPrompt|default:'' }}"
                        style="width:{% if c.rc_prompt_width_ch %}{% widthratio c.rc_prompt_width_ch 10 8 %}ch{% else %}100px{% endif %}; vertical-align:middle;">
               {% endif %}
 
@@ -1249,7 +1256,7 @@
       }
       .ctrl .rc-wrap > *{ flex:0 0 auto; }
       .ctrl .rc-break{ flex-basis:100%; height:0; }  /* forces a line break */
-      .ctrl .rc-prompt{ white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+      .ctrl .rc-prompt{ white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis;}
       .ctrl .rc-val{ width:40px; }
       .ctrl .rc-date{ width: 70px; font-size:10px; }
       .ctrl .rc-yes-label{ margin-right:0; }
