@@ -1565,52 +1565,76 @@
     var isDiary = el.getAttribute('data-diary') === '1' ||
                   el.classList.contains('tpl-lastentry');
 
-    decodeEscapes(blob).split(/\r?\n/).forEach(function (line) {
-      line = line.trim();
-      if (!line) return;
+    var raw = decodeEscapes(blob);
+      // NEW: harvest auto text (first one found per host)
+      var autoTextMatch = raw.split(/\r?\n/).find(function(line){
+        return /^\s*Auto-Entered Text\s*:/.test(line);
+      });
+      var autoText = '';
+      if (autoTextMatch){
+        autoText = autoTextMatch.replace(/^\s*Auto-Entered Text\s*:\s*/,'').trim();
+        if (autoText) autoText = 'Auto-Entered Text: ' + autoText;
+      }
 
-      var m = line.split('—');
-      var code  = (m[0] || '').trim();
-      var label = (m.slice(1).join('—') || '').trim();
-      if (!code) return;
+      raw.split(/\r?\n/).forEach(function (line) {
+        line = line.trim();
+        if (!line) return;
 
-      var ul   = isDiary ? diarySec.ul : allSec.ul;
-      var seen = isDiary ? seenDiary : seenAll;
+        // skip the auto-text line itself (we attach it as tooltip for the code)
+        if (/^\s*Auto-Entered Text\s*:/.test(line)) return;
 
-      if (seen.has(code)) return;
+        var m = line.split('—');
+        var code  = (m[0] || '').trim();
+        var label = (m.slice(1).join('—') || '').trim();
+        if (!code) return;
 
-      var li = document.createElement('li');
-      li.className = 'rc-row';
-      li.setAttribute('data-read-code', code);
+        var ul   = isDiary ? diarySec.ul : allSec.ul;
+        var seen = isDiary ? seenDiary : seenAll;
 
-      var c = document.createElement('code');
-      c.className = 'rc-code';
-      c.textContent = code;
-      li.appendChild(c);
+        if (seen.has(code)) {
+          // Attach Auto-Entered Text to the existing LI for this code (if any)
+          var listEl = isDiary ? diarySec.ul : allSec.ul;
+          var existing = Array.from(listEl.querySelectorAll('li')).find(function(li){
+            var cEl = li.querySelector('code');
+            return cEl && (cEl.textContent || '').trim() === code;
+          });
+          if (existing && autoText && !existing.dataset.autotext) {
+            existing.dataset.autotext = autoText;
+          }
+          return;
+        }
 
-      // separator + label span (to mirror templated markup)
-      li.appendChild(document.createTextNode(' — '));
-      var lbl = document.createElement('span');
-      lbl.className = 'rc-label';
-      lbl.textContent = label || '';
-      li.appendChild(lbl);
+        var li = document.createElement('li');
+        li.className = 'rc-row';
+        li.setAttribute('data-read-code', code);
+        if (autoText) li.dataset.autotext = autoText;      // ← store for tooltip
 
-      // decision badge placeholder (so lookup + hover work uniformly)
-      var badge = document.createElement('span');
-      badge.className = 'rc-decision badge badge--pending';
-      badge.textContent = 'checking…';
-      li.appendChild(badge);
+        var c  = document.createElement('code');
+        c.className = 'rc-code';
+        c.textContent = code;
+        li.appendChild(c);
+        if (label) {
+          var spanLbl = document.createElement('span');
+          spanLbl.className = 'rc-label';
+          spanLbl.textContent = ' — ' + label;
+          li.appendChild(spanLbl);
+        }
 
-      ul.appendChild(li);
-      seen.add(code);
+        // decision badge placeholder
+        var b = document.createElement('span');
+        b.className = 'rc-decision badge badge--pending';
+        b.textContent = 'checking…';
+        li.appendChild(b);
 
-      if (isDiary) addedDiary++; else addedAll++;
+        ul.appendChild(li);
+        seen.add(code);
+
+        if (isDiary) addedDiary++; else addedAll++;
+      });
     });
-  });
 
-  // If we added anything, remove the old "None detected." paragraph
-  if (addedAll && allSec.noneP) allSec.noneP.remove();
-  if (addedDiary && diarySec.noneP) diarySec.noneP.remove();
+    if (addedAll && allSec.noneP) allSec.noneP.remove();
+    if (addedDiary && diarySec.noneP) diarySec.noneP.remove();
 })();
 </script>
 
@@ -2161,15 +2185,12 @@
 
   // Collect all codes from the rendered list items (take text inside <code>)
   const items = Array.from(sidebar.querySelectorAll('ul li'));
-  console.log("Items for SnowFusion lookup:", items);
   const codes = [...new Set(
     items.map(li => {
       let code = (li.querySelector('code')?.textContent || '').trim();
       return code.replace(/^Last Entry for\s+/i, '');
     }).filter(Boolean)
   )];
-
-  console.log('SnowFusion lookup for codes:', codes);
 
   if (!codes.length) return;
 
@@ -2208,11 +2229,13 @@
 
         if (!badge) return;
 
+        const extra = li.dataset.autotext ? `\n${li.dataset.autotext}` : '';
+
         if (!hit) {
           badge.textContent = '✗';
           badge.className = 'rc-decision badge badge--miss';
           badge.removeAttribute('title');
-          badge.setAttribute('data-tip', 'Not in SnowFusion');
+          badge.setAttribute('data-tip', `Not in SnowFusion${extra}`);
         } else {
           const decision = hit.decision || '—';
           const desc = hit.description || '';
@@ -2230,7 +2253,7 @@
           // Tooltip: Decision • Description \n info (if present)
           const parts = [decision, desc].filter(Boolean).join(' • ');
           const tip = info ? `${parts}\n${info}` : (parts || decision);
-          badge.setAttribute('data-tip', tip);
+          badge.setAttribute('data-tip', `${tip}${extra}`);
           badge.removeAttribute('title'); // disable native delay
         }
       });
@@ -2239,7 +2262,8 @@
       console.error('SnowFusion lookup failed:', err);
       items.forEach(li => {
         const b = li.querySelector('.rc-decision');
-        if (b){ b.textContent = 'unavailable'; b.className = 'rc-decision badge badge--miss'; }
+        const extra = li.dataset.autotext ? `\n${li.dataset.autotext}` : '';
+        if (b){ b.textContent = 'unavailable'; b.className = 'rc-decision badge badge--miss'; b.setAttribute('data-tip', `Unavailable${extra}`);}
       });
     });
   })();
