@@ -148,7 +148,7 @@
         {# ReadCode: for TEmisReadCode and TEmisQuestionReadCode #}
         {% elif 'ReadCode' in c.type %}
         <div class="rc-row readcode-host"
-            data-readcodes="{{ c.rc_code|default:'' }} — {{ c.rc_term|default:'' }}{% if c.rc_has_negation %}\n\n{{ c.rc_neg_prefix }}{{ c.rc_code }} — Not - {{ c.rc_term }}{% endif %}"
+            data-readcodes="{{ c.rc_code|default:'' }} — {{ c.rc_term|default:'' }}{% if c.rc_has_negation %}\n\n{{ c.rc_neg_prefix }}{{ c.rc_code }} — Not - {{ c.rc_term }}{% endif %}{% if c.props.TextAuto %}\nAuto-Entered Text: {{ c.props.TextAuto }}{% endif %}"
             style="white-space:normal;">
 
           <div class="rc-wrap">

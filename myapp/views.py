@@ -184,7 +184,12 @@ def _build_context(controls, canvas):
             per_ctrl.append(f"{c.diary_readcode} — {label}")
 
         # attach for hover
-        setattr(c, "hover_codes", "\n".join(per_ctrl))
+        hover_parts = per_ctrl[:]
+        if c.props.get("TextAuto"):   # NEW
+            hover_parts.append(
+                f"Auto-Entered Text: {c.props['TextAuto']}"
+            )
+        setattr(c, "hover_codes", "\n".join(hover_parts))
 
     # de-dup
     all_read_codes   = _uniq_by_code(all_read_codes)
