@@ -2963,153 +2963,188 @@
   }
 
   // --------- MAPPERS ------------------------------------------------------------
-  function mapReadCode(ctrl){
-    const host = ctrl.querySelector('.rc-row.readcode-host') || ctrl;
-    const {code, label, autoText} = readcodeMeta(host);
-    const promptEl = host.querySelector('.rc-prompt');
-    const prompt = txt(promptEl) || label || code || 'ReadCode';
-    const yes = host.querySelector('input.rc-yesno[id$="_yes"]');
-    const no  = host.querySelector('input.rc-yesno[id$="_no"]');
-    const chk = host.querySelector('input.rc-chk');
-    const txtIn = host.querySelector('input[type="text"][id$="_text"]');
-    const valIn = host.querySelector('input[type="text"][id$="_val"]');
-    const dateIn = host.querySelector('input[type="date"][id$="_date"]');
+  // Replace your existing mapReadCode with this version
+function mapReadCode(ctrl){
+    const out = [];
 
-    const geom = geomFrom(ctrl);
-    const components = [];
-    const baseKey = prompt || code || 'readcode';
+    // ---- helpers ------------------------------------------------------------
+    const labelText = (ctrl.querySelector('.rc-prompt')?.textContent || '').trim() || 'Read code';
+    const readcode  = (ctrl.querySelector('input[type="hidden"][name$="_readcode"]')?.value || '').trim();
 
-    // Tooltip from auto text + code/term
-    const tooltip = [autoText && ('Auto-Entered Text: ' + autoText)]
-      .filter(Boolean).join('\n') || '';
+    const keyFrom = (base, hint='') => {
+      const raw = (base || '').replace(/\s+/g,' ').trim() || 'field';
+      const key = keyify(raw + (hint ? (' ' + hint) : ''));
+      if (!takenKeys.has(key)) { takenKeys.add(key); return key; }
+      let i = 2, k; do { k = key + i++; } while (takenKeys.has(k));
+      takenKeys.add(k); return k;
+    };
 
-    // Question (Yes/No) → radio with YES=code, NO=NEGATION-code
-    if (yes && no) {
-      const comp = {
-        type: 'radio',
-        key: uniqueKey('rcq_' + baseKey),
-        label: prompt,
-        input: true,
-        tableView: true,
-        labelPosition: 'top',
-        inline: true,
-        values: [
-          { label: 'Yes', value: code || 'YES' },
-          { label: 'No',  value: (code ? 'NEGATION-' + code : 'NO') }
-        ],
-        defaultValue: (yes.checked ? (code || 'YES') : (no.checked ? ('NEGATION-' + (code||'')) : '')),
-        tooltip,
-        properties: {
-          kind: 'ReadCodeQuestion',
-          readCode: code,
-          readTerm: label,
-          negationCode: code ? ('NEGATION-' + code) : '',
-          x: geom.x, y: geom.y, w: geom.w, h: geom.h
-        }
-      };
-      components.push(comp);
-    } else {
-      // Simple readcode:
-      // main checkbox
-      if (chk) {
-        components.push({
-          type: 'checkbox',
-          key: uniqueKey('rc_' + baseKey),
-          label: prompt,
-          input: true,
-          tableView: true,
-          defaultValue: !!chk.checked,
-          tooltip,
-          properties: {
-            kind: 'ReadCode',
-            readCode: code,
-            readTerm: label,
-            x: geom.x, y: geom.y, w: geom.w, h: geom.h
-          }
-        });
-      } else if (!txtIn && valIn) {
-        // value-only (no checkbox) -> number
-        components.push({
-          type: 'number',
-          key: uniqueKey('rcval_' + baseKey),
-          label: prompt,
-          input: true,
-          tableView: true,
-          suffix: (ctrl.querySelector('.rc-wrap span') || {}).textContent || '',
-          defaultValue: valIn.value ? Number(valIn.value) : '',
-          tooltip,
-          properties: {
-            kind: 'ReadCodeValueOnly',
-            readCode: code,
-            readTerm: label,
-            x: geom.x, y: geom.y, w: geom.w, h: geom.h
-          }
-        });
-      } else {
-        // If nothing else matched, include a label to avoid dropping content
-        components.push(makeHtmlEl(prompt));
-      }
-    }
+    // detect present bits
+    const hasYesNo = !!ctrl.querySelector('input.rc-yesno');     // question-style pair
+    const hasChk   = !!ctrl.querySelector('input.rc-chk');       // simple checkbox (may exist even for “pure” cases)
+    const textEl   = ctrl.querySelector('input[type="text"][name$="_text"]');
+    const valEl    = ctrl.querySelector('input[type="text"][name$="_val"]');
+    const dateEl   = ctrl.querySelector('input[type="date"]');
 
-    // Optional children (text/value/date) as separate siblings below the main item
-    if (txtIn) {
-      components.push({
+    const hasText  = !!textEl;
+    const hasVal   = !!valEl;
+    const hasDate  = !!dateEl;
+
+    const unitText = (() => {
+      const span = valEl?.nextElementSibling;
+      const t = span && span.tagName === 'SPAN' ? span.textContent.trim() : '';
+      return t || '';
+    })();
+
+    // ------------------------------------------------------------------------
+    // IMPORTANT: Treat controls as "pure" TEXT/DATE even if a main checkbox exists,
+    // as long as there is NO yes/no pair and NO numeric value.
+    // ------------------------------------------------------------------------
+
+    // A) Pure text prompt (ignore any rc-chk if present)
+    if (hasText && !hasYesNo && !hasVal){
+      out.push({
         type: 'textfield',
-        key: uniqueKey('txt_' + baseKey),
-        label: 'For text prompt inputs',
-        labelPosition: 'left-right',
-        labelWidth: 30,
-        labelMargin: 3,
         input: true,
+        key: keyFrom(labelText),
+        label: labelText,
         tableView: true,
-        inputType: 'text',
+        labelPosition: 'left-left',
         inputFormat: 'plain',
-        defaultValue: val(txtIn),
-        tooltip,
-        properties: {
-          kind: 'ReadCodeText',
-          parentReadCode: code,
-          x: geom.x, y: geom.y, w: geom.w, h: geom.h
-        }
+        validate: { required: textEl.hasAttribute('required') },
+        description: readcode ? `Readcode: ${readcode}` : undefined,
+        tooltip: textEl.title || undefined
       });
+      // If there is ALSO a date with no value & no yes/no, include it too (still no checkbox)
+      if (hasDate){
+        out.push({
+          type: 'datetime',
+          input: true,
+          key: keyFrom(labelText, 'date'),
+          label: `${labelText} (date)`,
+          labelPosition: 'left-left',
+          tableView: true,
+          enableDate: true,
+          enableTime: false,
+          datePicker: { showWeeks: true },
+          validate: { required: dateEl.hasAttribute('required') },
+          description: readcode ? `Readcode: ${readcode}` : undefined,
+          tooltip: dateEl.title || undefined
+        });
+      }
+      return out;
     }
-    if (valIn && (yes || no || chk)) {
-      components.push({
-        type: 'number',
-        key: uniqueKey('num_' + baseKey),
-        label: 'For value inputs',
-        input: true,
-        tableView: true,
-        suffix: (ctrl.querySelector('.rc-wrap span') || {}).textContent || '',
-        defaultValue: valIn.value ? Number(valIn.value) : '',
-        properties: {
-          kind: 'ReadCodeValue',
-          parentReadCode: code,
-          x: geom.x, y: geom.y, w: geom.w, h: geom.h
-        }
-      });
-    }
-    if (dateIn) {
-      components.push({
+
+    // B) Pure date entry (ignore any rc-chk if present)
+    if (hasDate && !hasYesNo && !hasVal){
+      out.push({
         type: 'datetime',
-        key: uniqueKey('date_' + baseKey),
-        label: 'For Dates',
         input: true,
+        key: keyFrom(labelText),
+        label: labelText,
+        labelPosition: 'left-left',
         tableView: true,
         enableDate: true,
         enableTime: false,
-        format: 'yyyy-MM-dd',
-        defaultDate: dateIn.value || '',
-        properties: {
-          kind: 'ReadCodeDate',
-          parentReadCode: code,
-          x: geom.x, y: geom.y, w: geom.w, h: geom.h
-        }
+        datePicker: { showWeeks: true },
+        validate: { required: dateEl.hasAttribute('required') },
+        description: readcode ? `Readcode: ${readcode}` : undefined,
+        tooltip: dateEl.title || undefined
       });
+      return out;
     }
 
-    return components;
+    // C) Pure value-only (no yes/no, no text, no date) → number export
+    if (hasVal && !hasYesNo && !hasText && !hasDate){
+      out.push({
+        type: 'number',
+        input: true,
+        key: keyFrom(labelText),
+        label: labelText,
+        tableView: true,
+        labelPosition: 'left-left',
+        suffix: unitText || undefined,
+        validate: { required: valEl.hasAttribute('required'), step: 'any' },
+        description: readcode ? `Readcode: ${readcode}` : undefined,
+        tooltip: valEl.title || undefined
+      });
+      return out;
+    }
+
+    // ------------------------------------------------------------------------
+    // If there IS a yes/no pair OR a true composite (e.g., value with anything),
+    // keep checkbox + companion fields as separate components.
+    // ------------------------------------------------------------------------
+    if (hasYesNo || hasChk){
+      out.push({
+        type: 'checkbox',
+        input: true,
+        key: keyFrom(labelText, 'chk'),
+        label: labelText,
+        labelPosition: 'left',
+        tableView: true,
+        tooltip: readcode ? `Readcode: ${readcode}` : undefined
+      });
+
+      if (hasText){
+        out.push({
+          type: 'textfield',
+          input: true,
+          key: keyFrom(labelText, 'text'),
+          label: `${labelText} (text)`,
+          tableView: true,
+          labelPosition: 'left-left',
+          inputFormat: 'plain',
+          validate: { required: textEl.hasAttribute('required') },
+          description: readcode ? `Readcode: ${readcode}` : undefined
+        });
+      }
+
+      if (hasVal){
+        out.push({
+          type: 'number',
+          input: true,
+          key: keyFrom(labelText, 'value'),
+          label: `${labelText} (value)`,
+          tableView: true,
+          labelPosition: 'left-left',
+          suffix: unitText || undefined,
+          validate: { required: valEl.hasAttribute('required'), step: 'any' },
+          description: readcode ? `Readcode: ${readcode}` : undefined
+        });
+      }
+
+      if (hasDate){
+        out.push({
+          type: 'datetime',
+          input: true,
+          key: keyFrom(labelText, 'date'),
+          label: `${labelText} (date)`,
+          labelPosition: 'left-left',
+          tableView: true,
+          enableDate: true,
+          enableTime: false,
+          datePicker: { showWeeks: true },
+          validate: { required: dateEl.hasAttribute('required') },
+          description: `Readcode: ${readcode}`
+        });
+      }
+
+      return out;
+    }
+
+    // Fallback: label so nothing is lost
+    out.push({
+      type: 'htmlelement',
+      key: keyFrom(labelText, 'label'),
+      tag: 'p',
+      content: labelText,
+      hideLabel: true,
+      input: false
+    });
+    return out;
   }
+
 
   function mapReadList(ctrl){
     // Try to detect your render variants:
