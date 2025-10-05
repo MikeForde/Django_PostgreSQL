@@ -2866,6 +2866,475 @@
 })();
 </script>
 
+<script>
+(function(){
+  // ------ small helper UI button ------------------------------------------------
+  function addExportButton(){
+    const toolbar = document.querySelector('form[method="post"]') || document.body;
+    if (!toolbar) return;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Export to Form.io JSON';
+    btn.style.marginLeft = '10px';
+    btn.style.padding = '6px 10px';
+    btn.style.fontSize = '12px';
+    btn.addEventListener('click', exportToFormio);
+    // put it near the existing Render button if possible
+    const renderBtn = toolbar.querySelector('button[type="submit"]');
+    if (renderBtn && renderBtn.parentNode) {
+      renderBtn.parentNode.appendChild(btn);
+    } else {
+      toolbar.appendChild(btn);
+    }
+  }
+
+  // ------ DOM helpers -----------------------------------------------------------
+  const CANVAS = document.getElementById('canvas') || document; // outer eForm canvas
+  function q(sel, root=CANVAS){ return root.querySelector(sel); }
+  function qa(sel, root=CANVAS){ return Array.from(root.querySelectorAll(sel)); }
+  function txt(n){ return (n && (n.textContent || '').trim()) || ''; }
+  function val(n){ return (n && (n.value || '').trim()) || ''; }
+
+  // Slugify -> Form.io `key` (must be unique)
+  function keyify(s){
+    return (s || '')
+      .replace(/[^A-Za-z0-9_]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .replace(/^(\d)/, '_$1')
+      .slice(0, 80) || ('k_' + Math.random().toString(36).slice(2));
+  }
+
+  // Unique key generator
+  const takenKeys = new Set();
+  function uniqueKey(base){
+    let k = keyify(base);
+    if (!takenKeys.has(k)) { takenKeys.add(k); return k; }
+    let i = 2;
+    while (takenKeys.has(k + '_' + i)) i++;
+    k = k + '_' + i;
+    takenKeys.add(k);
+    return k;
+  }
+
+  // Try to read original geometry from the wrapper .ctrl if present
+  function geomFrom(el){
+    const s = getComputedStyle(el);
+    function px(n){ return parseInt(n, 10) || 0; }
+    return {
+      x: px(s.left), y: px(s.top),
+      w: px(s.width), h: px(s.height)
+    };
+  }
+
+  // Extract useful metadata from readcode host
+  function readcodeMeta(host){
+    const blob = host.getAttribute('data-readcodes') || '';
+    const lines = blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).filter(Boolean);
+    // First non-auto line assumed primary code
+    let code = '', label = '';
+    for (const line of lines){
+      if (/^\s*Auto-Entered Text\s*:/i.test(line)) continue;
+      const m = line.split('—');
+      code  = (m[0] || '').trim();
+      label = (m.slice(1).join('—') || '').trim();
+      break;
+    }
+    // Auto text (if present)
+    const autoLine = lines.find(l => /^\s*Auto-Entered Text\s*:/i.test(l));
+    let autoText = '';
+    if (autoLine) autoText = autoLine.replace(/^\s*Auto-Entered Text\s*:\s*/i,'').trim();
+    return { code, label, autoText };
+  }
+
+  // Make a basic htmlelement
+  function makeHtmlEl(content, tag='p'){
+    return {
+      type: 'htmlelement',
+      tag,
+      key: uniqueKey('content_' + content.slice(0,30)),
+      input: false,
+      content,
+      hideLabel: true,
+      attrs: [{attr:'', value:''}],
+      className: '',
+      properties: {}
+    };
+  }
+
+  // --------- MAPPERS ------------------------------------------------------------
+  function mapReadCode(ctrl){
+    const host = ctrl.querySelector('.rc-row.readcode-host') || ctrl;
+    const {code, label, autoText} = readcodeMeta(host);
+    const promptEl = host.querySelector('.rc-prompt');
+    const prompt = txt(promptEl) || label || code || 'ReadCode';
+    const yes = host.querySelector('input.rc-yesno[id$="_yes"]');
+    const no  = host.querySelector('input.rc-yesno[id$="_no"]');
+    const chk = host.querySelector('input.rc-chk');
+    const txtIn = host.querySelector('input[type="text"][id$="_text"]');
+    const valIn = host.querySelector('input[type="text"][id$="_val"]');
+    const dateIn = host.querySelector('input[type="date"][id$="_date"]');
+
+    const geom = geomFrom(ctrl);
+    const components = [];
+    const baseKey = prompt || code || 'readcode';
+
+    // Tooltip from auto text + code/term
+    const tooltip = [autoText && ('Auto-Entered Text: ' + autoText)]
+      .filter(Boolean).join('\n') || '';
+
+    // Question (Yes/No) → radio with YES=code, NO=NEGATION-code
+    if (yes && no) {
+      const comp = {
+        type: 'radio',
+        key: uniqueKey('rcq_' + baseKey),
+        label: prompt,
+        input: true,
+        tableView: true,
+        labelPosition: 'top',
+        inline: true,
+        values: [
+          { label: 'Yes', value: code || 'YES' },
+          { label: 'No',  value: (code ? 'NEGATION-' + code : 'NO') }
+        ],
+        defaultValue: (yes.checked ? (code || 'YES') : (no.checked ? ('NEGATION-' + (code||'')) : '')),
+        tooltip,
+        properties: {
+          kind: 'ReadCodeQuestion',
+          readCode: code,
+          readTerm: label,
+          negationCode: code ? ('NEGATION-' + code) : '',
+          x: geom.x, y: geom.y, w: geom.w, h: geom.h
+        }
+      };
+      components.push(comp);
+    } else {
+      // Simple readcode:
+      // main checkbox
+      if (chk) {
+        components.push({
+          type: 'checkbox',
+          key: uniqueKey('rc_' + baseKey),
+          label: prompt,
+          input: true,
+          tableView: true,
+          defaultValue: !!chk.checked,
+          tooltip,
+          properties: {
+            kind: 'ReadCode',
+            readCode: code,
+            readTerm: label,
+            x: geom.x, y: geom.y, w: geom.w, h: geom.h
+          }
+        });
+      } else if (!txtIn && valIn) {
+        // value-only (no checkbox) -> number
+        components.push({
+          type: 'number',
+          key: uniqueKey('rcval_' + baseKey),
+          label: prompt,
+          input: true,
+          tableView: true,
+          suffix: (ctrl.querySelector('.rc-wrap span') || {}).textContent || '',
+          defaultValue: valIn.value ? Number(valIn.value) : '',
+          tooltip,
+          properties: {
+            kind: 'ReadCodeValueOnly',
+            readCode: code,
+            readTerm: label,
+            x: geom.x, y: geom.y, w: geom.w, h: geom.h
+          }
+        });
+      } else {
+        // If nothing else matched, include a label to avoid dropping content
+        components.push(makeHtmlEl(prompt));
+      }
+    }
+
+    // Optional children (text/value/date) as separate siblings below the main item
+    if (txtIn) {
+      components.push({
+        type: 'textfield',
+        key: uniqueKey('txt_' + baseKey),
+        label: 'For text prompt inputs',
+        labelPosition: 'left-right',
+        labelWidth: 30,
+        labelMargin: 3,
+        input: true,
+        tableView: true,
+        inputType: 'text',
+        inputFormat: 'plain',
+        defaultValue: val(txtIn),
+        tooltip,
+        properties: {
+          kind: 'ReadCodeText',
+          parentReadCode: code,
+          x: geom.x, y: geom.y, w: geom.w, h: geom.h
+        }
+      });
+    }
+    if (valIn && (yes || no || chk)) {
+      components.push({
+        type: 'number',
+        key: uniqueKey('num_' + baseKey),
+        label: 'For value inputs',
+        input: true,
+        tableView: true,
+        suffix: (ctrl.querySelector('.rc-wrap span') || {}).textContent || '',
+        defaultValue: valIn.value ? Number(valIn.value) : '',
+        properties: {
+          kind: 'ReadCodeValue',
+          parentReadCode: code,
+          x: geom.x, y: geom.y, w: geom.w, h: geom.h
+        }
+      });
+    }
+    if (dateIn) {
+      components.push({
+        type: 'datetime',
+        key: uniqueKey('date_' + baseKey),
+        label: 'For Dates',
+        input: true,
+        tableView: true,
+        enableDate: true,
+        enableTime: false,
+        format: 'yyyy-MM-dd',
+        defaultDate: dateIn.value || '',
+        properties: {
+          kind: 'ReadCodeDate',
+          parentReadCode: code,
+          x: geom.x, y: geom.y, w: geom.w, h: geom.h
+        }
+      });
+    }
+
+    return components;
+  }
+
+  function mapReadList(ctrl){
+    // Try to detect your render variants:
+    //  - Select (minimised): <select> with <option>
+    //  - Checkbox list: inputs[name$="[]"] type=checkbox
+    //  - Radio list: inputs type=radio
+    const geom = geomFrom(ctrl);
+    const cap =
+      txt(ctrl.querySelector('.rl-caption')) ||
+      txt(ctrl.querySelector('label')) ||
+      'List';
+
+    const select = ctrl.querySelector('select');
+    if (select) {
+      const opts = Array.from(select.querySelectorAll('option'))
+        .filter(o => o.value || txt(o))
+        .map(o => ({ value: o.value || txt(o), label: txt(o) || o.value }));
+
+      const multiple = !!select.multiple;
+      return [{
+        type: 'select',
+        key: uniqueKey('select_' + cap),
+        label: multiple ? 'For Multiselect Dropdowns' : 'For single select dropdowns',
+        input: true,
+        tableView: true,
+        dataSrc: 'values',
+        data: { values: opts },
+        multiple,
+        defaultValue: multiple
+          ? (Array.from(select.selectedOptions || []).map(o => o.value))
+          : (select.value || ''),
+        {% verbatim %}
+        template: '<span>{{ item.label }}</span>',
+        {% endverbatim %}
+        properties: {
+          kind: 'ReadList',
+          x: geom.x, y: geom.y, w: geom.w, h: geom.h
+        }
+      }];
+    }
+
+    const checks = Array.from(ctrl.querySelectorAll('input[type="checkbox"]'));
+    if (checks.length) {
+      // Use selectboxes (boolean map per option)
+      const values = checks.map(ch => {
+        const lbl = txt(ch.closest('label')) || ch.value || 'Option';
+        const value = keyify(lbl) || ('opt_' + Math.random().toString(36).slice(2));
+        return { label: lbl, value, shortcut: '' };
+      });
+      // defaultValue is object { valueKey: true/false }
+      const def = {};
+      checks.forEach(ch => {
+        const lbl = txt(ch.closest('label')) || ch.value || 'Option';
+        const value = keyify(lbl);
+        if (value) def[value] = !!ch.checked;
+      });
+      return [{
+        type: 'selectboxes',
+        key: uniqueKey('selectboxes_' + cap),
+        label: 'For lists',
+        input: true,
+        tableView: true,
+        values,
+        defaultValue: def,
+        properties: {
+          kind: 'ReadListMulti',
+          x: geom.x, y: geom.y, w: geom.w, h: geom.h
+        }
+      }];
+    }
+
+    const radios = Array.from(ctrl.querySelectorAll('input[type="radio"]'));
+    if (radios.length) {
+      const seen = new Map();
+      const values = [];
+      radios.forEach(r => {
+        const lbl = txt(r.closest('label')) || r.value || 'Option';
+        const v = r.value || keyify(lbl);
+        if (!seen.has(v)) {
+          seen.set(v, true);
+          values.push({ value: v, label: lbl, shortcut: '' });
+        }
+      });
+      const def = (radios.find(r => r.checked) || {}).value || '';
+      return [{
+        type: 'radio',
+        key: uniqueKey('radio_' + cap),
+        label: 'For radio buttons',
+        input: true,
+        tableView: true,
+        inline: true,
+        values,
+        defaultValue: def,
+        properties: {
+          kind: 'ReadListExclusive',
+          x: geom.x, y: geom.y, w: geom.w, h: geom.h
+        }
+      }];
+    }
+
+    // Fallback
+    return [makeHtmlEl(cap)];
+  }
+
+  // Attempt to detect labels/links you render
+  function mapLabelOrLink(ctrl){
+    const a = ctrl.querySelector('a[href]');
+    if (a) {
+      return [ {
+        type: 'htmlelement',
+        tag: 'a',
+        key: uniqueKey('link_' + txt(a)),
+        input: false,
+        content: txt(a) || a.href,
+        hideLabel: true,
+        attrs: [{ attr: 'href', value: a.href }],
+        className: '',
+        properties: { kind: 'Url', href: a.href, ...geomFrom(ctrl) }
+      } ];
+    }
+    const labelEl = ctrl.querySelector('label');
+    if (labelEl) return [ makeHtmlEl(labelEl.textContent || 'Label') ];
+    return [];
+  }
+
+  // --------- EXPORT CORE ---------------------------------------------------------
+  function exportToFormio(){
+    takenKeys.clear();
+
+    // --- helpers -------------------------------------------------------------
+    // Returns the best-guess TEX filename (with or without .tex)
+    function getSelectedTexName(){
+      // 1) Universal label we added earlier
+      const label = document.getElementById('selected-tex-label')?.textContent?.trim();
+      if (label && label.toLowerCase() !== 'no tex file selected') return label;
+
+      // 2) Native library <select>
+      const libSel = document.querySelector('#lib-pane-list select');
+      if (libSel && libSel.value) return libSel.value;
+
+      // 3) Fall back to page title if nothing else (last resort)
+      const h1 = document.querySelector('h1')?.textContent?.trim();
+      return h1 || 'Imported_TEX';
+    }
+
+    // Strip .tex (case-insensitive) and normalise spaces to underscores for the Title
+    function makeTitleFromTexName(name){
+      let base = String(name || '').trim();
+      base = base.replace(/\.[Tt][Ee][Xx]$/, '');       // drop extension
+      base = base.replace(/\s+/g, '_');                 // spaces -> underscores
+      base = base || 'Imported_TEX';
+      return base;
+    }
+
+    // lowerCamelCase from a base string (split on non-alnum, incl. underscores)
+    function toLowerCamelCase(s){
+      const parts = String(s || '')
+        .replace(/\.[A-Za-z0-9]+$/, '')     // drop any trailing extension defensively
+        .split(/[^A-Za-z0-9]+/).filter(Boolean);
+
+      if (!parts.length) return 'importedForm';
+      const head = parts[0].toLowerCase();
+      const tail = parts.slice(1).map(p => p.charAt(0).toUpperCase() + p.slice(1));
+      let out = [head, ...tail].join('');
+
+      // ensure starts with a letter; if not, prefix with 'f'
+      if (!/^[A-Za-z]/.test(out)) out = 'f' + out;
+
+      // hard cap to something sensible for path/name (optional)
+      if (out.length > 128) out = out.slice(0, 128);
+      return out;
+    }
+
+    // --- compute title/name/path --------------------------------------------
+    const texName = getSelectedTexName();          // e.g. "Patient_Population_Sub_Group_DMICP.tex"
+    const title   = makeTitleFromTexName(texName); // e.g. "Patient_Population_Sub_Group_DMICP"
+    const key     = toLowerCamelCase(title);       // e.g. "patientPopulationSubGroupDMICP"
+
+    // --- gather components as before ----------------------------------------
+    const controls = qa('.ctrl');
+    const outComponents = [];
+
+    controls.forEach(ctrl => {
+      let added = [];
+      if (ctrl.querySelector('.readcode-host')) {
+        added = mapReadCode(ctrl);
+      } else if (
+        ctrl.querySelector('.readlist-host') ||
+        ctrl.querySelector('select') ||
+        ctrl.querySelector('input[type="checkbox"]') ||
+        ctrl.querySelector('input[type="radio"]')
+      ) {
+        added = mapReadList(ctrl);
+      } else {
+        added = mapLabelOrLink(ctrl);
+      }
+      if (added && added.length) outComponents.push(...added);
+    });
+
+    // --- Form.io payload -----------------------------------------------------
+    const form = {
+      display: 'form',
+      type: 'form',
+      title,            // exact base TEX filename (underscores kept)
+      name: key,        // lowerCamelCase
+      path: key,        // lowerCamelCase
+      components: outComponents
+    };
+
+    // --- Download ------------------------------------------------------------
+    const blob = new Blob([JSON.stringify(form, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${title}_formio.json`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 100);
+  }
+
+  // Kick it off (unchanged)
+  addExportButton();
+})();
+</script>
+
+
 {% endif %}
 
 </div>
