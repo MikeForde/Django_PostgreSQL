@@ -3237,7 +3237,7 @@ function mapReadCode(ctrl){
       return [{
         type: 'select',
         key: uniqueKey('select_' + cap),
-        label: multiple ? 'For Multiselect Dropdowns' : 'For single select dropdowns',
+        label: cap,
         input: true,
         tableView: true,
         dataSrc: 'values',
@@ -3274,7 +3274,7 @@ function mapReadCode(ctrl){
       return [{
         type: 'selectboxes',
         key: uniqueKey('selectboxes_' + cap),
-        label: 'For lists',
+        label: cap,
         input: true,
         tableView: true,
         values,
@@ -3302,7 +3302,7 @@ function mapReadCode(ctrl){
       return [{
         type: 'radio',
         key: uniqueKey('radio_' + cap),
-        label: 'For radio buttons',
+        label: cap,
         input: true,
         tableView: true,
         inline: true,
@@ -3369,6 +3369,253 @@ function mapReadCode(ctrl){
       return base;
     }
 
+    function isClassicReadCode(ctrl){
+      // Classic render we created for ReadCodes
+      return !!(
+        ctrl.querySelector('.rc-wrap') ||
+        ctrl.querySelector('.rc-yesno') ||
+        ctrl.querySelector('.rc-chk')   ||
+        ctrl.querySelector('.rc-prompt')
+      );
+    }
+
+    function hasAnyFormInputs(root){
+      return !!root.querySelector('select,textarea,input[type="text"],input[type="date"],input[type="number"],input[type="checkbox"],input[type="radio"]');
+    }
+
+    function mapGenericControls(ctrl){
+      const out = [];
+      const geom = geomFrom(ctrl);
+
+      // helper: best label near an element
+      function findLabelFor(el){
+        // 1) <label for=...> match
+        if (el.id) {
+          const m = ctrl.querySelector(`label[for="${CSS.escape(el.id)}"]`);
+          if (m) return txt(m);
+        }
+        // 2) wrapping label
+        const wrap = el.closest('label');
+        if (wrap) return txt(wrap);
+
+        // 3) previous sibling label or <span>/<strong> used as label
+        let p = el.previousElementSibling;
+        if (p && /^(LABEL|SPAN|STRONG)$/i.test(p.tagName)) {
+          const t = txt(p);
+          if (t) return t;
+        }
+        // 4) parent fieldset legend
+        const fs = el.closest('fieldset');
+        const lg = fs?.querySelector('legend');
+        if (lg) return txt(lg);
+
+        // 5) last resort: tidy name or placeholder
+        return el.name || el.placeholder || 'Field';
+      }
+
+      // helper: get readcode info from nearest readcode-host (first non-empty line)
+      function readcodeInfo(el){
+        const host = el.closest('.readcode-host');
+        if (!host) return {};
+        const blob = host.getAttribute('data-readcodes') || '';
+        const line = (blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).find(l => /\S/.test(l)) || '').trim();
+        if (!line) return {};
+        const parts = line.split('—');
+        const code = (parts[0] || '').trim();
+        const label = (parts.slice(1).join('—') || '').trim();
+        return { code, label, desc: code ? `Readcode: ${code}` : undefined };
+      }
+
+      // --- 1) radios: group by name -------------------------------------------
+      const radios = Array.from(ctrl.querySelectorAll('input[type="radio"]'));
+      const radioGroups = new Map();
+      radios.forEach(r => {
+        const name = r.name || '_radio_' + Math.random().toString(36).slice(2);
+        if (!radioGroups.has(name)) radioGroups.set(name, []);
+        radioGroups.get(name).push(r);
+      });
+
+      radioGroups.forEach(group => {
+        // label from shared legend/near first radio
+        const label = findLabelFor(group[0]);
+        const values = [];
+        const seen = new Set();
+
+        group.forEach(r => {
+          // option label from wrapping label OR sibling text
+          let optLabel = '';
+          const lab = r.closest('label');
+          if (lab) optLabel = txt(lab);
+          if (!optLabel) {
+            // try next sibling text node/element
+            const sib = r.nextSibling;
+            if (sib && sib.nodeType === 3) optLabel = (sib.nodeValue || '').trim();
+          }
+          if (!optLabel) optLabel = r.value || 'Option';
+
+          const optVal = r.value || keyify(optLabel);
+          if (seen.has(optVal)) return;
+          seen.add(optVal);
+          values.push({ value: optVal, label: optLabel, shortcut: '' });
+        });
+
+        const def = (group.find(r => r.checked) || {}).value || '';
+        const meta = readcodeInfo(group[0]);
+
+        out.push({
+          type: 'radio',
+          input: true,
+          key: uniqueKey(label),
+          label,
+          tableView: true,
+          inline: true,
+          values,
+          defaultValue: def,
+          description: meta.desc,
+          properties: { x: geom.x, y: geom.y, w: geom.w, h: geom.h }
+        });
+      });
+
+      // --- 2) selects -----------------------------------------------------------
+      const selects = Array.from(ctrl.querySelectorAll('select'));
+      selects.forEach(sel => {
+        const label = findLabelFor(sel);
+        const opts = Array.from(sel.querySelectorAll('option')).map(o => ({
+          value: o.value || txt(o),
+          label: txt(o) || o.value || ''
+        })).filter(o => o.value || o.label);
+
+        const multiple = !!sel.multiple;
+        const def = multiple
+          ? Array.from(sel.selectedOptions || []).map(o => o.value || txt(o))
+          : (sel.value || '');
+
+        const meta = readcodeInfo(sel);
+
+        out.push({
+          type: 'select',
+          input: true,
+          key: uniqueKey(label),
+          label,
+          tableView: true,
+          dataSrc: 'values',
+          data: { values: opts },
+          multiple,
+          defaultValue: def,
+          {% verbatim %}
+          template: '<span>{{ item.label }}</span>',
+          {% endverbatim %}
+          description: meta.desc,
+          properties: { x: geom.x, y: geom.y, w: geom.w, h: geom.h }
+        });
+      });
+
+      // --- 3) checkboxes (standalone, not radios) ------------------------------
+      const checks = Array.from(ctrl.querySelectorAll('input[type="checkbox"]'));
+      checks.forEach(ch => {
+        // If used inside a selectboxes-style grid we still emit single checkbox
+        const label = findLabelFor(ch);
+        const meta = readcodeInfo(ch);
+
+        out.push({
+          type: 'checkbox',
+          input: true,
+          key: uniqueKey(label),
+          label,
+          tableView: true,
+          defaultValue: !!ch.checked,
+          tooltip: meta.desc,
+          properties: { x: geom.x, y: geom.y, w: geom.w, h: geom.h }
+        });
+      });
+
+      // --- 4) dates -------------------------------------------------------------
+      const dates = Array.from(ctrl.querySelectorAll('input[type="date"]'));
+      dates.forEach(d => {
+        const label = findLabelFor(d);
+        const meta = readcodeInfo(d);
+
+        out.push({
+          type: 'datetime',
+          input: true,
+          key: uniqueKey(label),
+          label,
+          labelPosition: 'left-left',
+          tableView: true,
+          enableDate: true,
+          enableTime: false,
+          datePicker: { showWeeks: true },
+          validate: { required: d.hasAttribute('required') },
+          description: meta.desc,
+          properties: { x: geom.x, y: geom.y, w: geom.w, h: geom.h }
+        });
+      });
+
+      // --- 5) textarea ----------------------------------------------------------
+      const areas = Array.from(ctrl.querySelectorAll('textarea'));
+      areas.forEach(a => {
+        const label = findLabelFor(a);
+        const meta = readcodeInfo(a);
+
+        out.push({
+          type: 'textarea',
+          input: true,
+          key: uniqueKey(label),
+          label,
+          tableView: true,
+          rows: Math.max(1, parseInt(a.getAttribute('rows') || '3', 10)),
+          defaultValue: a.value || '',
+          description: meta.desc,
+          properties: { x: geom.x, y: geom.y, w: geom.w, h: geom.h }
+        });
+      });
+
+      // --- 6) plain text/number inputs (skip readonly displays) ----------------
+      const texts = Array.from(ctrl.querySelectorAll('input[type="text"],input[type="number"]'))
+        .filter(i => !i.readOnly);
+      texts.forEach(ti => {
+        const label = findLabelFor(ti);
+        const meta = readcodeInfo(ti);
+
+        // decide number vs text (based on input type)
+        if (ti.type === 'number') {
+          out.push({
+            type: 'number',
+            input: true,
+            key: uniqueKey(label),
+            label,
+            tableView: true,
+            validate: { step: 'any', required: ti.hasAttribute('required') },
+            description: meta.desc,
+            properties: { x: geom.x, y: geom.y, w: geom.w, h: geom.h }
+          });
+        } else {
+          out.push({
+            type: 'textfield',
+            input: true,
+            key: uniqueKey(label),
+            label,
+            tableView: true,
+            inputFormat: 'plain',
+            validate: { required: ti.hasAttribute('required') },
+            defaultValue: ti.value || '',
+            description: meta.desc,
+            properties: { x: geom.x, y: geom.y, w: geom.w, h: geom.h }
+          });
+        }
+      });
+
+      // If nothing found, return label/legend so we don’t lose the section
+      if (!out.length) {
+        const legend = ctrl.querySelector('legend');
+        if (legend) return [ makeHtmlEl(txt(legend)) ];
+        const anyLabel = ctrl.querySelector('label');
+        if (anyLabel) return [ makeHtmlEl(txt(anyLabel)) ];
+      }
+
+      return out;
+    }
+
     // lowerCamelCase from a base string (split on non-alnum, incl. underscores)
     function toLowerCamelCase(s){
       const parts = String(s || '')
@@ -3399,18 +3646,15 @@ function mapReadCode(ctrl){
 
     controls.forEach(ctrl => {
       let added = [];
-      if (ctrl.querySelector('.readcode-host')) {
-        added = mapReadCode(ctrl);
-      } else if (
-        ctrl.querySelector('.readlist-host') ||
-        ctrl.querySelector('select') ||
-        ctrl.querySelector('input[type="checkbox"]') ||
-        ctrl.querySelector('input[type="radio"]')
-      ) {
-        added = mapReadList(ctrl);
+
+      if (isClassicReadCode(ctrl)) {
+        added = mapReadCode(ctrl);                       // existing mapper (fixed earlier)
+      } else if (hasAnyFormInputs(ctrl)) {
+        added = mapGenericControls(ctrl);                // NEW: generic mapper
       } else {
-        added = mapLabelOrLink(ctrl);
+        added = mapLabelOrLink(ctrl);                    // fallback
       }
+
       if (added && added.length) outComponents.push(...added);
     });
 
