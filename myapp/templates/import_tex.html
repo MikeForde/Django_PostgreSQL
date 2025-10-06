@@ -2967,7 +2967,7 @@
 function mapReadCode(ctrl){
     const out = [];
 
-    // ---- helpers ------------------------------------------------------------
+    // --- helpers -------------------------------------------------------------
     const labelText = (ctrl.querySelector('.rc-prompt')?.textContent || '').trim() || 'Read code';
     const readcode  = (ctrl.querySelector('input[type="hidden"][name$="_readcode"]')?.value || '').trim();
 
@@ -2979,9 +2979,12 @@ function mapReadCode(ctrl){
       takenKeys.add(k); return k;
     };
 
-    // detect present bits
-    const hasYesNo = !!ctrl.querySelector('input.rc-yesno');     // question-style pair
-    const hasChk   = !!ctrl.querySelector('input.rc-chk');       // simple checkbox (may exist even for “pure” cases)
+    // detect present bits in the rendered DOM
+    const yesInput = ctrl.querySelector('.rc-yes-label input.rc-yesno');
+    const noInput  = ctrl.querySelector('.rc-no-label  input.rc-yesno');
+    const hasYesNo = !!(yesInput || noInput);
+
+    const hasChk   = !!ctrl.querySelector('input.rc-chk'); // simple checkbox (non-question)
     const textEl   = ctrl.querySelector('input[type="text"][name$="_text"]');
     const valEl    = ctrl.querySelector('input[type="text"][name$="_val"]');
     const dateEl   = ctrl.querySelector('input[type="date"]');
@@ -2997,11 +3000,7 @@ function mapReadCode(ctrl){
     })();
 
     // ------------------------------------------------------------------------
-    // IMPORTANT: Treat controls as "pure" TEXT/DATE even if a main checkbox exists,
-    // as long as there is NO yes/no pair and NO numeric value.
-    // ------------------------------------------------------------------------
-
-    // A) Pure text prompt (ignore any rc-chk if present)
+    // Pure TEXT (and optional DATE) — ignore any main checkbox if there’s no yes/no and no value
     if (hasText && !hasYesNo && !hasVal){
       out.push({
         type: 'textfield',
@@ -3015,7 +3014,6 @@ function mapReadCode(ctrl){
         description: readcode ? `Readcode: ${readcode}` : undefined,
         tooltip: textEl.title || undefined
       });
-      // If there is ALSO a date with no value & no yes/no, include it too (still no checkbox)
       if (hasDate){
         out.push({
           type: 'datetime',
@@ -3035,7 +3033,7 @@ function mapReadCode(ctrl){
       return out;
     }
 
-    // B) Pure date entry (ignore any rc-chk if present)
+    // Pure DATE — ignore any main checkbox if there’s no yes/no and no value
     if (hasDate && !hasYesNo && !hasVal){
       out.push({
         type: 'datetime',
@@ -3054,7 +3052,7 @@ function mapReadCode(ctrl){
       return out;
     }
 
-    // C) Pure value-only (no yes/no, no text, no date) → number export
+    // Pure VALUE — number
     if (hasVal && !hasYesNo && !hasText && !hasDate){
       out.push({
         type: 'number',
@@ -3072,10 +3070,84 @@ function mapReadCode(ctrl){
     }
 
     // ------------------------------------------------------------------------
-    // If there IS a yes/no pair OR a true composite (e.g., value with anything),
-    // keep checkbox + companion fields as separate components.
+    // QUESTION ReadCode (Yes/No pair) → Form.io RADIO with two options
     // ------------------------------------------------------------------------
-    if (hasYesNo || hasChk){
+    if (hasYesNo){
+      const yesVal = yesInput?.value || 'yes';
+      const noVal  = noInput?.value  || 'no';
+      const yesChecked = !!(yesInput && yesInput.checked);
+      const noChecked  = !!(noInput  && noInput.checked);
+
+      out.push({
+        type: 'radio',
+        input: true,
+        key: keyFrom(labelText),
+        label: labelText,
+        tableView: true,
+        inline: true,
+        values: [
+          { value: yesVal, label: 'Yes', shortcut: '' },
+          { value: noVal,  label: 'No',  shortcut: '' }
+        ],
+        defaultValue: yesChecked ? yesVal : (noChecked ? noVal : ''),
+        properties: {
+          kind: 'QuestionReadCode',
+          readcode: yesVal,
+          negcode: noVal
+        },
+        description: readcode ? `Readcode: ${readcode}` : undefined
+      });
+
+      // If the question also has extra fields, include them after the radio
+      if (hasText){
+        out.push({
+          type: 'textfield',
+          input: true,
+          key: keyFrom(labelText, 'text'),
+          label: `${labelText} (text)`,
+          tableView: true,
+          labelPosition: 'left-left',
+          inputFormat: 'plain',
+          validate: { required: textEl.hasAttribute('required') },
+          description: readcode ? `Readcode: ${readcode}` : undefined
+        });
+      }
+      if (hasVal){
+        out.push({
+          type: 'number',
+          input: true,
+          key: keyFrom(labelText, 'value'),
+          label: `${labelText} (value)`,
+          tableView: true,
+          labelPosition: 'left-left',
+          suffix: unitText || undefined,
+          validate: { required: valEl.hasAttribute('required'), step: 'any' },
+          description: readcode ? `Readcode: ${readcode}` : undefined
+        });
+      }
+      if (hasDate){
+        out.push({
+          type: 'datetime',
+          input: true,
+          key: keyFrom(labelText, 'date'),
+          label: `${labelText} (date)`,
+          labelPosition: 'left-left',
+          tableView: true,
+          enableDate: true,
+          enableTime: false,
+          datePicker: { showWeeks: true },
+          validate: { required: dateEl.hasAttribute('required') },
+          description: readcode ? `Readcode: ${readcode}` : undefined
+        });
+      }
+
+      return out;
+    }
+
+    // ------------------------------------------------------------------------
+    // Simple checkbox (non-question) + any companions
+    // ------------------------------------------------------------------------
+    if (hasChk){
       out.push({
         type: 'checkbox',
         input: true,
@@ -3099,7 +3171,6 @@ function mapReadCode(ctrl){
           description: readcode ? `Readcode: ${readcode}` : undefined
         });
       }
-
       if (hasVal){
         out.push({
           type: 'number',
@@ -3113,7 +3184,6 @@ function mapReadCode(ctrl){
           description: readcode ? `Readcode: ${readcode}` : undefined
         });
       }
-
       if (hasDate){
         out.push({
           type: 'datetime',
@@ -3126,7 +3196,7 @@ function mapReadCode(ctrl){
           enableTime: false,
           datePicker: { showWeeks: true },
           validate: { required: dateEl.hasAttribute('required') },
-          description: `Readcode: ${readcode}`
+          description: readcode ? `Readcode: ${readcode}` : undefined
         });
       }
 
