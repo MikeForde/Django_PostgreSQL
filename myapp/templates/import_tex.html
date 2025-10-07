@@ -94,31 +94,52 @@
             {{ c.caption|default:c.name }}
           </button>
 
-        {# Read lists (your existing branches) #}
+        {# Read lists (classic + minimised). Add machine-readable labels/captions for export. #}
         {% elif 'ReadList' in c.type %}
-          <div class="rl-wrap" style="white-space:normal;">
+          <div class="rl-wrap"
+              style="white-space:normal;"
+              data-name="{{ c.name }}"
+              data-caption="{{ c.caption|default:'' }}">
+            {# Visible caption for classic (non-minimised) lists. Give it a class to find easily. #}
             {% if c.caption and not c.rl_minimised %}
-              <div style="font-weight:600; margin-bottom:-1px;">{{ c.caption }}</div>
+              <div class="rl-caption" style="font-weight:600; margin-bottom:-1px;">{{ c.caption }}</div>
             {% endif %}
+
             {% if c.rl_minimised and c.rl_multi %}
-              <div class="ms" id="ms_{{ c.name }}" style="position:relative; display:inline-block; min-width:140px;">
-                <button type="button" class="ms-btn" aria-haspopup="listbox" aria-expanded="false"
+              {# Minimized MULTI (custom multiselect) #}
+              <div class="ms" id="ms_{{ c.name }}"
+                  style="position:relative; display:inline-block; min-width:140px;"
+                  data-caption="{{ c.caption|default:'' }}">
+                <button type="button"
+                        class="ms-btn"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="{{ c.caption|default:'Select options' }}"
                         style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-width:140px; padding:0px 6px; border:1px solid #888; background:#fff; cursor:pointer; font-size: 10.5px;">
-                  <span class="ms-label">{{ c.caption|default:"Selettct…" }}</span><span aria-hidden="true">▾</span>
+                  <span class="ms-label">{{ c.caption|default:"Select…" }}</span><span aria-hidden="true">▾</span>
                 </button>
                 <div class="ms-panel"
                     style="position:absolute; top:100%; left:0; z-index:1000; display:none; border:1px solid #888; background:#fff; max-height:180px; overflow:auto; min-width:220px; padding:6px; box-shadow:0 2px 6px rgba(0,0,0,.15);">
                   {% for opt in c.options %}
                     <label style="display:block; white-space:nowrap;">
-                      <input type="checkbox" name="{{ c.name }}[]"
+                      <input type="checkbox"
+                            name="{{ c.name }}[]"
                             value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
                       {{ opt.label }}
                     </label>
                   {% endfor %}
                 </div>
               </div>
+
             {% elif c.rl_minimised %}
-              <select name="{{ c.name }}" id="{{ c.name }}" size="1" tabindex="{{ c.props.TabOrder|default:'0' }}" style="min-width:140px; font-size: 10.5px;">
+              {# Minimized SINGLE (native select, size=1). Add aria/data-caption. #}
+              <select name="{{ c.name }}"
+                      id="{{ c.name }}"
+                      size="1"
+                      tabindex="{{ c.props.TabOrder|default:'0' }}"
+                      style="min-width:140px; font-size: 10.5px;"
+                      aria-label="{{ c.caption|default:'Select…' }}"
+                      data-caption="{{ c.caption|default:'' }}">
                 <option value="" selected disabled hidden>{{ c.caption|default:"Select…" }}</option>
                 {% for opt in c.options %}
                   <option value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
@@ -126,9 +147,18 @@
                   </option>
                 {% endfor %}
               </select>
+
             {% else %}
-              <select name="{{ c.name }}{% if c.rl_multi %}[]{% endif %}" id="{{ c.name }}" {% if c.rl_multi %}multiple{% endif %}
-                      size="{{ c.rl_size|default:5 }}" tabindex="{{ c.props.TabOrder|default:'0' }}" style="min-width:120px; font-size: 10.5px;">
+              {# Classic list (single or multi via multiple attribute). Add class + aria/data-caption. #}
+              <select name="{{ c.name }}{% if c.rl_multi %}[]{% endif %}"
+                      id="{{ c.name }}"
+                      class="rl-classic"
+                      {% if c.rl_multi %}multiple{% endif %}
+                      size="{{ c.rl_size|default:5 }}"
+                      tabindex="{{ c.props.TabOrder|default:'0' }}"
+                      style="min-width:120px; font-size: 10.5px;"
+                      aria-label="{{ c.caption|default:c.name }}"
+                      data-caption="{{ c.caption|default:'' }}">
                 {% for opt in c.options %}
                   <option value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
                     {{ opt.label }}
@@ -140,7 +170,12 @@
             {% if c.rl_date_prompt %}
               <div style="margin-top:6px;">
                 <label for="{{ c.name }}_date" style="margin-right:6px;">Date:</label>
-                <input id="{{ c.name }}_date" name="{{ c.name }}_date" type="date" tabindex="{{ c.props.TabOrder|default:'0' }}">
+                <input id="{{ c.name }}_date"
+                      name="{{ c.name }}_date"
+                      type="date"
+                      tabindex="{{ c.props.TabOrder|default:'0' }}"
+                      aria-label="{{ c.caption|default:c.name }} date"
+                      data-caption="{{ c.caption|default:'' }}">
               </div>
             {% endif %}
           </div>
@@ -3648,11 +3683,19 @@ function mapReadCode(ctrl){
       let added = [];
 
       if (isClassicReadCode(ctrl)) {
-        added = mapReadCode(ctrl);                       // existing mapper (fixed earlier)
-      } else if (hasAnyFormInputs(ctrl)) {
-        added = mapGenericControls(ctrl);                // NEW: generic mapper
-      } else {
-        added = mapLabelOrLink(ctrl);                    // fallback
+        // standard question/value/date readcode controls
+        added = mapReadCode(ctrl);
+      }
+      else if (ctrl.querySelector('.rl-wrap, select[name^="Readlist"], select[id^="Readlist"]')) {
+        // explicitly handle classic read lists before generic mapper
+        added = mapReadList(ctrl);
+      }
+      else if (hasAnyFormInputs(ctrl)) {
+        // only use generic mapper for ad-hoc / hand-crafted controls
+        added = mapGenericControls(ctrl);
+      }
+      else {
+        added = mapLabelOrLink(ctrl);
       }
 
       if (added && added.length) outComponents.push(...added);
