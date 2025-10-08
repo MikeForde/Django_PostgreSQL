@@ -833,22 +833,30 @@
         break;
         }
       case 15: { // TextBox
-        if ((ctrl.H||0) > 28){
-          const ta = document.createElement('div');
-          ta.className = 'textarea';
-          ta.dataset.id = ctrl.CID;
-          ta.textContent = props.DEFAULT != null ? String(props.DEFAULT) : '';
-          common.appendChild(ta);
-        } else {
-          const tx = document.createElement('div');
-          tx.className = 'textbox';
-          tx.dataset.id = ctrl.CID;
-          tx.textContent = props.DEFAULT != null ? String(props.DEFAULT) : '';
-          common.appendChild(tx);
-        }
+        const ta = document.createElement('textarea');
+        ta.className = 'eformTextBox';
+        ta.setAttribute('data-id', ctrl.CID || ctrl.ID);   // use CID as your scripts expect
+        ta.tabIndex = 0;
+
+        // initial value (use DEFAULT if present)
+        ta.value = props.DEFAULT != null ? String(props.DEFAULT) : '';
+
+        // fill the absolute wrapper
+        ta.style.width = '100%';
+        ta.style.height = '100%';
+        ta.style.resize = 'none';
+        ta.style.borderStyle = 'solid';
+        ta.style.textAlign = 'left';
+        ta.style.backgroundColor = '#ffffff';
+        ta.style.fontSize = (ctrl.FSIZE != null ? ctrl.FSIZE : 9) + 'px';
+
+        // single-line vs multi-line height is already handled by the wrapper (H)
+        // so we always use a <textarea> here
+
+        common.appendChild(ta);
         parentNode.appendChild(common);
         break;
-      }
+        }
       case 2: { // Calendar
         const tx = document.createElement('div');
         tx.className = 'textbox';
@@ -1083,7 +1091,9 @@ function setSelectIndex(sel, idx) {
     txtLims.forEach((txtLim) => {
         txtLim.dataset.toggle = "tooltip"
         txtLim.style.padding = "0rem"
+        console.log('txtLim', txtLim)
         txtLim.addEventListener('focusin', function (e) {
+            console.log('focusin')
             txtLim.style.height = "63px"
         });
         txtLim.addEventListener('focusout', function (e) {
