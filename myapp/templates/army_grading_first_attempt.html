@@ -1,0 +1,672 @@
+{# templates/army_grading.html #}
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>MF_Advanced_Army_Grading_Concept</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --gap: 10px; --card: #fff; --ink: #111; --muted: #666; --line: #e7e7e7; }
+    * { box-sizing: border-box; }
+    html, body { margin:0; padding:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:var(--ink); }
+    .wrap { max-width: 1400px; margin: 24px auto; padding: 0 16px 48px; }
+    h1 { font-size: 1.25rem; margin: 0 0 16px; }
+    form { display: grid; gap: var(--gap); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--gap); }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap); }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+    .title { font-weight: 600; margin-bottom: 10px; display:flex; align-items:center; justify-content:space-between; }
+    .row { display:flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    label { font-size: .9rem; color: var(--muted); margin-right: 4px; }
+    input[type=text], input[type=date], select, textarea {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff;
+    }
+    textarea { min-height: 72px; resize: vertical; }
+    .btn { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: #f7f7f7; cursor: pointer; font-size: .9rem; }
+    .btn.secondary { background: #eef3ff; }
+    .btn.warn { background: #fff3f2; }
+    .btn:active { transform: translateY(1px); }
+    .kicker { font-size: .82rem; color: var(--muted); }
+    .stack { display: grid; gap: 6px; }
+    .stack-row { display:grid; grid-template-columns: 110px 1fr; gap: 8px; align-items: center; }
+    .pill { font-size: .8rem; padding: 2px 8px; border-radius: 999px; background:#f0f0f0; }
+    .muted { color:var(--muted); }
+    .listbox { height: 160px; }
+    .footnote { font-size: .85rem; color: var(--muted); }
+    .hr { height:1px; background: var(--line); margin: 12px 0; }
+    .right-note { font-size: .85rem; color: var(--muted); text-align:right; }
+    .tight { gap:6px; }
+    .badge { font-size:.75rem; background:#f5f5ff; border:1px solid #e5e7ff; color:#2b2b7f; padding:2px 6px; border-radius:6px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Army Grading and Limitations</h1>
+
+  <form method="post" action="">
+    {% csrf_token %}
+
+    <!-- Patient banner -->
+    <div class="card">
+      <div class="title">
+        <div><strong id="chasmPatientBanner">[Patient Banner]</strong></div>
+        <div class="row tight">
+          <label for="chkBolSet" class="muted">Add to current lims</label>
+          <input type="checkbox" id="chkBolSet" name="chkBolSet" />
+          <button type="button" class="btn" id="btnReset">Reset to Original Values</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <!-- From/To Grade + label column -->
+      <div class="card">
+        <div class="title">Grades</div>
+        <div class="row">
+          <div style="flex:1">
+            <label for="LBFromGrade">From</label>
+            <select id="LBFromGrade" name="LBFromGrade" size="10" class="listbox" multiple>
+                <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+                <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label for="LBToGrade">To</label>
+            <select id="LBToGrade" name="LBToGrade" size="10" class="listbox" multiple>
+              <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+                <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option>
+            </select>
+            <div class="footnote kicker">Calculated using From and To grades</div>
+          </div>
+          <div style="flex:1" class="stack">
+            <div class="pill">MFD</div>
+            <div class="pill">MFD E2</div>
+            <div class="pill">MLD T</div>
+            <div class="pill">MLD P</div>
+            <div class="pill">MND T</div>
+            <div class="pill">MND P</div>
+            <div class="pill">Preg E6</div>
+            <div class="pill">P0</div>
+            <div class="pill">P8</div>
+            <div class="pill">P7 MLD T</div>
+            <div class="pill">P7 MLD P</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- P U L H H E E M S -->
+      <div class="card">
+        <div class="title">PULHHEEMS</div>
+        <div class="grid-4">
+          <div class="stack">
+            <label>P</label>
+            <select id="CBPulP" name="CBPulP">
+              <option>2</option><option>3</option><option>4</option><option>7</option><option>8</option><option>0</option>
+            </select>
+          </div>
+          <div class="stack">
+            <label>U</label>
+            <select id="CBPulU" name="CBPulU">
+             <option>2</option><option>3</option><option>4</option><option>7</option><option>8</option><option>0</option>
+            </select>
+          </div>
+          <div class="stack">
+            <label>L</label>
+            <select id="CBPulL" name="CBPulL">
+               <option>2</option><option>3</option><option>4</option><option>7</option><option>8</option><option>0</option>
+            </select>
+          </div>
+          <div class="stack">
+            <label>H</label>
+            <div class="badge">R1 L1</div>
+          </div>
+          <div class="stack">
+            <label>E</label>
+            <div class="badge">R1/ L1/</div>
+          </div>
+          <div class="stack">
+            <label>M</label>
+            <select id="CBPulM" name="CBPulM">
+              <option>2</option><option>3</option><option>4</option><option>7</option><option>8</option><option>0</option>
+            </select>
+          </div>
+          <div class="stack">
+            <label>S</label>
+            <select id="CBPulS" name="CBPulS">
+              <option>2</option><option>3</option><option>4</option><option>7</option><option>8</option><option>0</option>
+            </select>
+          </div>
+          <div class="stack">
+            <label>MDS</label>
+            <div class="badge">Full</div>
+          </div>
+          <div class="stack">
+            <label>T/P</label>
+            <div class="badge">N/A</div>
+          </div>
+          <div class="stack">
+            <label>MES</label>
+            <div class="row tight">
+              <span class="pill">A</span>
+              <span class="pill">L</span>
+              <span class="pill">M</span>
+              <span class="pill">E</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Factors & Risk quick-toggles -->
+      <div class="card">
+        <div class="title">Field Conditions & Risk</div>
+        <div class="grid-2">
+          <div class="stack">
+            <div class="row tight"><input type="checkbox" id="chkFC1"><label for="chkFC1">Cover/Prone</label></div>
+            <div class="row tight"><input type="checkbox" id="chkFC2"><label for="chkFC2">Short Run</label></div>
+            <div class="row tight"><input type="checkbox" id="chkFC3"><label for="chkFC3">Carry Bergen</label></div>
+            <div class="row tight"><input type="checkbox" id="chkFC4"><label for="chkFC4">Body Armour</label></div>
+            <div class="row tight"><input type="checkbox" id="chkFC5"><label for="chkFC5">2hrs PPE</label></div>
+          </div>
+          <div class="stack">
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtRisk" data-value="Incapacitation - Low">Incapacitation - Low</button>
+              <button type="button" class="btn" data-fill="#txtRisk" data-value="Worsening - Low">Worsening - Low</button>
+            </div>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtRisk" data-value="Primary Care - Low">Primary Care - Low</button>
+              <button type="button" class="btn" data-fill="#txtRisk" data-value="Rehab - Low">Rehab - Low</button>
+            </div>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtRisk" data-value="Emergency Evac - Low">Emergency Evac - Low</button>
+              <button type="button" class="btn" data-fill="#txtRisk" data-value="Overall - Low">Overall - Low</button>
+            </div>
+            <input type="text" id="txtRisk" name="txtRisk" placeholder="Risk summary…" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Limitations (Ops & Work) -->
+    <div class="card">
+      <div class="title">Operational Limitations</div>
+      <div class="stack">
+        <div class="stack-row">
+          <label for="txtLimOps">Ops</label>
+          <input id="txtLimOps" name="txtLimOps" type="text" placeholder="Ops…" />
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="grid-3">
+        <!-- Column 1 -->
+        <div class="stack">
+          <div class="stack-row">
+            <label>Weight</label>
+            <div class="row" style="gap:6px; flex-wrap:wrap;">
+              <button type="button" class="btn" data-fill="#txtLimWeight" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimWeight" data-value="Not advised">Not advised</button>
+              <button type="button" class="btn warn" data-fill="#txtLimWeight" data-value="15kg only">15kg only</button>
+              <select id="drpLimWeight" name="drpLimWeight">
+               <option>Helm</option><option>20kg</option><option>25kg</option><option>30kg</option><option>35kg</option>
+              </select>
+            </div>
+          </div>
+          <input id="txtLimWeight" name="txtLimWeight" type="text" placeholder="Weight note…" />
+
+          <div class="stack-row">
+            <label>Infantry</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimInfantry" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimInfantry" data-value="Not advised">Not advised</button>
+              <button type="button" class="btn warn" data-fill="#txtLimInfantry" data-value="No digging/sandbagging">No digging/sandbagging</button>
+            </div>
+          </div>
+          <input id="txtLimInfantry" name="txtLimInfantry" type="text" placeholder="Infantry note…" />
+
+          <div class="stack-row">
+            <label>On Foot</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimOnFoot" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimOnFoot" data-value="Not advised">Not advised</button>
+              <button type="button" class="btn warn" data-fill="#txtLimOnFoot" data-value="15kg only">15kg only</button>
+              <button type="button" class="btn warn" data-fill="#txtLimOnFoot" data-value="No weight">No weight</button>
+            </div>
+          </div>
+          <input id="txtLimOnFoot" name="txtLimOnFoot" type="text" placeholder="On foot note…" />
+        </div>
+
+        <!-- Column 2 -->
+        <div class="stack">
+          <div class="stack-row">
+            <label>Trade</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimTrade" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimTrade" data-value="Not advised">Not advised</button>
+              <button type="button" class="btn secondary" data-fill="#txtLimTrade" data-value="Within App9 Restrictions">Within App9 Restrictions</button>
+            </div>
+          </div>
+          <input id="txtLimTrade" name="txtLimTrade" type="text" placeholder="Trade note…" />
+
+          <div class="stack-row">
+            <label>Field</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimField" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimField" data-value="Not advised">Not advised</button>
+              <button type="button" class="btn secondary" data-fill="#txtLimField" data-value="Bed">Bed</button>
+              <button type="button" class="btn secondary" data-fill="#txtLimField" data-value="Camp cot">Camp cot</button>
+            </div>
+          </div>
+          <input id="txtLimField" name="txtLimField" type="text" placeholder="Field note…" />
+
+          <div class="stack-row">
+            <label>Mov/Fire</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimMovFire" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimMovFire" data-value="Not advised">Not advised</button>
+              <button type="button" class="btn secondary" data-fill="#txtLimMovFire" data-value="Within App9 Restrictions">Within App9 Restrictions</button>
+            </div>
+          </div>
+          <input id="txtLimMovFire" name="txtLimMovFire" type="text" placeholder="Movement/fire note…" />
+        </div>
+
+        <!-- Column 3 -->
+        <div class="stack">
+          <div class="stack-row">
+            <label>Ex/TSO</label>
+            <input id="txtLimExTSO" name="txtLimExTSO" type="text" placeholder="Exercise/TSO…" />
+          </div>
+
+          <div class="stack-row">
+            <label>Noise</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimNoise" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimNoise" data-value="SA80 Only">SA80 Only</button>
+              <button type="button" class="btn warn" data-fill="#txtLimNoise" data-value="CoC - ensure HP adequate">CoC - ensure HP adequate</button>
+            </div>
+          </div>
+          <input id="txtLimNoise" name="txtLimNoise" type="text" placeholder="Noise note…" />
+
+          <div class="stack-row">
+            <label>Climate</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimClim" data-value="Fine">Fine</button>
+              <button type="button" class="btn secondary" data-fill="#txtLimClim" data-value="Employed in appropriate thermal environment">Employed in appropriate thermal environment</button>
+            </div>
+          </div>
+          <input id="txtLimClim" name="txtLimClim" type="text" placeholder="Climate note…" />
+
+          <div class="stack-row">
+            <label>Other</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimOther" data-value="Fine">Fine</button>
+              <button type="button" class="btn secondary" data-fill="#txtLimOther" data-value="Recommended Health + Safety Assessment">Recommended Health + Safety Assessment</button>
+            </div>
+          </div>
+          <input id="txtLimOther" name="txtLimOther" type="text" placeholder="Other note…" />
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="grid-3">
+        <div class="stack">
+          <div class="stack-row"><label>Specific</label><input id="txtLimSpecific" name="txtLimSpecific" type="text" /></div>
+          <div class="stack-row"><label>Trade</label><input id="txtLimTradeX" name="txtLimTradeX" type="text" /></div>
+        </div>
+
+        <div class="stack">
+          <div class="stack-row">
+            <label>PT Level</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimPT" data-value="3">3</button>
+              <button type="button" class="btn warn" data-fill="#txtLimPT" data-value="2">2</button>
+              <button type="button" class="btn warn" data-fill="#txtLimPT" data-value="1">1</button>
+            </div>
+          </div>
+          <input id="txtLimPT" name="txtLimPT" type="text" placeholder="PT Level…" />
+
+          <div class="stack-row">
+            <label>PT Rx</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimPTRx" data-value="Not Required">Not Required</button>
+              <button type="button" class="btn warn" data-fill="#txtLimPTRx" data-value="Given">Given</button>
+              <button type="button" class="btn warn" data-fill="#txtLimPTRx" data-value="To Obtain">To Obtain</button>
+            </div>
+          </div>
+          <input id="txtLimPTRx" name="txtLimPTRx" type="text" placeholder="PT Rx…" />
+
+          <div class="stack-row">
+            <label>Rehab</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimRehab" data-value="No risk if interrupted">No risk if interrupted</button>
+              <button type="button" class="btn warn" data-fill="#txtLimRehab" data-value="Risk if interrupted">Risk if interrupted</button>
+            </div>
+          </div>
+          <input id="txtLimRehab" name="txtLimRehab" type="text" placeholder="Rehab…" />
+        </div>
+
+        <div class="stack">
+          <div class="stack-row"><label>Review</label><input type="date" id="dtReview" name="dtReview"></div>
+          <div class="stack-row"><label>PHC</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimPHC" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimPHC" data-value="Requires ongoing PHC">Requires ongoing PHC</button>
+            </div>
+          </div>
+          <input id="txtLimPHC" name="txtLimPHC" type="text" placeholder="PHC note…" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobility / Equipment / Driving etc. -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="title">Mobility & Duty</div>
+        <div class="stack">
+          <!-- Walking -->
+          <div class="stack-row">
+            <label>Walking</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimWalking" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimWalking" data-value="Barracks Only">Barracks Only</button>
+              <button type="button" class="btn warn" data-fill="#txtLimWalking" data-value="Needs driver if over 100m">Needs driver if over 100m</button>
+            </div>
+          </div>
+          <input id="txtLimWalking" name="txtLimWalking" type="text" />
+
+          <!-- Standing -->
+          <div class="stack-row">
+            <label>Standing</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimStanding" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimStanding" data-value="Needs chair">Needs chair</button>
+              <button type="button" class="btn warn" data-fill="#txtLimStanding" data-value="Avoid standing over 5 mins">Avoid standing over 5 mins</button>
+            </div>
+          </div>
+          <input id="txtLimStanding" name="txtLimStanding" type="text" />
+
+          <!-- Sitting -->
+          <div class="stack-row">
+            <label>Sitting</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimSitting" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimSitting" data-value="Stand 5 in 30">Stand 5 in 30</button>
+              <button type="button" class="btn warn" data-fill="#txtLimSitting" data-value="Needs work place assess">Needs work place assess</button>
+            </div>
+          </div>
+          <input id="txtLimSitting" name="txtLimSitting" type="text" />
+
+          <!-- Lifting -->
+          <div class="stack-row">
+            <label>Lifting</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimLifting" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimLifting" data-value="Avoid All">Avoid All</button>
+              <button type="button" class="btn warn" data-fill="#txtLimLifting" data-value="5kg">5kg</button>
+              <button type="button" class="btn warn" data-fill="#txtLimLifting" data-value="10kg">10kg</button>
+            </div>
+          </div>
+          <input id="txtLimLifting" name="txtLimLifting" type="text" />
+
+          <!-- Hours -->
+          <div class="stack-row">
+            <label>Hours</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimHours" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimHours" data-value="8hrs Day Only">8hrs Day Only</button>
+              <button type="button" class="btn warn" data-fill="#txtLimHours" data-value="37.5hrs pw">37.5hrs pw</button>
+              <button type="button" class="btn warn" data-fill="#txtLimHours" data-value="Freq rest">Freq rest</button>
+            </div>
+          </div>
+          <input id="txtLimHours" name="txtLimHours" type="text" />
+
+          <!-- Work -->
+          <div class="stack-row">
+            <label>Work</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimWork" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimWork" data-value="Desk">Desk</button>
+              <button type="button" class="btn warn" data-fill="#txtLimWork" data-value="Ground">Ground</button>
+              <button type="button" class="btn warn" data-fill="#txtLimWork" data-value="No Hs">No Hs</button>
+              <button type="button" class="btn warn" data-fill="#txtLimWork" data-value="Thermal">Thermal</button>
+            </div>
+          </div>
+          <input id="txtLimWork" name="txtLimWork" type="text" />
+
+          <!-- March/Drill -->
+          <div class="stack-row">
+            <label>March/Drill</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimMarch" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimMarch" data-value="Neither">Neither</button>
+              <button type="button" class="btn warn" data-fill="#txtLimMarch" data-value="No Marching">No Marching</button>
+              <button type="button" class="btn warn" data-fill="#txtLimMarch" data-value="No Drill">No Drill</button>
+            </div>
+          </div>
+          <input id="txtLimMarch" name="txtLimMarch" type="text" />
+
+          <!-- Guard -->
+          <div class="stack-row">
+            <label>Guard</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimGuard" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimGuard" data-value="Guard Room Only - No weapons/patrolling">Guard Room Only - No weapons/patrolling</button>
+            </div>
+          </div>
+          <input id="txtLimGuard" name="txtLimGuard" type="text" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="title">Equipment, Ranges & Safety</div>
+        <div class="stack">
+          <!-- Boots -->
+          <div class="stack-row">
+            <label>Boots</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimBoots" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimBoots" data-value="PCRF Assess">PCRF Assess</button>
+              <button type="button" class="btn warn" data-fill="#txtLimBoots" data-value="Cold Weather">Cold Weather</button>
+              <button type="button" class="btn warn" data-fill="#txtLimBoots" data-value="Non-issue">Non-issue</button>
+            </div>
+          </div>
+          <input id="txtLimBoots" name="txtLimBoots" type="text" />
+
+          <!-- Clothing -->
+          <div class="stack-row">
+            <label>Clothing</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimCloth" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimCloth" data-value="x Head dress">x Head dress</button>
+              <button type="button" class="btn warn" data-fill="#txtLimCloth" data-value="Full Cold Weather Clothing">Full Cold Weather Clothing</button>
+            </div>
+          </div>
+          <input id="txtLimCloth" name="txtLimCloth" type="text" />
+
+          <!-- CBA -->
+          <div class="stack-row">
+            <label>CBA</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimCBA" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimCBA" data-value="Not advised">Not advised</button>
+              <button type="button" class="btn warn" data-fill="#txtLimCBA" data-value="ECBA Only">ECBA Only</button>
+            </div>
+          </div>
+          <input id="txtLimCBA" name="txtLimCBA" type="text" />
+
+          <!-- Helmet -->
+          <div class="stack-row">
+            <label>Helmet</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimHelmet" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimHelmet" data-value="Not advised">Not advised</button>
+            </div>
+          </div>
+          <input id="txtLimHelmet" name="txtLimHelmet" type="text" />
+
+          <!-- Functional -->
+          <div class="stack-row">
+            <label>Functional</label>
+            <input id="txtLimFunctional" name="txtLimFunctional" type="text" />
+          </div>
+
+          <!-- Driving -->
+          <div class="stack-row">
+            <label>Driving</label>
+            <div class="row tight" style="flex:1">
+              <button type="button" class="btn" data-fill="#txtLimDriving" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimDriving" data-value="Not advised">Not advised</button>
+              <button type="button" class="btn warn" data-fill="#txtLimDriving" data-value="White Fl">White Fl</button>
+              <select id="drpLimDriving" name="drpLimDriving">
+                <option>No A/C</option><option>No A/B/C</option><option>B Only</option><option>No+DVLA</option>
+              </select>
+            </div>
+          </div>
+          <input id="txtLimDriving" name="txtLimDriving" type="text" />
+
+          <!-- Passenger -->
+          <div class="stack-row">
+            <label>Passenger</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimPass" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimPass" data-value="Metal Only">Metal Only</button>
+              <button type="button" class="btn warn" data-fill="#txtLimPass" data-value="No A (Tracked) Vehicles">No A (Tracked) Vehicles</button>
+            </div>
+          </div>
+          <input id="txtLimPass" name="txtLimPass" type="text" />
+
+          <!-- Weapons -->
+          <div class="stack-row">
+            <label>Weapons</label>
+            <div class="row tight" style="flex:1">
+              <button type="button" class="btn" data-fill="#txtLimWeapons" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimWeapons" data-value="No Handling">No Handling</button>
+              <button type="button" class="btn warn" data-fill="#txtLimWeapons" data-value="No Live">No Live</button>
+              <select id="drpLimWeapons" name="drpLimWeapons">
+               <option>SA80 Only</option><option>ACMT Only</option><option>WHT (drill rounds) Only</option>
+              </select>
+            </div>
+          </div>
+          <input id="txtLimWeapons" name="txtLimWeapons" type="text" />
+
+          <!-- Ranges -->
+          <div class="stack-row">
+            <label>Ranges</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimRanges" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimRanges" data-value="None">None</button>
+              <button type="button" class="btn warn" data-fill="#txtLimRanges" data-value="Static Only">Static Only</button>
+              <button type="button" class="btn warn" data-fill="#txtLimRanges" data-value="Minimize">Minimize</button>
+            </div>
+          </div>
+          <input id="txtLimRanges" name="txtLimRanges" type="text" />
+
+          <!-- Hs -->
+          <div class="stack-row">
+            <label>Hs</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimHs" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimHs" data-value="Not advised">Not advised</button>
+            </div>
+          </div>
+          <input id="txtLimHs" name="txtLimHs" type="text" />
+
+          <!-- WPA -->
+          <div class="stack-row">
+            <label>WPA</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimWPA" data-value="Fine">Fine</button>
+              <button type="button" class="btn warn" data-fill="#txtLimWPA" data-value="Work Place Assessment Advised by Unit">Work Place Assessment Advised by Unit</button>
+            </div>
+          </div>
+          <input id="txtLimWPA" name="txtLimWPA" type="text" />
+
+          <!-- Safety -->
+          <div class="stack-row">
+            <label>Safety</label>
+            <input id="txtLimSafety" name="txtLimSafety" type="text" />
+          </div>
+
+          <!-- Med Review -->
+          <div class="stack-row">
+            <label>Med Review</label>
+            <div class="row tight" style="flex:1">
+              <button type="button" class="btn" data-fill="#txtLimMedReview" data-value="No">No</button>
+              <button type="button" class="btn warn" data-fill="#txtLimMedReview" data-value="Yes">Yes</button>
+              <button type="button" class="btn warn" data-fill="#txtLimMedReview" data-value="Yes - if Role Change">Yes - if Role Change</button>
+              <select id="drpLimMedReview" name="drpLimMedReview">
+                <option>No-Fit current</option><option>No-Unless Change</option><option>Yes-ROHT</option>
+              </select>
+            </div>
+          </div>
+          <input id="txtLimMedReview" name="txtLimMedReview" type="text" />
+
+          <!-- ROHT -->
+          <div class="stack-row">
+            <label>ROHT</label>
+            <div class="row tight">
+              <button type="button" class="btn" data-fill="#txtLimROHT" data-value="No">No</button>
+              <button type="button" class="btn warn" data-fill="#txtLimROHT" data-value="Yes">Yes</button>
+              <button type="button" class="btn warn" data-fill="#txtLimROHT" data-value="Yes - if Role Change">Yes - if Role Change</button>
+              <select id="drpLimROHT" name="drpLimROHT">
+                <option>No-Fit current</option><option>No-Unless Change</option>
+              </select>
+            </div>
+          </div>
+          <input id="txtLimROHT" name="txtLimROHT" type="text" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Boards & Previous PULs / Guidance / Warnings -->
+    <div class="grid-3">
+      <div class="card">
+        <div class="title">Board</div>
+        <select id="LBBoard" name="LBBoard" size="6" class="listbox" multiple>
+          <option>Annual</option><option>FWAB(T)</option><option>FWAB(P)</option><option>FMB</option><option>MOD(A)</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div class="title">Guidance</div>
+        <textarea id="TBGuidance" name="TBGuidance"></textarea>
+        <div class="title" style="margin-top:8px;">Warnings</div>
+        <textarea id="TBWarnings" name="TBWarnings"></textarea>
+      </div>
+
+      <div class="card">
+        <div class="title">Previous PULHHEEMS</div>
+        <textarea id="LBPrevPULs" name="LBPrevPULs" class="listbox" readonly>
+Date            P  U  L  H  H  E  E  M  S  MES                 T/P   MDS
+26/02/22       2  2  2  1  1  1  1  2  2  A4 L1 M4 E1         Perm  Full
+26/09/21       3  2  3  1  1  1  1  2  2  A4 L3 M4 E3         Temp  Liml
+        </textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content: flex-end;">
+        <button class="btn" type="submit">Save</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Small helper: any button with data-fill fills/extends the target input
+  document.addEventListener('click', function(e){
+    const b = e.target.closest('button[data-fill]');
+    if(!b) return;
+    const sel = b.getAttribute('data-fill');
+    const v = b.getAttribute('data-value') || b.textContent.trim();
+    const el = document.querySelector(sel);
+    if(!el) return;
+    if(!el.value) { el.value = v; }
+    else if(!el.value.includes(v)) { el.value = el.value.trim() + (el.value.endsWith('.') ? ' ' : ' ') + v; }
+  });
+</script>
+</body>
+</html>

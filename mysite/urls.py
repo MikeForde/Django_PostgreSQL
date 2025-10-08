@@ -32,4 +32,5 @@ urlpatterns = [
     path('dental/', views.dental, name='dental'),
     path('audiogram/analysis/', views.audiogram_analysis, name='audiogram_analysis'),
     path("audio/", views.audio_poc, name="audio_poc"),
+    path("army/grading/", views.army_grading, name="army_grading"),
 ]

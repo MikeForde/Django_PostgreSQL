@@ -19,6 +19,13 @@ from django.views.decorators.http import require_GET
 
 TARGETPATH_RE = re.compile(r'^TARGETPATH\s*=\s*(.*)\s*$', re.IGNORECASE | re.MULTILINE)
 
+def army_grading(request):
+    if request.method == "POST":
+        # TODO: persist request.POST as needed
+        # return redirect(...) or show a success message
+        pass
+    return render(request, "army_grading.html")
+
 def _read_targetpath_from_content(text):
     """
     Find TARGETPATH=... inside the TEX header. Returns a cleaned path string or ''.

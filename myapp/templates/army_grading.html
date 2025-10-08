@@ -1,0 +1,1975 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Audio POC | TT-Mick-P{% endblock %}
+
+{% block content %}
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Army Grading and Limitations</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    :root{
+      --page-w:1686px; /* from <W> */
+      --page-h:840px;  /* from <H> */
+      --font-family: Arial, sans-serif; /* from <FONTNAME_F> */
+      --default-fs:9px; /* from <FSIZE_F> */
+    }
+    body{margin:0;background:#f2f2f2;font-family:var(--font-family)}
+    .page{
+      position:relative;
+      width:var(--page-w);
+      height:var(--page-h);
+      margin:16px auto;
+      box-shadow:0 8px 24px rgba(0,0,0,.15);
+      background:#fff;
+      overflow:hidden;
+    }
+    .abs{position:absolute; box-sizing:border-box;}
+    .label{display:flex; align-items:center; justify-content:flex-start; padding:2px 6px; white-space:pre-wrap}
+    .center{justify-content:center; text-align:center}
+    .right{justify-content:flex-end; text-align:right}
+    .btn{border:1px solid #333; border-radius:4px; padding:0 8px; height:100%; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none}
+    .textbox{border:1px solid #666; border-radius:4px; padding:2px 6px; height:100%; display:flex; align-items:center; background:#fff}
+    .textarea{border:1px solid #666; border-radius:4px; padding:6px; background:#fff; overflow:auto}
+    .checkbox{display:flex; align-items:center; gap:6px}
+    .select, .listbox{border:1px solid #666; border-radius:4px; background:#fff; height:100%; padding:2px 10px; display:flex; align-items:center}
+    .panel{border:1px solid #999; border-radius:6px; overflow:hidden}
+    .hidden{display:none !important}
+    /* Allow child absolute items inside panels to be relative to panel */
+    .panel-inner{position:relative; width:100%; height:100%}
+    /* Safety: buttons with very small heights still clickable */
+    .btn:where([data-h]){min-height:20px}
+  </style>
+</head>
+<body>
+  <h3>Working In Progress - Non-Interactive Render Only (Currently)</h3>
+  <div id="page" class="page" role="document" aria-label="Army Grading and Limitations">
+  </div>
+  <script type="application/json" id="eform-data">
+{
+  "meta": {"FONTNAME_F": "Arial", "FSIZE_F": 9.0, "PAGEW": 100, "PAGEH": 23},
+  "tpccp": [
+    {"ID":"OPT2722", "CID":"chasmPatientBanner", "CTYPE":12, "PARENT":"PG23271", "X":605, "Y":643, "FSIZE":8.25, "BCOL":16777215, "H":52, "W":747, "TAB":0, "STYLE":"eformPanel"},
+    {"ID":"OPT2095", "CID":"LBFromGrade", "CTYPE":10, "PARENT":"PG23271", "X":10, "Y":63, "FSIZE":8.25, "BCOL":-657956, "H":270, "W":33, "TAB":1, "DISPLAY":true, "STYLE":"eformListBox"},
+    {"ID":"OPT2097", "CID":"LBToGrade", "CTYPE":10, "PARENT":"PG23271", "X":106, "Y":63, "FSIZE":8.25, "BCOL":-657956, "H":270, "W":33, "TAB":2, "DISPLAY":true, "STYLE":"eformListBox"},
+    {"ID":"OPT2098", "CID":"Label2", "CTYPE":8, "PARENT":"PG23271", "TEXT":"MFD", "X":49, "Y":63, "FSIZE":9.0, "BCOL":-4128832, "H":20, "W":51, "TAB":3, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2099", "CID":"Label3", "CTYPE":8, "PARENT":"PG23271", "TEXT":"MFD E2", "X":49, "Y":86, "FSIZE":9.0, "BCOL":-4128832, "H":20, "W":51, "TAB":4, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2100", "CID":"Label4", "CTYPE":8, "PARENT":"PG23271", "TEXT":"MLD T", "X":49, "Y":109, "FSIZE":9.0, "BCOL":-64, "H":20, "W":51, "TAB":5, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2101", "CID":"Label5", "CTYPE":8, "PARENT":"PG23271", "TEXT":"MLD P", "X":49, "Y":132, "FSIZE":9.0, "BCOL":-64, "H":20, "W":51, "TAB":6, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2102", "CID":"Label6", "CTYPE":8, "PARENT":"PG23271", "TEXT":"MND T", "X":49, "Y":154, "FSIZE":9.0, "BCOL":-8000, "H":20, "W":51, "TAB":7, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2103", "CID":"Label7", "CTYPE":8, "PARENT":"PG23271", "TEXT":"MND P", "X":49, "Y":177, "FSIZE":9.0, "BCOL":-8000, "H":20, "W":51, "TAB":8, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2104", "CID":"Label8", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Preg E6", "X":49, "Y":200, "FSIZE":9.0, "BCOL":-8000, "H":20, "W":51, "TAB":9, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2105", "CID":"Label9", "CTYPE":8, "PARENT":"PG23271", "TEXT":"P0", "X":49, "Y":223, "FSIZE":9.0, "BCOL":-16192, "H":20, "W":51, "TAB":10, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2106", "CID":"Label10", "CTYPE":8, "PARENT":"PG23271", "TEXT":"P8", "X":49, "Y":246, "FSIZE":9.0, "BCOL":-16192, "H":20, "W":51, "TAB":11, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2107", "CID":"Label11", "CTYPE":8, "PARENT":"PG23271", "TEXT":"P7 MLD T", "X":44, "Y":269, "FSIZE":9.0, "BCOL":-2894893, "H":20, "W":62, "TAB":12, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2108", "CID":"Label12", "CTYPE":8, "PARENT":"PG23271", "TEXT":"P7 MLD P", "X":44, "Y":292, "FSIZE":9.0, "BCOL":-2894893, "H":20, "W":62, "TAB":13, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2109", "CID":"Label13", "CTYPE":8, "PARENT":"PG23271", "TEXT":"To", "X":106, "Y":36, "FSIZE":8.25, "BCOL":-657956, "H":23, "W":37, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2110", "CID":"Label14", "CTYPE":8, "PARENT":"PG23271", "TEXT":"E2", "X":145, "Y":37, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":74, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2112", "CID":"Label15", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Limited", "X":225, "Y":37, "FSIZE":8.25, "BCOL":-64, "H":23, "W":84, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2114", "CID":"Label16", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Severe", "X":315, "Y":36, "FSIZE":8.25, "BCOL":-8000, "H":23, "W":84, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2116", "CID":"btnReset", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Reset to Original Values", "X":10, "Y":11, "FSIZE":9.0, "BCOL":-32640, "H":23, "W":167, "TAB":0, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2117", "CID":"chkBolSet", "CTYPE":3, "PARENT":"PG23271", "TEXT":"CheckBox1", "X":191, "Y":10, "FSIZE":9.0, "BCOL":-657956, "H":24, "W":28, "TAB":0, "DISPLAY":true, "STYLE":"eformCheckBox"},
+    {"ID":"OPT2118", "CID":"Label17", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Add to current lims", "X":207, "Y":9, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":123, "TAB":23, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2119", "CID":"CBPulP", "CTYPE":4, "PARENT":"PG23271", "X":437, "Y":38, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":25, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2120", "CID":"Label18", "CTYPE":8, "PARENT":"PG23271", "TEXT":"P", "X":407, "Y":37, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2121", "CID":"Label19", "CTYPE":8, "PARENT":"PG23271", "TEXT":"U", "X":407, "Y":66, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2122", "CID":"CBPulU", "CTYPE":4, "PARENT":"PG23271", "X":437, "Y":67, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":26, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2123", "CID":"Label20", "CTYPE":8, "PARENT":"PG23271", "TEXT":"L", "X":407, "Y":95, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2124", "CID":"CBPulL", "CTYPE":4, "PARENT":"PG23271", "X":437, "Y":96, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":27, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2125", "CID":"Label21", "CTYPE":8, "PARENT":"PG23271", "TEXT":"H", "X":407, "Y":122, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2126", "CID":"TBPulH2", "CTYPE":8, "PARENT":"PG23271", "TEXT":"R1 L1", "X":437, "Y":122, "FSIZE":9.0, "BCOL":-657931, "H":23, "W":43, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2127", "CID":"TBPulE2", "CTYPE":8, "PARENT":"PG23271", "TEXT":"R1/ L1/", "X":437, "Y":145, "FSIZE":9.0, "BCOL":-657931, "H":23, "W":52, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2128", "CID":"Label24", "CTYPE":8, "PARENT":"PG23271", "TEXT":"E", "X":407, "Y":145, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2129", "CID":"Label25", "CTYPE":8, "PARENT":"PG23271", "TEXT":"M", "X":407, "Y":170, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2130", "CID":"CBPulM", "CTYPE":4, "PARENT":"PG23271", "X":437, "Y":171, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":28, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2131", "CID":"Label26", "CTYPE":8, "PARENT":"PG23271", "TEXT":"S", "X":407, "Y":199, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2132", "CID":"CBPulS", "CTYPE":4, "PARENT":"PG23271", "X":437, "Y":200, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":29, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2133", "CID":"TBMDS", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Full", "X":450, "Y":231, "FSIZE":9.0, "BCOL":-657931, "H":23, "W":67, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2134", "CID":"TBPermTemp2", "CTYPE":8, "PARENT":"PG23271", "TEXT":"N/A", "X":450, "Y":255, "FSIZE":9.0, "BCOL":-657931, "H":23, "W":52, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2135", "CID":"Label27", "CTYPE":8, "PARENT":"PG23271", "TEXT":"A", "X":406, "Y":284, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":41, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2136", "CID":"CBJMESA", "CTYPE":4, "PARENT":"PG23271", "X":406, "Y":310, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":41, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2137", "CID":"Label28", "CTYPE":8, "PARENT":"PG23271", "TEXT":"L", "X":440, "Y":284, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2138", "CID":"CBJMESL", "CTYPE":4, "PARENT":"PG23271", "X":440, "Y":310, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":42, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2139", "CID":"Label29", "CTYPE":8, "PARENT":"PG23271", "TEXT":"M", "X":474, "Y":284, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2140", "CID":"CBJMESM", "CTYPE":4, "PARENT":"PG23271", "X":474, "Y":310, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":43, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2141", "CID":"Label30", "CTYPE":8, "PARENT":"PG23271", "TEXT":"E", "X":508, "Y":284, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2142", "CID":"CBJMESE", "CTYPE":4, "PARENT":"PG23271", "X":508, "Y":310, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":44, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2143", "CID":"Label31", "CTYPE":8, "PARENT":"PG23271", "TEXT":"MDS", "X":407, "Y":231, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":37, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2144", "CID":"Label32", "CTYPE":8, "PARENT":"PG23271", "TEXT":"T/P", "X":407, "Y":254, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":37, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2145", "CID":"LBBoard", "CTYPE":10, "PARENT":"PG23271", "X":39, "Y":344, "FSIZE":9.0, "BCOL":-657956, "H":139, "W":131, "TAB":3, "DISPLAY":true, "STYLE":"eformListBox"},
+    {"ID":"OPT2146", "CID":"Label33", "CTYPE":8, "PARENT":"PG23271", "TEXT":"(Calculated using\n&lt;br&gt;From and To\n&lt;br&gt;grades)", "X":176, "Y":359, "FSIZE":9.0, "BCOL":-657956, "H":103, "W":82, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2147", "CID":"LBPrevPULs", "CTYPE":10, "PARENT":"PG23271", "X":39, "Y":552, "FSIZE":9.0, "BCOL":-657956, "H":139, "W":495, "TAB":0, "DISPLAY":true, "READONLY":"true</READONLY>", "STYLE":"eformListBox"},
+    {"ID":"OPT2148", "CID":"Label34", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Previous PULHHEEMS", "X":39, "Y":529, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":179, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2149", "CID":"chkFC1", "CTYPE":3, "PARENT":"PG23271", "TEXT":"CheckBox1", "X":581, "Y":6, "FSIZE":9.0, "BCOL":-657956, "H":24, "W":18, "TAB":54, "DISPLAY":true, "STYLE":"eformCheckBox"},
+    {"ID":"OPT2150", "CID":"lblFC1", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Cover/Prone", "X":605, "Y":0, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":85, "TAB":55, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2151", "CID":"lblFC2", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Short Run", "X":605, "Y":23, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":85, "TAB":57, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2152", "CID":"chkFC2", "CTYPE":3, "PARENT":"PG23271", "TEXT":"CheckBox1", "X":581, "Y":29, "FSIZE":9.0, "BCOL":-657956, "H":24, "W":18, "TAB":56, "DISPLAY":true, "STYLE":"eformCheckBox"},
+    {"ID":"OPT2153", "CID":"lblFC3", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Carry Bergen", "X":605, "Y":46, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":85, "TAB":59, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2154", "CID":"chkFC3", "CTYPE":3, "PARENT":"PG23271", "TEXT":"CheckBox1", "X":581, "Y":52, "FSIZE":9.0, "BCOL":-657956, "H":24, "W":18, "TAB":58, "DISPLAY":true, "STYLE":"eformCheckBox"},
+    {"ID":"OPT2155", "CID":"lblFC4", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Body Armour", "X":605, "Y":69, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":85, "TAB":61, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2156", "CID":"chkFC4", "CTYPE":3, "PARENT":"PG23271", "TEXT":"CheckBox1", "X":581, "Y":75, "FSIZE":9.0, "BCOL":-657956, "H":24, "W":18, "TAB":60, "DISPLAY":true, "STYLE":"eformCheckBox"},
+    {"ID":"OPT2157", "CID":"lblFC5", "CTYPE":8, "PARENT":"PG23271", "TEXT":"2hrs PPE", "X":605, "Y":92, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":85, "TAB":63, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2158", "CID":"chkFC5", "CTYPE":3, "PARENT":"PG23271", "TEXT":"CheckBox1", "X":581, "Y":98, "FSIZE":9.0, "BCOL":-657956, "H":24, "W":18, "TAB":62, "DISPLAY":true, "STYLE":"eformCheckBox"},
+    {"ID":"OPT2159", "CID":"btnRisk1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Incapacitation - Low", "X":696, "Y":0, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":139, "TAB":64, "DISPLAY":true, "STYLE":"eformButton", "HELPTEXT":"Try some help text</HELPTEXT>"},
+    {"ID":"OPT2160", "CID":"btnRisk2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Worsening - Low", "X":696, "Y":29, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":139, "TAB":65, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2161", "CID":"btnRisk3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Primary Care - Low", "X":696, "Y":58, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":139, "TAB":66, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2162", "CID":"btnRisk4", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Rehab- Low", "X":696, "Y":87, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":139, "TAB":67, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2163", "CID":"btnRisk8", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Overall- Low", "X":841, "Y":87, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":149, "TAB":71, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2164", "CID":"btnRisk7", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Primary Care - Low", "X":841, "Y":58, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":149, "TAB":70, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2165", "CID":"btnRisk6", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Emergency Evac - Low", "X":841, "Y":29, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":149, "TAB":69, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2166", "CID":"btnRisk5", "CTYPE":1, "PARENT":"PG23271", "TEXT":"2nd Care - Low", "X":841, "Y":0, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":149, "TAB":68, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2167", "CID":"ControlAction1", "CTYPE":27, "PARENT":"PG23271", "X":0, "Y":0, "FSIZE":8.25, "BCOL":-1, "H":0, "W":0, "TAB":1, "VISIBLE":"false</VISIBLE>"},
+    {"ID":"OPT2168", "CID":"txtLimOps", "CTYPE":15, "PARENT":"PG23271", "X":605, "Y":127, "FSIZE":9.0, "BCOL":-1, "H":21, "W":334, "TAB":72, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null, "HELPTEXT":"Some text</HELPTEXT>"},
+    {"ID":"OPT2169", "CID":"Label38", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Ops", "X":562, "Y":125, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":37, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2170", "CID":"Label39", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Weight", "X":542, "Y":153, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2171", "CID":"btnLimWeight1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":605, "Y":153, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":75, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2172", "CID":"btnLimInfantry1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":605, "Y":182, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":80, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2173", "CID":"Label40", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Infantry", "X":542, "Y":182, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2174", "CID":"btnLimOnFoot1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":605, "Y":211, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":84, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2175", "CID":"Label41", "CTYPE":8, "PARENT":"PG23271", "TEXT":"On Foot", "X":542, "Y":211, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2176", "CID":"btnLimTrade1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":605, "Y":240, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":89, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2177", "CID":"Label42", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Trade", "X":542, "Y":240, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2178", "CID":"btnLimField1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":605, "Y":269, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":93, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2179", "CID":"Label43", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Field", "X":542, "Y":269, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2180", "CID":"btnLimMovFire1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":605, "Y":300, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":98, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2181", "CID":"Label44", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Mov/Fire", "X":542, "Y":300, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2182", "CID":"btnLimWeight2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Not advised", "X":660, "Y":154, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":76, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2183", "CID":"btnLimInfantry2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Not advised", "X":660, "Y":183, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":81, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2184", "CID":"btnLimOnFoot2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Not advised", "X":660, "Y":212, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":85, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2185", "CID":"btnLimTrade2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Not advised", "X":660, "Y":241, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":90, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2186", "CID":"btnLimField2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Not advised", "X":660, "Y":270, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":94, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2187", "CID":"btnLimMovFire2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Not advised", "X":660, "Y":299, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":99, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2188", "CID":"btnLimWeight3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"15kg only", "X":755, "Y":153, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":77, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2189", "CID":"btnLimInfantry3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"No digging/sandbagging", "X":755, "Y":183, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":184, "TAB":82, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2190", "CID":"drpLimWeight", "CTYPE":4, "PARENT":"PG23271", "X":850, "Y":155, "FSIZE":9.0, "BCOL":-1, "H":23, "W":89, "TAB":78, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2191", "CID":"btnLimOnFoot3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"15kg only", "X":755, "Y":212, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":86, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2192", "CID":"btnLimOnFoot4", "CTYPE":1, "PARENT":"PG23271", "TEXT":"No weight", "X":850, "Y":212, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":87, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2193", "CID":"btnLimTrade3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Within App9 Restrictions", "X":755, "Y":241, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":184, "TAB":91, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2194", "CID":"btnLimField4", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Camp cot", "X":850, "Y":270, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":96, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2195", "CID":"btnLimField3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Bed", "X":755, "Y":270, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":95, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2196", "CID":"btnLimMovFire3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Within App9 Restrictions", "X":755, "Y":299, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":184, "TAB":100, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2197", "CID":"Label45", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Ex/TSO", "X":541, "Y":326, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2198", "CID":"txtLimExTSO", "CTYPE":15, "PARENT":"PG23271", "X":604, "Y":328, "FSIZE":9.0, "BCOL":-1, "H":21, "W":334, "TAB":102, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2199", "CID":"txtLimWeight", "CTYPE":15, "PARENT":"PG23271", "X":945, "Y":156, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":79, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2200", "CID":"txtLimInfantry", "CTYPE":15, "PARENT":"PG23271", "X":945, "Y":185, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":83, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2201", "CID":"txtLimOnFoot", "CTYPE":15, "PARENT":"PG23271", "X":945, "Y":213, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":88, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2202", "CID":"txtLimTrade", "CTYPE":15, "PARENT":"PG23271", "X":945, "Y":243, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":92, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2203", "CID":"txtLimField", "CTYPE":15, "PARENT":"PG23271", "X":945, "Y":270, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":97, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2204", "CID":"txtLimMovFire", "CTYPE":15, "PARENT":"PG23271", "X":945, "Y":299, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":101, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2205", "CID":"txtLimNoise", "CTYPE":15, "PARENT":"PG23271", "X":944, "Y":371, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":106, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2206", "CID":"btnLimNoise4", "CTYPE":1, "PARENT":"PG23271", "TEXT":"CoC - ensure HP adequate", "X":754, "Y":369, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":184, "TAB":105, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2207", "CID":"btnLimNoise3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"SA80 Only", "X":659, "Y":369, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":104, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2208", "CID":"btnLimNoise1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":604, "Y":368, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":103, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2209", "CID":"Label46", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Noise", "X":541, "Y":368, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2210", "CID":"Label47", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Climate", "X":541, "Y":397, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2211", "CID":"txtLimClim", "CTYPE":15, "PARENT":"PG23271", "X":944, "Y":400, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":109, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2212", "CID":"btnLimClim3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Employed in appropriate thermal environment", "X":659, "Y":398, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":279, "TAB":108, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2213", "CID":"btnLimClim1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":604, "Y":397, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":107, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2214", "CID":"Label48", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Other", "X":541, "Y":426, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2215", "CID":"txtLimOther", "CTYPE":15, "PARENT":"PG23271", "X":944, "Y":429, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":112, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2216", "CID":"btnLimOther3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Recommended Health + Safety Assessment", "X":659, "Y":427, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":279, "TAB":111, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2217", "CID":"btnLimOther1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":604, "Y":426, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":110, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2218", "CID":"Label49", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Specific", "X":541, "Y":483, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2219", "CID":"txtLimSpecific", "CTYPE":15, "PARENT":"PG23271", "X":604, "Y":485, "FSIZE":9.0, "BCOL":-1, "H":21, "W":334, "TAB":115, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2220", "CID":"Label50", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Trade", "X":541, "Y":510, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2221", "CID":"txtLimTradeX", "CTYPE":15, "PARENT":"PG23271", "X":604, "Y":512, "FSIZE":9.0, "BCOL":-1, "H":21, "W":334, "TAB":116, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2222", "CID":"Label51", "CTYPE":8, "PARENT":"PG23271", "TEXT":"PT Level", "X":542, "Y":549, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2223", "CID":"btnLimPT2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"1", "X":832, "Y":550, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":107, "TAB":119, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2224", "CID":"btnLimPT3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"2", "X":720, "Y":550, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":106, "TAB":118, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2225", "CID":"btnLimPT1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"3", "X":605, "Y":549, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":109, "TAB":117, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2226", "CID":"Label52", "CTYPE":8, "PARENT":"PG23271", "TEXT":"PT Rx", "X":542, "Y":578, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2227", "CID":"btnLimPTRx4", "CTYPE":1, "PARENT":"PG23271", "TEXT":"To Obtain", "X":832, "Y":579, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":107, "TAB":122, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2228", "CID":"btnLimPTRx3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Given", "X":720, "Y":579, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":106, "TAB":121, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2229", "CID":"btnLimPTRx1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Not Required", "X":605, "Y":578, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":109, "TAB":120, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2230", "CID":"Label53", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Rehab", "X":542, "Y":607, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2231", "CID":"btnLimRehab3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Risk if interrupted", "X":775, "Y":608, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":163, "TAB":124, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2232", "CID":"btnLimRehab1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"No risk if interrupted", "X":605, "Y":607, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":164, "TAB":123, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2233", "CID":"Label54", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Walking", "X":1097, "Y":5, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2234", "CID":"txtLimWalking", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":8, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":140, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2235", "CID":"btnLimWalking3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Needs driver if over 100m", "X":1332, "Y":6, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":182, "TAB":139, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2236", "CID":"btnLimWalking2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Barracks Only", "X":1215, "Y":6, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":111, "TAB":138, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2237", "CID":"btnLimWalking1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":5, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":137, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2238", "CID":"Label55", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Standing", "X":1097, "Y":34, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2239", "CID":"txtLimStanding", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":37, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":145, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2240", "CID":"btnLimStanding3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Avoid standing over 5 mins", "X":1332, "Y":35, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":182, "TAB":144, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2241", "CID":"btnLimStanding2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Needs chair", "X":1215, "Y":35, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":111, "TAB":143, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2242", "CID":"btnLimStanding1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":34, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":142, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2243", "CID":"Label56", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Sitting", "X":1097, "Y":63, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2244", "CID":"txtLimSitting", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":66, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":150, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2245", "CID":"btnLimSitting3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Needs work place assess", "X":1332, "Y":64, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":182, "TAB":149, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2246", "CID":"btnLimSitting2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Stand 5 in 30", "X":1215, "Y":64, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":111, "TAB":148, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2247", "CID":"btnLimSitting1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":63, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":147, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2248", "CID":"Label57", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Lifting", "X":1097, "Y":92, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2249", "CID":"txtLimLifting", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":93, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":156, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2250", "CID":"btnLimLifting3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"5kg", "X":1332, "Y":93, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":79, "TAB":154, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2251", "CID":"btnLimLifting2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Avoid All", "X":1215, "Y":93, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":111, "TAB":153, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2252", "CID":"btnLimLifting1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":92, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":152, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2253", "CID":"btnLimLifting4", "CTYPE":1, "PARENT":"PG23271", "TEXT":"10kg", "X":1415, "Y":93, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":99, "TAB":155, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2254", "CID":"btnLimHours4", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Freq rest", "X":1429, "Y":121, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":85, "TAB":161, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2255", "CID":"Label58", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Hours", "X":1097, "Y":120, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2256", "CID":"txtLimHours", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":121, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":162, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2257", "CID":"btnLimHours6", "CTYPE":1, "PARENT":"PG23271", "TEXT":"37.5hrs pw", "X":1332, "Y":121, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":91, "TAB":160, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2258", "CID":"btnLimHours2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"8hrs Day Only", "X":1215, "Y":121, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":111, "TAB":159, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2259", "CID":"btnLimHours1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":120, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":158, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2260", "CID":"btnLimWork5", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Thermal", "X":1450, "Y":150, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":64, "TAB":168, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2261", "CID":"Label59", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Work", "X":1097, "Y":149, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2262", "CID":"txtLimWork", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":151, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":169, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2263", "CID":"btnLimWork4", "CTYPE":1, "PARENT":"PG23271", "TEXT":"No Hs", "X":1351, "Y":150, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":93, "TAB":167, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2264", "CID":"btnLimWork2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Desk", "X":1215, "Y":150, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":62, "TAB":165, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2265", "CID":"btnLimWork1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":149, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":164, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2266", "CID":"btnLimWork3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Ground", "X":1283, "Y":150, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":62, "TAB":166, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2268", "CID":"Label60", "CTYPE":8, "PARENT":"PG23271", "TEXT":"March/Drill", "X":1081, "Y":178, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":73, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2269", "CID":"btnLimMarch3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"No Marching", "X":1323, "Y":179, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":100, "TAB":173, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2270", "CID":"btnLimMarch2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Neither", "X":1215, "Y":179, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":102, "TAB":172, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2271", "CID":"btnLimMarch1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":178, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":171, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2272", "CID":"Label61", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Guard", "X":1097, "Y":207, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2273", "CID":"txtLimGuard", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":210, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":179, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2274", "CID":"btnLimGuard3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Guard Room Only - No weapons/patrolling", "X":1215, "Y":208, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":299, "TAB":178, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2275", "CID":"btnLimGuard1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":207, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":177, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2276", "CID":"btnLimBoots5", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Non-issue", "X":1434, "Y":237, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":80, "TAB":184, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2277", "CID":"Label62", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Boots", "X":1081, "Y":236, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":73, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2278", "CID":"txtLimBoots", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":237, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":185, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2279", "CID":"btnLimBoots4", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Cold Weather", "X":1330, "Y":237, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":99, "TAB":183, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2280", "CID":"btnLimBoots3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"PCRF Assess", "X":1215, "Y":237, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":109, "TAB":182, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2281", "CID":"btnLimBoots1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":236, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":181, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2282", "CID":"btnLimMarch4", "CTYPE":1, "PARENT":"PG23271", "TEXT":"No Drill", "X":1429, "Y":180, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":85, "TAB":174, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2283", "CID":"txtLimMarch", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":181, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":175, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2284", "CID":"Label63", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Clothing", "X":1097, "Y":265, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2285", "CID":"txtLimCloth", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":268, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":192, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2286", "CID":"btnLimCloth3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Full Cold Weather Clothing", "X":1330, "Y":266, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":184, "TAB":191, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2287", "CID":"btnLimCloth2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"x Head dress", "X":1215, "Y":266, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":109, "TAB":190, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2288", "CID":"btnLimCloth1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":265, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":189, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2289", "CID":"Label64", "CTYPE":8, "PARENT":"PG23271", "TEXT":"CBA", "X":1097, "Y":294, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2290", "CID":"txtLimCBA", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":297, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":197, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2291", "CID":"btnLimCBA3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"ECBA Only", "X":1330, "Y":295, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":184, "TAB":196, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2292", "CID":"btnLimCBA2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Not advised", "X":1215, "Y":295, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":109, "TAB":195, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2293", "CID":"btnLimCBA1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":294, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":194, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2294", "CID":"Label65", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Helmet", "X":1097, "Y":323, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2295", "CID":"txtLimHelmet", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":326, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":201, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2296", "CID":"btnLimHelmet2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Not advised", "X":1215, "Y":324, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":299, "TAB":200, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2297", "CID":"btnLimHelmet1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":323, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":199, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2298", "CID":"Label66", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Functional", "X":1084, "Y":351, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":70, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2299", "CID":"txtLimFunctional", "CTYPE":15, "PARENT":"PG23271", "X":1160, "Y":353, "FSIZE":9.0, "BCOL":-1, "H":21, "W":354, "TAB":202, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2300", "CID":"txtLimDriving", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":383, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":210, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2301", "CID":"drpLimDriving", "CTYPE":4, "PARENT":"PG23271", "X":1405, "Y":382, "FSIZE":9.0, "BCOL":-1, "H":23, "W":109, "TAB":209, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2302", "CID":"btnLimDriving3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"White Fl", "X":1310, "Y":381, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":208, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2303", "CID":"btnLimDriving2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Not advised", "X":1215, "Y":381, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":89, "TAB":207, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2304", "CID":"btnLimDriving1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":380, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":206, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2305", "CID":"Label67", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Driving", "X":1097, "Y":380, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2306", "CID":"Label68", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Passenger", "X":1081, "Y":409, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":73, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2307", "CID":"txtLimPass", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":412, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":214, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2308", "CID":"btnLimPass4", "CTYPE":1, "PARENT":"PG23271", "TEXT":"No A (Tracked) Vehicles", "X":1332, "Y":410, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":182, "TAB":213, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2309", "CID":"btnLimPass3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Metal Only", "X":1215, "Y":410, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":111, "TAB":212, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2310", "CID":"btnLimPass1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":409, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":211, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2311", "CID":"txtLimWeapons", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":441, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":221, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2312", "CID":"drpLimWeapons", "CTYPE":4, "PARENT":"PG23271", "X":1405, "Y":440, "FSIZE":9.0, "BCOL":-1, "H":23, "W":109, "TAB":220, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2313", "CID":"btnLimWeapons6", "CTYPE":1, "PARENT":"PG23271", "TEXT":"No Live", "X":1323, "Y":439, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":76, "TAB":219, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2314", "CID":"btnLimWeapons2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"No Handling", "X":1215, "Y":439, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":102, "TAB":218, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2315", "CID":"btnLimWeapons1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":438, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":217, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2316", "CID":"Label69", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Weapons", "X":1084, "Y":438, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":70, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2317", "CID":"txtLimRanges", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":468, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":226, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2318", "CID":"btnLimRanges3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Static Only", "X":1332, "Y":468, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":99, "TAB":224, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2319", "CID":"btnLimRanges2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"None", "X":1215, "Y":468, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":111, "TAB":223, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2320", "CID":"btnLimRanges1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":467, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":222, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2321", "CID":"btnLimRanges4", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Minimize", "X":1437, "Y":468, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":77, "TAB":225, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2322", "CID":"Label70", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Ranges", "X":1081, "Y":467, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":73, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2323", "CID":"txtLimHs", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":499, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":230, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2324", "CID":"btnLimHs3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Not advised", "X":1215, "Y":497, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":299, "TAB":229, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2325", "CID":"btnLimHs1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":496, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":228, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2326", "CID":"Label71", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Hs", "X":1097, "Y":496, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2327", "CID":"txtLimWPA", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":529, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":234, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2328", "CID":"btnLimWPA3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Work Place Assessment Advised by Unit", "X":1215, "Y":527, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":299, "TAB":233, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2329", "CID":"btnLimWPA1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":1160, "Y":526, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":232, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2330", "CID":"Label72", "CTYPE":8, "PARENT":"PG23271", "TEXT":"WPA", "X":1097, "Y":526, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2331", "CID":"txtLimSafety", "CTYPE":15, "PARENT":"PG23271", "X":1160, "Y":558, "FSIZE":9.0, "BCOL":-1, "H":21, "W":354, "TAB":235, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2332", "CID":"Label73", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Safety", "X":1084, "Y":556, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":70, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2333", "CID":"drpLimMedReview", "CTYPE":4, "PARENT":"PG23271", "X":1405, "Y":586, "FSIZE":9.0, "BCOL":-1, "H":23, "W":109, "TAB":242, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2334", "CID":"btnLimMedReview3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Yes - if Role Change", "X":1255, "Y":585, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":144, "TAB":241, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2335", "CID":"btnLimMedReview2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Yes", "X":1215, "Y":585, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":34, "TAB":240, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2336", "CID":"btnLimMedReview1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"No", "X":1160, "Y":584, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":239, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2337", "CID":"Label74", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Med Review", "X":1060, "Y":584, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":94, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2338", "CID":"drpLimROHT", "CTYPE":4, "PARENT":"PG23271", "X":1405, "Y":615, "FSIZE":9.0, "BCOL":-1, "H":23, "W":109, "TAB":247, "DISPLAY":true, "STYLE":"eformDropDownList"},
+    {"ID":"OPT2339", "CID":"btnLimROHT3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Yes - if Role Change", "X":1255, "Y":614, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":144, "TAB":246, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2340", "CID":"btnLimROHT2", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Yes", "X":1215, "Y":614, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":34, "TAB":245, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2341", "CID":"btnLimROHT1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"No", "X":1160, "Y":613, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":244, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2342", "CID":"Label75", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Med Review", "X":1060, "Y":613, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":94, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2343", "CID":"txtLimMedReview", "CTYPE":15, "PARENT":"PG23271", "X":1520, "Y":588, "FSIZE":9.0, "BCOL":-1, "H":21, "W":136, "TAB":243, "DISPLAY":true, "STYLE":"eformTextBox"},
+    {"ID":"OPT2344", "CID":"TBGuidance", "CTYPE":15, "PARENT":"PG23271", "X":273, "Y":368, "FSIZE":9.0, "BCOL":-1, "H":89, "W":263, "TAB":0, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null},
+    {"ID":"OPT2345", "CID":"TBWarnings", "CTYPE":15, "PARENT":"PG23271", "X":271, "Y":463, "FSIZE":9.0, "BCOL":-1, "H":71, "W":263, "TAB":0, "DISPLAY":true, "STYLE":"eformTextBox"},
+    {"ID":"OPT2352", "CID":"dtReview", "CTYPE":2, "PARENT":"PG23271", "X":349, "Y":339, "FSIZE":9.0, "BCOL":-1, "H":23, "W":187, "TAB":45, "DISPLAY":true, "STYLE":"eformCalendar"},
+    {"ID":"OPT2353", "CID":"Label76", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Review", "X":290, "Y":339, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":53, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2354", "CID":"btnE2Opt01", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Shaving", "X":145, "Y":63, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":74, "TAB":4, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2355", "CID":"btnE2Opt02", "CTYPE":1, "PARENT":"PG23271", "TEXT":"SCT", "X":145, "Y":87, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":74, "TAB":5, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2356", "CID":"btnGpLimOpt01", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Lower", "X":225, "Y":63, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":6, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2357", "CID":"btnGpLimOpt02", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Upper", "X":225, "Y":86, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":7, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2358", "CID":"btnGpLimOpt03", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Back", "X":225, "Y":109, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":8, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2359", "CID":"btnGpLimOpt04", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Hearing", "X":225, "Y":132, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":9, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2360", "CID":"btnGpLimOpt05", "CTYPE":1, "PARENT":"PG23271", "TEXT":"S grade", "X":225, "Y":155, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":10, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2361", "CID":"btnGpLimOpt06", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Medical", "X":225, "Y":178, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":11, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2362", "CID":"btnGpLimOpt07", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Heat", "X":225, "Y":201, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":12, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2363", "CID":"btnGpLimOpt08", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Cold", "X":225, "Y":224, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":13, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2364", "CID":"btnSevereOpt08", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Cold", "X":315, "Y":224, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":21, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2365", "CID":"btnSevereOpt07", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Heat", "X":315, "Y":201, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":20, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2366", "CID":"btnSevereOpt06", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Medical", "X":315, "Y":178, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":19, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2367", "CID":"btnSevereOpt05", "CTYPE":1, "PARENT":"PG23271", "TEXT":"S grade", "X":315, "Y":155, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":18, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2368", "CID":"btnSevereOpt04", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Hearing", "X":315, "Y":132, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":17, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2369", "CID":"btnSevereOpt03", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Back", "X":315, "Y":109, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":16, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2370", "CID":"btnSevereOpt02", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Upper", "X":315, "Y":86, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":15, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2371", "CID":"btnSevereOpt01", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Lower", "X":315, "Y":63, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":14, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2372", "CID":"btnSevereOpt09", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Preg", "X":315, "Y":247, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":22, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2373", "CID":"btnSevereOpt10", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Champix", "X":315, "Y":270, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":23, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2374", "CID":"btnSevereOpt11", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Roaccutane", "X":315, "Y":293, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":24, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2376", "CID":"btnLimPHC3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Requires ongoing PHC", "X":660, "Y":456, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":279, "TAB":114, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2377", "CID":"btnLimPHC1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":605, "Y":455, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":113, "DISPLAY":true, "STYLE":"eformButton"},
+    {"ID":"OPT2717", "CID":"Button1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"btnTest", "X":720, "Y":729, "FSIZE":9.0, "BCOL":-1, "H":23, "W":75, "TAB":2, "VISIBLE":"false</VISIBLE>", "STYLE":"eformButton"},
+    {"ID":"OPT2718", "CID":"chkTest", "CTYPE":3, "PARENT":"PG23271", "TEXT":"CheckBox1", "X":720, "Y":767, "FSIZE":9.0, "BCOL":-1, "H":24, "W":104, "TAB":4, "VISIBLE":"false</VISIBLE>", "STYLE":"eformCheckBox"},
+    {"ID":"OPT2719", "CID":"Label1", "CTYPE":8, "PARENT":"chasmPatientBanner", "TEXT":"[Patient Banner]", "X":3, "Y":14, "FSIZE":9.0, "BCOL":-1, "H":25, "W":741, "TAB":0, "DISPLAY":true, "VISIBLE":"false</VISIBLE>", "STYLE":"eformLabel"},
+    {"ID":"OPT2720", "CID":"lblForButton", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Button Label", "X":603, "Y":729, "FSIZE":9.0, "BCOL":-1, "H":23, "W":100, "TAB":1, "VISIBLE":"false</VISIBLE>", "STYLE":"eformLabel"},
+    {"ID":"6743", "CID":"lblForChkB", "CTYPE":8, "PARENT":"PG23271", "TEXT":"CheckBox Label", "X":603, "Y":767, "FSIZE":9.0, "BCOL":-1, "H":23, "W":100, "TAB":3, "VISIBLE":"false</VISIBLE>", "STYLE":"eformLabel"}
+  ],
+  "tpcp": [
+    {"ID":"OPT2095", "ITEMS":"1,2,3,4,5,6,7,8,9,10,11", "DEFAULT":"1"},
+    {"ID":"OPT2098", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2099", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2101", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2102", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2103", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2104", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2105", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2106", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2107", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2108", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2109", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2110", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2112", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2114", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2116", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2117", "DIRECTION":"Horizontal"},
+    {"ID":"OPT2118", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2119", "ITEMS":"2,3,4,7,8,0", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"2"},
+    {"ID":"OPT2120", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2143", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2144", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2145", "ITEMS":"Annual,FWAB(T),FWAB(P),FMB,MOD(A)"},
+    {"ID":"OPT2146", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2147", "ITEMS":"Date            P  U  L  H  H  E  E  M  S  MES                 T/P   MDS,26/02/22     2   2  2   1   1  1   1  2   2  A4 L1 M4 E1    Perm  Full,26/09/21     3   2  3   1   1  1   1  2   2  A4 L3 M4 E3    Temp Liml"},
+    {"ID":"OPT2148", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2150", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2151", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2152", "DIRECTION":"Horizontal"},
+    {"ID":"OPT2153", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2154", "DIRECTION":"Horizontal"},
+    {"ID":"OPT2155", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2156", "DIRECTION":"Horizontal"},
+    {"ID":"OPT2157", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2158", "DIRECTION":"Horizontal"},
+    {"ID":"OPT2159", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2160", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2100", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2161", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2162", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2163", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2164", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2165", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2166", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2167"},
+    {"ID":"OPT2168", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2169", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2170", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2171", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2172", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2173", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2174", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2175", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2176", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2177", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2178", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2179", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2180", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2181", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2182", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2183", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2184", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2185", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2186", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2187", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2188", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2189", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2190", "ITEMS":"Helm,20kg,25kg,30kg,35kg", "BLANK":"Not Include", "SELECT":"Display"},
+    {"ID":"OPT2191", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2192", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2193", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2194", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2195", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2196", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2205", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2206", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2207", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2208", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2209", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2210", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2211", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2212", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2213", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2214", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2215", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2216", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2217", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2218", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2219", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2220", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2221", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2222", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2223", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2224", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2225", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2226", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2227", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2228", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2229", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2230", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2231", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2232", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2282", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2283", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2284", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2285", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2286", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2287", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2288", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2289", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2290", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2291", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2292", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2293", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2294", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2295", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2296", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2297", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2298", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2299", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2300", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2301", "ITEMS":"No A/C,No A/B/C,B Only,No+DVLA", "BLANK":"Not Include", "SELECT":"Display"},
+    {"ID":"OPT2302", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2303", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2304", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2305", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2306", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2307", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2308", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2309", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2310", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2311", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2312", "ITEMS":"SA80 Only,ACMT Only,WHT (drill rounds) Only", "BLANK":"Not Include", "SELECT":"Display"},
+    {"ID":"OPT2313", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2314", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2315", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2316", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2317", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2318", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2319", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2320", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2321", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2322", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2097", "ITEMS":"1,2,3,4,5,6,7,8,9,10,11", "FUNCTIONORDER":"RunJavascript</FUNCTIONORDER>", "RUNJAVASCRIPT":"LBToGradeFunc()</RUNJAVASCRIPT>"},
+    {"ID":"OPT2323", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2324", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2325", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2326", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2327", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2328", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2329", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2330", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2331", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2332", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2333", "ITEMS":"No-Fit current,No-Unless Change,Yes-ROHT", "BLANK":"Not Include", "SELECT":"Display"},
+    {"ID":"OPT2334", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2335", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2336", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2337", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2338", "ITEMS":"No-Fit current,No-Unless Change", "BLANK":"Not Include", "SELECT":"Display"},
+    {"ID":"OPT2339", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2340", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2341", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2342", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2343", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2344", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2345", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2149", "DIRECTION":"Horizontal", "DEFAULT":"true"},
+    {"ID":"OPT2248", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2249", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2250", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2251", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2252", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2253", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2254", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2255", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2256", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2257", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2258", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2259", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2260", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2261", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2262", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2263", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2264", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2265", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2266", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2268", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2269", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2270", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2271", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2272", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2273", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2274", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2275", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2276", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2277", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2197", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2198", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2199", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2200", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2201", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2202", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2203", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2204", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2233", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2234", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2235", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2236", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2237", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2238", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2239", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2240", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2241", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2242", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2243", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2244", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2245", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2246", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2247", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2278", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
+    {"ID":"OPT2279", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2280", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2281", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2352"},
+    {"ID":"OPT2353", "ALIGN":"MiddleRight"},
+    {"ID":"OPT2354", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2355", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2356", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2357", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2358", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2359", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2360", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2361", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2362", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2363", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2364", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2365", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2366", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2367", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2368", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2369", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2370", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2371", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2372", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2373", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2374", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2121", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2122", "ITEMS":"2,3,7,8,0", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"2"},
+    {"ID":"OPT2123", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2124", "ITEMS":"2,3,7,8,0", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"2"},
+    {"ID":"OPT2125", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2126", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2127", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2128", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2129", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2130", "ITEMS":"2,3,7,8", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"2"},
+    {"ID":"OPT2131", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2132", "ITEMS":"2,3,7,8,0", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"2"},
+    {"ID":"OPT2133", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2134", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2135", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2136", "ITEMS":"1,2,3,4,5,6", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"4"},
+    {"ID":"OPT2137", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2138", "ITEMS":"1,2,3,4,5,6", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"1"},
+    {"ID":"OPT2139", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2140", "ITEMS":"1,2,3,4,5,6", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"4"},
+    {"ID":"OPT2141", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2142", "ITEMS":"1,2,3,4,5,6", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"1"},
+    {"ID":"OPT2376", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2377", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2717", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2718", "DIRECTION":"Horizontal"},
+    {"ID":"OPT2719", "ALIGN":"MiddleCenter"},
+    {"ID":"OPT2720", "ALIGN":"MiddleLeft"},
+    {"ID":"OPT2721", "ALIGN":"MiddleLeft"},
+    {"ID":"6743"}
+  ]
+}
+
+  </script>
+
+  <script>
+  // Convert signed 32-bit int to CSS #RRGGBB
+  function intToColor(n){
+    if (n === undefined || n === null) return null;
+    const v = (n >>> 0) & 0xFFFFFF;
+    const b = v & 0xFF, g = (v >> 8) & 0xFF, r = (v >> 16) & 0xFF;
+    const rgb = (r<<16) | (g<<8) | b;
+    return '#' + rgb.toString(16).padStart(6,'0');
+  }
+
+  // Map ALIGN tokens to CSS classes
+  function alignClass(a){
+    if(!a) return '';
+    const t = String(a).toLowerCase();
+    if (t.includes('center')) return 'center';
+    if (t.includes('right')) return 'right';
+    return '';
+  }
+
+  // Parse ITEMS: supports comma/pipe/newline splits and value:label pairs
+  function parseItems(itemsRaw){
+    if (!itemsRaw && itemsRaw !== 0) return [];
+    const s = String(itemsRaw).trim();
+    const parts = s.split(/[\n,\|]+/).map(x => x.trim()).filter(Boolean);
+    return parts.map(p => {
+      const i = p.indexOf(':');
+      if (i > -1) {
+        const value = p.slice(0, i).trim();
+        const label = p.slice(i+1).trim();
+        return { value, label };
+      }
+      return { value: p, label: p };
+    });
+  }
+
+  // Parse DEFAULT for selects/listboxes — allow multiple
+  function parseDefaults(defRaw){
+    if (defRaw === undefined || defRaw === null) return [];
+    if (typeof defRaw === 'boolean') return defRaw ? ['true'] : ['false'];
+    const s = String(defRaw).trim();
+    if (!s) return [];
+    return s.split(/[\n,\|]+/).map(x => x.trim()).filter(Boolean);
+  }
+
+  // Build a map: ID -> complete tpcp prop object (so we can use ALIGN, ITEMS, DEFAULT, etc.)
+  function buildPropMap(tpcp){
+    const m = new Map();
+    (tpcp||[]).forEach(p=>{
+      if (p && p.ID){
+        // if multiple entries for same ID, merge shallowly
+        const prev = m.get(p.ID) || {};
+        m.set(p.ID, Object.assign(prev, p));
+      }
+    });
+    return m;
+  }
+
+  function fillOptionsFromProps(selectEl, props){
+    if (!selectEl || !props || !props.ITEMS) return;
+
+    // ITEMS supports: "A,B,C" or "1|One,2|Two"
+    const items = String(props.ITEMS).split(',').map(s => s.trim()).filter(Boolean);
+    items.forEach((raw, idx) => {
+      let value = raw, label = raw;
+      const pipe = raw.indexOf('|');
+      if (pipe !== -1){ value = raw.slice(0, pipe); label = raw.slice(pipe+1); }
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = label;
+      selectEl.appendChild(opt);
+    });
+
+    // DEFAULT can be: value text, 1-based index, or label
+    if (props.DEFAULT != null){
+      const def = String(props.DEFAULT).trim();
+      // Try index (1-based)
+      const asNum = Number(def);
+      if (!Number.isNaN(asNum) && asNum > 0 && asNum <= selectEl.options.length){
+        selectEl.selectedIndex = asNum - 1;
+        return;
+      }
+      // Try value or label match
+      for (let i=0; i<selectEl.options.length; i++){
+        const o = selectEl.options[i];
+        if (o.value === def || o.text === def){ selectEl.selectedIndex = i; break; }
+      }
+    }
+  }
+
+  // Add <option> children to a <select>
+  function populateSelect(sel, items, defaults, isMulti){
+    const defaultSet = new Set(defaults.map(String));
+    items.forEach(({value, label})=>{
+      const opt = document.createElement('option');
+      opt.value = String(value);
+      opt.textContent = label;
+      if (defaultSet.has(String(value))) opt.selected = true;
+      sel.appendChild(opt);
+    });
+
+    // If nothing selected and a single default string equals the display label, try match by label
+    if (!isMulti && sel.selectedIndex === -1 && defaults.length === 1){
+      const want = defaults[0];
+      for (let i=0;i<sel.options.length;i++){
+        if (sel.options[i].text === want){ sel.options[i].selected = true; break; }
+      }
+    }
+
+    // Fallback: select first item for single selects if no default matched
+    if (!isMulti && sel.selectedIndex === -1 && sel.options.length){
+      sel.options[0].selected = true;
+    }
+  }
+
+  // Create a DOM element for a control
+  function renderControl(ctrl, propMap, parentNode){
+    const props = propMap.get(ctrl.ID) || {};
+    const common = document.createElement('div');
+    common.className = 'abs';
+    common.dataset.id = ctrl.ID;
+    common.style.left   = (ctrl.X||0) + 'px';
+    common.style.top    = (ctrl.Y||0) + 'px';
+    if (ctrl.W != null) common.style.width  = ctrl.W + 'px';
+    if (ctrl.H != null) common.style.height = ctrl.H + 'px';
+    const fs = (ctrl.FSIZE != null ? ctrl.FSIZE : 9) || 9;
+    common.style.fontSize = fs + 'px';
+
+    const bcol = intToColor(ctrl.BCOL);
+    if (bcol && ctrl.BCOL !== -1) common.style.backgroundColor = bcol;
+
+    if (ctrl.VISIBLE === false) common.classList.add('hidden');
+
+    const aClass = alignClass(props.ALIGN);
+
+    switch (Number(ctrl.CTYPE)) {
+      case 12: { // Panel
+        common.classList.add('panel');
+        const inner = document.createElement('div');
+        inner.className = 'panel-inner';
+        inner.style.width = '100%';
+        inner.style.height = '100%';
+        common.appendChild(inner);
+        parentNode.appendChild(common);
+        return {container: inner, wrapper: common};
+      }
+      case 8: { // Label
+        common.classList.add('label');
+        if (aClass) common.classList.add(aClass);
+        common.innerHTML = (ctrl.TEXT || '').replaceAll('&lt;br&gt;','<br>');
+        parentNode.appendChild(common);
+        break;
+      }
+      case 1: { // Button
+        const btn = document.createElement('div');
+        btn.className = 'btn';
+        btn.textContent = ctrl.TEXT || 'Button';
+        btn.setAttribute('role','button');
+        btn.dataset.h = ctrl.H || '';
+        // NEW: expose the same data-id on the clickable element
+        btn.dataset.id = ctrl.ID;
+        common.appendChild(btn);
+        parentNode.appendChild(common);
+        break;
+      }
+      case 3: { // Checkbox
+        const wrap = document.createElement('div');
+        wrap.className = 'checkbox';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.id = ctrl.ID + '_cb';
+
+        // DEFAULT could be "true"/"false" or 1/0 or "1"/"0"
+        const d = props.DEFAULT;
+        if (typeof d === 'boolean') cb.checked = d;
+        else if (d !== undefined && d !== null) {
+          const ds = String(d).toLowerCase();
+          cb.checked = (ds === 'true' || ds === '1' || ds === 'yes');
+        }
+
+        // label text (if you want the caption visible)
+        // const lab = document.createElement('label');
+        // lab.htmlFor = cb.id;
+        // lab.textContent = ctrl.TEXT || '';
+
+        wrap.appendChild(cb);
+        // wrap.appendChild(lab);
+        common.appendChild(wrap);
+        parentNode.appendChild(common);
+        break;
+      }
+      case 4: { // DropDown
+        const sel = document.createElement('select');
+        sel.className = 'select';
+        sel.style.width='100%'; sel.style.height='100%';
+        // NEW: populate from tpcp
+        fillOptionsFromProps(sel, propMap.get(ctrl.ID));
+        common.appendChild(sel);
+        parentNode.appendChild(common);
+        break;
+}
+      case 10: { // ListBox (multi)
+        const sel = document.createElement('select');
+        sel.className = 'listbox';
+        sel.multiple = true;
+        sel.size = Math.max(2, Math.floor((ctrl.H||60)/16));
+        sel.style.width='100%'; sel.style.height='100%';
+        // NEW: populate from tpcp
+        fillOptionsFromProps(sel, propMap.get(ctrl.ID));
+        common.appendChild(sel);
+        parentNode.appendChild(common);
+        break;
+        }
+      case 15: { // TextBox
+        if ((ctrl.H||0) > 28){
+          const ta = document.createElement('div');
+          ta.className = 'textarea';
+          ta.textContent = props.DEFAULT != null ? String(props.DEFAULT) : '';
+          common.appendChild(ta);
+        } else {
+          const tx = document.createElement('div');
+          tx.className = 'textbox';
+          tx.textContent = props.DEFAULT != null ? String(props.DEFAULT) : '';
+          common.appendChild(tx);
+        }
+        parentNode.appendChild(common);
+        break;
+      }
+      case 2: { // Calendar
+        const tx = document.createElement('div');
+        tx.className = 'textbox';
+        tx.textContent = props.DEFAULT ? String(props.DEFAULT) : 'yyyy-mm-dd';
+        common.appendChild(tx);
+        parentNode.appendChild(common);
+        break;
+      }
+      default: {
+        // Fallback box
+        common.classList.add('label');
+        if (aClass) common.classList.add(aClass);
+        common.textContent = ctrl.TEXT || ctrl.CID || ctrl.ID;
+        parentNode.appendChild(common);
+      }
+    }
+  }
+
+  (function bootstrap(){
+    const root = document.getElementById('page');
+    const payload = JSON.parse(document.getElementById('eform-data').textContent);
+
+    const propMap = buildPropMap(payload.tpcp);
+    const alignMap = new Map();
+    (payload.tpcp||[]).forEach(p=>{ if (p && p.ID && p.ALIGN) alignMap.set(p.ID, p.ALIGN); });
+
+    // Registry to allow parenting by CID/ID
+    const containers = new Map();
+    containers.set('PG23271', root); // page root id from your data
+
+    // Pass 1: panels
+    payload.tpccp.filter(c => Number(c.CTYPE) === 12).forEach(p=>{
+      const parent = containers.get(p.PARENT) || root;
+      const out = renderControl(p, propMap, parent);
+      containers.set(p.ID, out.container);
+      if (p.CID) containers.set(p.CID, out.container);
+    });
+
+    // Pass 2: everything else
+    payload.tpccp.filter(c => Number(c.CTYPE) !== 12).forEach(c=>{
+      const parent = containers.get(c.PARENT) || containers.get(c.CID) || root;
+      renderControl(c, propMap, parent);
+    });
+
+    // Optional: page-level color could be applied here if desired
+    // root.style.backgroundColor = intToColor(-657956);
+    if (typeof agcCode === 'function') agcCode(null, null);
+  })();
+</script>
+
+
+<script>
+
+  // Helpers your script expects but weren’t in the snippet
+  function addMonths(d, months){
+    const dt = new Date(d.getTime());
+    dt.setMonth(dt.getMonth() + months);
+    return dt;
+  }
+  function fnGetUKDateAsString(d){
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  // Grab a <select> inside a control wrapper, or the wrapper if it's already a <select>
+function selectEl(id) {
+  return document.querySelector(`[data-id='${id}'] select`) ||
+         document.querySelector(`[data-id='${id}']`);
+}
+// Get 1-based numeric choice from a <select>
+function getSelectNumber(sel) {
+  // prefer numeric value if provided, else use selectedIndex+1
+  const v = sel && sel.value != null ? Number(sel.value) : NaN;
+  if (!Number.isNaN(v)) return v;
+  return (sel && sel.selectedIndex >= 0) ? sel.selectedIndex + 1 : 0;
+}
+// Set selection by 0-based index on a <select> (with bounds check)
+function setSelectIndex(sel, idx) {
+  if (!sel) return;
+  const n = Math.max(0, Math.min(idx, sel.options.length - 1));
+  sel.selectedIndex = n;
+  sel.dispatchEvent(new Event('change'));
+}
+
+
+  agcCode = function (ds, pt) {
+    // const eform = $(".eformsPage");
+    // const eformId = eform.attr("id");
+
+    // Colours
+    const sSelected = "rgb(224, 224, 224)"
+    const sClear = "rgb(245, 245, 220)"
+    const sIntermediateSelected = "rgb(220, 220, 220)"
+    const sIntermediateClear = "rgb(240, 240, 240)"
+    const sRedSevere = "rgb(255, 224, 192)"
+    const sYellowLimited = "rgb(255, 255, 192)"
+    const sGreenOK = "rgb(192, 255, 192)"
+    const sGrey = "RGB(224,224,224)"
+    const sWhite = "RGB(255,255,255)"
+
+    // **** INITIALISATION ****
+    // Reference Lims arrays - these will be arrays of arrays - built in subInitLims
+    var arrSGE2Lims
+    var arrSGLimitedLims
+    var arrSGSevereLims
+    var arrSGE2Comments
+    var arrSGLimitedComments
+    var arrSGSevereComments
+
+    var arrE2OptSelected = new Array(2)
+    arrE2OptSelected.fill(false)
+    var arrLimOptSelected = new Array(8)
+    arrLimOptSelected.fill(false)
+    var arrSevOptSelected = new Array(11)
+    arrSevOptSelected.fill(false)
+
+    subInitLims()
+
+    // Actual active lims and comments 
+    var arrayLims = new Array(46), arrayComments = new Array(18)
+    arrayLims.fill(9)
+    arrayComments.fill("")
+    // subSetInitial() // These will be eventually initialised against previous values
+
+    // Date Variables
+    const currentDate = new Date()
+    var reviewDate = new Date()
+    console.log(fnGetUKDateAsString(currentDate))
+
+    // Boolean switches to control access to the limitation group shortcuts
+    var bolE2Enabled = false
+    var bolLimitedEnabled = false
+    var bolSevereEnabled = false
+
+    // Limitation shortcuts now buttons rather than listbox (as later doesn't work well)
+    // E2 buttons are called btnE2Opt0x
+    // Limited buttons are called btnGrpLimOpt0x (to avoid conflict with the actual lims buttons called btnLim...)
+    // Severe buttons are called btnSevereOpt0x
+
+
+    // User feedback/guidance
+    const TBWarnings = $("[data-id='TBWarnings']")
+    const TBGuidance = $("[data-id='TBGuidance']")
+
+    // JMES - dropdowns easier to work with as vanilla JS objects rather than JQuery
+    const CBJMESA = document.querySelector("[data-id='CBJMESA']");
+    const CBJMESL = document.querySelector("[data-id='CBJMESL']");
+    const CBJMESM = document.querySelector("[data-id='CBJMESM']");
+    const CBJMESE = document.querySelector("[data-id='CBJMESE']");
+
+    // From and To Grade + Boarding Type
+    const LBFromGrade = selectEl('LBFromGrade');
+    const LBToGrade = selectEl('LBToGrade');
+    const LBBoard = selectEl('LBBoard');
+    var iLBToGrade, iLBFromGrade
+    var iLBBoard = 1;
+
+    // PULHHEEMS - dropdowns easier to work with as vanilla JS objects rather than JQuery
+    const CBPulP = document.querySelector("[data-id='CBPulP']");
+    const CBPulU = document.querySelector("[data-id='CBPulU']");
+    const CBPulL = document.querySelector("[data-id='CBPulL']");
+    const CBPulM = document.querySelector("[data-id='CBPulM']");
+    const CBPulS = document.querySelector("[data-id='CBPulS']");
+    //const CBPulP = $("[data-id='CBPulP']");
+    const TBPermTemp2 = document.querySelector("[data-id='TBPermTemp2'] div"); // actually a label
+    const TBMDS = document.querySelector("[data-id='TBMDS'] div"); // actually a label
+    const dtReview = document.querySelector("[data-id='dtReview']");
+
+    // Set event handlers for groups of controls - similar in VBA to assigning them all to a class event.
+    // Events fire twice for some reason - for now need to compensate 
+    const chkBolSet = document.querySelector("[data-id='chkBolSet']");
+
+    const btnsE2 = document.querySelectorAll("[data-id*='btnE2Opt']");
+    btnsE2.forEach((btnE2) => {
+        btnE2.addEventListener('click', function (e) {
+            if (bolE2Enabled) { subBtnE2(e) }
+        });
+    });
+
+    const btnsGpLim = document.querySelectorAll("[data-id*='btnGpLimOpt']");
+    btnsGpLim.forEach((btnGpLim) => {
+        btnGpLim.addEventListener('click', function (e) {
+            if (bolLimitedEnabled) { subBtnGpLim(e) }
+        });
+    });
+
+    const btnsSevere = document.querySelectorAll("[data-id*='btnSevereOpt']");
+    btnsSevere.forEach((btnSevere) => {
+        btnSevere.addEventListener('click', function (e) {
+            if (bolSevereEnabled) { subBtnSevere(e) }
+        });
+    });
+
+    const chksFC = document.querySelectorAll("[data-id*='chkFC']");
+    chksFC.forEach((chkFC) => {
+        chkFC.firstChild.checked = true;  // Just for demo set each checkbox as checked (can't set in cCube) - replace with previous data when available
+        chkFC.firstChild.addEventListener('change', function (e) {
+            subChkFC(e);
+        });
+    });
+
+    const btnsRisk = document.querySelectorAll("[data-id*='btnRisk']");
+    btnsRisk.forEach((btnRisk) => {
+        btnRisk.dataset.toggle = "tooltip"
+        btnRisk.dataset.html = "true"
+        const sRiskHelp = "Low = At or close to risk of healthy individual<br/>Med = Could be part of current clinical issue<br/>High = Highly likely or - where applicable - already part of clinical plan"
+        btnRisk.setAttribute("title", sRiskHelp)
+        btnRisk.addEventListener('click', function (e) {
+            subBtnRisk(e);
+        });
+    });
+
+    const btnsLim = document.querySelectorAll("[data-id*='btnLim']");
+    btnsLim.forEach((btnLim) => {
+        btnLim.addEventListener('click', function (e) {
+            subBtnLim(e);
+        });
+    });
+
+    const drpsLim = document.querySelectorAll("[data-id*='drpLim']");
+    drpsLim.forEach((drpLim) => {
+        drpLim.addEventListener('change', function (e) {
+            subDrpLim(e);
+        });
+    });
+
+    const txtLims = document.querySelectorAll("[data-id*='txtLim']");
+    txtLims.forEach((txtLim) => {
+        txtLim.dataset.toggle = "tooltip"
+        txtLim.style.padding = "0rem"
+        txtLim.addEventListener('focusin', function (e) {
+            txtLim.style.height = "63px"
+        });
+        txtLim.addEventListener('focusout', function (e) {
+            txtLim.style.height = "21px"
+            txtLim.setAttribute("title", txtLim.textContent || '')
+        });
+    });
+
+    // Demo stubs for now
+    function subBtnE2(e) {
+        // Change button background
+        var bolRun = fnSelectOption(e)
+        if (bolRun) {
+            subWhichOptions()
+            //subEvalULS() //- probably no point as nothing can change
+            subEvalLims()
+        }
+    }
+
+    function subBtnGpLim(e) {
+        var bolRun = fnSelectOption(e)
+        if (bolRun) {
+            switchSevereToLimited(e.target)
+            subWhichOptions()
+            subEvalULS()
+            subEvalLims()
+        }
+    }
+
+    function switchSevereToLimited(ctl) {
+        var ctlNum = fnCtlNumber(ctl)
+        var ctlSevere = document.querySelector("[data-id='btnSevereOpt0" + ctlNum + "']")
+        ctlSevere.style.backgroundColor = sClear
+    }
+
+    function subBtnSevere(e) {
+        var bolRun = fnSelectOption(e)
+        if (bolRun) {
+            switchLimitedToSevere(e.target)
+            subWhichOptions()
+            subEvalULS()
+            subEvalLims()
+        }
+    }
+
+    function switchLimitedToSevere(ctl) {
+        var ctlNum = fnCtlNumber(ctl)
+        if (ctlNum < 9) {
+            var ctlGpLim = document.querySelector("[data-id='btnGpLimOpt0" + ctlNum + "']")
+            ctlGpLim.style.backgroundColor = sClear
+        }
+
+    }
+
+    function fnSelectOption(e) {
+        // Due to double event we use an intermediate selected and clear colour and only allow running the rest of the code once
+        // If the double event is fixed then this code will need to be simplified
+        var ctl = e.target
+        var bolRun
+        // if (ctl.style.backgroundColor == sClear || ctl.style.backgroundColor == sSelected) {
+        //     ctl.style.backgroundColor == sClear ? ctl.style.backgroundColor = sIntermediateSelected : ctl.style.backgroundColor = sIntermediateClear
+        //     bolRun = false
+        // } else {
+        //     ctl.style.backgroundColor == sIntermediateSelected ? ctl.style.backgroundColor = sSelected : ctl.style.backgroundColor = sClear
+        //     bolRun = true
+        // }
+        ctl.style.backgroundColor == sSelected ? ctl.style.backgroundColor = sClear : ctl.style.backgroundColor = sSelected
+        bolRun = true
+        return bolRun
+    }
+
+    function subWhichOptions() {
+        // Instead of the VBA version - which can use Listboxes - here, as we are using buttons, we will build an array of selected buttons
+        // Determined by their background colour - we can then use the array in subEvalULS and subEvalLims
+        // Both those functions need to calculate the totality of the all the option shortcuts selected
+        btnsE2.forEach((btnE2) => {
+            arrE2OptSelected[fnCtlNumber(btnE2) - 1] = fnSelected(btnE2)
+        });
+
+        btnsGpLim.forEach((btnGpLim) => {
+            arrLimOptSelected[fnCtlNumber(btnGpLim) - 1] = fnSelected(btnGpLim)
+        });
+
+        btnsSevere.forEach((btnSevere) => {
+            arrSevOptSelected[fnCtlNumber(btnSevere) - 1] = fnSelected(btnSevere)
+        });
+    }
+
+    function fnSelected(ctl) {
+        if (ctl.style.backgroundColor == sSelected) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    function fnCtlNumber(ctl) {
+        var ctlDataId = ctl.getAttribute('data-id')
+        var sLimName = ctlDataId.substring(6)
+        var iLenLimName = sLimName.length
+        var sLimNum = sLimName.substring(iLenLimName - 2)
+        return +sLimNum
+    }
+
+    function subEvalULS() {
+        // arrLimOptSelected(0 -7)
+        // arrSevOptSelected(0-10)
+        CBPulU.options[1].selected = true
+        CBPulL.options[1].selected = true
+        CBPulS.options[1].selected = true
+
+        if (arrLimOptSelected[0] || arrLimOptSelected[2]) { CBPulL.options[2].selected = true }
+        if (arrLimOptSelected[1]) { CBPulU.options[2].selected = true }
+        if (arrLimOptSelected[4]) { CBPulS.options[2].selected = true }
+
+        if (arrSevOptSelected[0] || arrSevOptSelected[2]) { CBPulL.options[3].selected = true }
+        if (arrSevOptSelected[1]) {
+            CBPulU.options[3].selected = true // 7
+        } else if (arrSevOptSelected[2]) {
+            CBPulU.options[2].selected = true // 3
+        }
+        if (arrSevOptSelected[4]) { CBPulS.options[3].selected = true } // 7
+    }
+
+    function subEvalLims() {
+
+        // Reset soley based on choices unless "add to lims" option selected
+        if (chkBolSet.firstChild.checked == false) {
+            for (var y = 0; y < 46; y++) {
+                arrayLims[y] = 9
+            }
+            for (var y = 0; y < 18; y++) {
+                arrayComments[y] = ""
+            }
+        }
+
+        // Use any selected E2 buttons
+        for (var i = 0; i < 2; i++) {
+            if (arrE2OptSelected[i]) {
+                for (var y = 0; y < 46; y++) {
+                    if (arrSGE2Lims[i][y] < arrayLims[y]) { arrayLims[y] = arrSGE2Lims[i][y] }
+                }
+                for (var y = 0; y < 18; y++) {
+                    if (arrayComments[y].includes(arrSGE2Comments[i][y]) == false) { arrayComments[y] = arrayComments[y] + arrSGE2Comments[i][y] }
+                }
+            }
+        }
+
+        // Use any selected Limited buttons
+        for (var i = 0; i < 8; i++) {
+            if (arrLimOptSelected[i]) {
+                for (var y = 0; y < 46; y++) {
+                    if (arrSGLimitedLims[i][y] < arrayLims[y]) { arrayLims[y] = arrSGLimitedLims[i][y] }
+                }
+                for (var y = 0; y < 18; y++) {
+                    if (arrayComments[y].includes(arrSGLimitedComments[i][y]) == false) { arrayComments[y] = arrayComments[y] + arrSGLimitedComments[i][y] }
+                }
+            }
+        }
+
+        // Use any selected Severe buttons
+        for (var i = 0; i < 11; i++) {
+            if (arrSevOptSelected[i]) {
+                for (var y = 0; y < 46; y++) {
+                    if (arrSGSevereLims[i][y] < arrayLims[y]) { arrayLims[y] = arrSGSevereLims[i][y] }
+                }
+                for (var y = 0; y < 18; y++) {
+                    if (arrayComments[y].includes(arrSGSevereComments[i][y]) == false) { arrayComments[y] = arrayComments[y] + arrSGSevereComments[i][y] }
+                }
+            }
+        }
+        subUpdateLims()
+    }
+
+    function subUpdateLims() {
+        // Update Functional Limitation Checkboxes
+        for (var i = 0; i < 5; i++) {
+            var chkFC = document.querySelector("[data-id='chkFC" + (i + 1) + "']")
+            if (arrayLims[i] == 1) {
+                chkFC.firstChild.checked = false
+            } else {
+                chkFC.firstChild.checked = true
+            }
+            chkFC.firstChild.dispatchEvent(new Event("change")) // This will take care of formatting
+        }
+
+        // Update Triple-State Risk Buttons
+        for (var i = 1; i < 9; i++) {
+            var btnRisk = document.querySelector("[data-id='btnRisk" + i + "']")
+            var sBGColor = btnRisk.style.backgroundColor
+            switch (sBGColor) {
+                case sRedSevere:
+                    if (arrayLims[i + 4] == 1) {
+                        // no action required as already red
+                    } else if (arrayLims[i + 4] == 2) {
+                        btnRisk.dispatchEvent(new Event("click"))
+                        btnRisk.dispatchEvent(new Event("click"))
+                    } else {
+                        btnRisk.dispatchEvent(new Event("click"))
+                    }
+                    break;
+                case sYellowLimited:
+                    if (arrayLims[i + 4] == 1) {
+                        btnRisk.dispatchEvent(new Event("click"))
+                    } else if (arrayLims[i + 4] == 2) {
+                        // no action required as already yellow
+                    } else {
+                        btnRisk.dispatchEvent(new Event("click"))
+                        btnRisk.dispatchEvent(new Event("click"))
+                    }
+                    break;
+                case sGreenOK:
+                    if (arrayLims[i + 4] == 1) {
+                        btnRisk.dispatchEvent(new Event("click"))
+                        btnRisk.dispatchEvent(new Event("click"))
+                    } else if (arrayLims[i + 4] == 2) {
+                        btnRisk.dispatchEvent(new Event("click"))
+                    } else {
+                        // no action required as already green
+                    }
+
+            }
+        }
+
+        // Update Lims Buttons
+        subLimTextUpdate("Ops", 15)
+
+        subLimUpdate(13, "Weight", "9;1;3", "2;4;5;6;7")
+        subLimUpdate(14, "Infantry", "9;1;2", "", 1)
+        subLimUpdate(15, "OnFoot", "9;1;2;3")
+        subLimUpdate(16, "Trade", "9;1;2")
+        subLimUpdate(17, "Field", "9;1;2;3", "", 2)
+        subLimUpdate(18, "MovFire", "9;1;2")
+
+        subLimTextUpdate("ExTSO", 16)
+        subLimTextUpdate("TradeX", 17)
+
+        subLimUpdate(19, "Noise", "9;;1;2", "", 3)
+        subLimUpdate(20, "Clim", "9;;1", "", 4)
+        subLimUpdate(21, "Other", "9;;1", "", 5)
+        subLimUpdate(22, "PHC", "9;;1")
+
+        subLimTextUpdate("Specific", 18)
+
+        subLimUpdate(23, "PT", "9;1;2")
+        subLimUpdate(24, "PTRx", "9;;1;2")
+        subLimUpdate(25, "Rehab", "9;;1")
+
+        subLimUpdate(26, "Walking", "9;1;2")
+        subLimUpdate(27, "Standing", "9;1;2")
+        subLimUpdate(28, "Sitting", "9;1;2")
+        subLimUpdate(29, "Lifting", "9;1;2;3", "", 6)
+        subLimUpdate(30, "Hours", "9;2;;3;;1", "", 7)
+        subLimUpdate(31, "Work", "9;1;2;3", "", 8)
+        subLimUpdate(32, "March", "9;1;2;3", "", 9)
+        subLimUpdate(33, "Guard", "9;;1", "", 10)
+        subLimUpdate(34, "Boots", "9;;2;1;3")
+        subLimUpdate(35, "Cloth", "9;1;2")
+        subLimUpdate(36, "CBA", "9;1;2")
+        subLimUpdate(37, "Helmet", "9;1")
+
+        subLimTextUpdate("Functional", 11)
+
+        subLimUpdate(38, "Driving", "9;2;3", "5;6;4;1")
+        subLimUpdate(39, "Pass", "9;;1;2")
+        subLimUpdate(40, "Weapons", "9;1;;;;2", "4;5;3")
+        subLimUpdate(41, "Ranges", "9;1;3;2")
+        subLimUpdate(42, "Heights", "9;;1")
+        subLimUpdate(43, "WPA", "9;;1", "", 12)
+
+        subLimTextUpdate("Safety", 13)
+
+        subLimUpdate(44, "MedReview", "9;2;3", "5;4;1", 14)
+        subLimUpdate(45, "ROHT", "9;1;2", "4;3")
+
+    }
+
+    function subLimUpdate(iLim, sCtrl, sButtonCodes, sComboCodes = "", iComment = 0) {
+        // Associated Comments - if applicable
+        if (iComment != 0) { subLimTextUpdate(sCtrl, iComment) }
+
+        var aButtonCodes = sButtonCodes.split(";")
+        var aBtnLen = aButtonCodes.length
+        console.log(sCtrl + ", " + aButtonCodes + ", " + aBtnLen)
+        for (var i = 0; i < aBtnLen; i++) {
+            if (aButtonCodes[i] == arrayLims[iLim]) {
+                var btnLim = document.querySelector("[data-id='btnLim" + sCtrl + (i + 1) + "']")
+                btnLim.dispatchEvent(new Event("click"))
+            }
+        }
+
+        if (sComboCodes != "") {
+            var aComboCodes = sComboCodes.split(";")
+            var aComboLen = aComboCodes.length
+            for (var i = 0; i < aComboLen; i++) {
+                if (aComboCodes[i] == arrayLims[iLim]) {
+                    var drpLim = document.querySelector("[data-id='drpLim" + sCtrl + "']")
+                    drpLim.options[i + 1].selected = true
+                    drpLim.dispatchEvent(new Event("change"))
+                }
+            }
+        }
+    }
+
+    function subLimTextUpdate(ctlName, iComment) {
+        var sText = arrayComments[iComment - 1]
+        var ctl = $("[data-id='txtLim" + ctlName + "']")
+        ctl.val(sText)
+        ctl = document.querySelector("[data-id='txtLim" + ctlName + "']")
+        ctl.setAttribute("title", sText)
+    }
+
+    // Set current values 
+    function subSetintLBs(bolSkipBoard = false) {
+        iLBFromGrade = getSelectNumber(LBFromGrade);
+        iLBToGrade = getSelectNumber(LBToGrade);
+
+        if (!bolSkipBoard) {
+            iLBBoard = getSelectNumber(LBBoard);
+        }
+    }
+
+    // LBFromGrade - Just for demo - in final version the From Grade will be calculated from previous data and not be changeable
+    LBFromGrade.addEventListener('change', function(){
+        subSetintLBs(true);
+        subBoardTypeEstimate();
+        subwarnings();
+    });
+
+    LBToGrade.addEventListener('change', function(){
+        subSetintLBs(true);
+        subBoardTypeEstimate();
+        subwarnings();
+        subALME();
+        subClinTypes();
+        subSetPGradeTempMDSAndReview();
+        subSetULSM();
+    });
+
+    LBBoard.addEventListener('change', function(){
+        subwarnings();
+    });
+
+    function subDrpLim(e) {
+        var ctl = e.target
+        var ctlDataId = ctl.getAttribute('data-id')
+        var sLimName = ctlDataId.substring(6)
+        // Reset all controls in group to grey
+        for (i = 1; i < 7; i++) {
+            var ictl = $("[data-id='btnLim" + sLimName + i + "']")
+            ictl.css('background', sGrey)
+        }
+        ctl.style.backgroundColor = sYellowLimited
+        var sCtl = ctl.options[ctl.selectedIndex].text
+        if (sCtl == "No+DVLA") { ctl.style.backgroundColor = sRedSevere }
+    }
+
+    function subBtnLim(e) {
+        var ctl = e.target
+        var ctlDataId = ctl.getAttribute('data-id')
+        var sLimName = ctlDataId.substring(6)
+        var iLenLimName = sLimName.length
+        var sLimNum = sLimName.substring(iLenLimName - 1)
+        var sLimName = sLimName.substring(0, iLenLimName - 1)
+        // Reset all controls in group to grey
+        for (i = 1; i < 7; i++) {
+            var ictl = $("[data-id='btnLim" + sLimName + i + "']")
+            ictl.css('background', sGrey)
+        }
+        // Reset dropboxes if exist - silent error if not - maybe check!
+        var drp = $("[data-id='drpLim" + sLimName + "']")
+        drp.css('background', sWhite)
+        drp.val("")
+
+        // Colour based on severity
+        if (sLimNum == "1") { ctl.style.backgroundColor = sGreenOK } else
+            if (sLimNum == "2" || sLimNum == "6") { ctl.style.backgroundColor = sRedSevere } else { ctl.style.backgroundColor = sYellowLimited }
+
+    }
+
+    function subBtnRisk(e) {
+        // Enables a triple-state for the Risk buttons Low --> Med --> High
+        // As events fire twice, reverse order so progresses as expected
+        var ctl = e.target
+        var ctlCaption = ctl.innerHTML
+        var iCaptionLen = ctlCaption.length
+        var sLast4 = ctlCaption.substring(iCaptionLen - 4)
+        var sStart = ctlCaption.substring(0, (iCaptionLen - 4))
+        // Single event order - restore if double-event issue fixed
+        if (sLast4 == " Low") {
+            ctl.style.backgroundColor = sYellowLimited
+            ctl.innerHTML = sStart + " Med"
+        } else if (sLast4 == " Med") {
+            ctl.style.backgroundColor = sRedSevere
+            ctl.innerHTML = sStart + " High"
+        } else {
+            ctl.style.backgroundColor = sGreenOK
+            ctl.innerHTML = sStart + "Low"
+        }
+
+        // Double event order - as event fires twice this will actually achieve the correct order Low --> Med --> High
+        // if (sLast4 == " Low") {
+        //     ctl.style.backgroundColor = sRedSevere
+        //     ctl.innerHTML = sStart + " High"
+        // } else if (sLast4 == " Med") {
+        //     ctl.style.backgroundColor = sGreenOK
+        //     ctl.innerHTML = sStart + "Low"
+        // } else {
+        //     ctl.style.backgroundColor = sYellowLimited
+        //     ctl.innerHTML = sStart + " Med"
+        // }
+    }
+
+    function subChkFC(e) {
+        var ctl = e.target
+        var ctlName = ctl.name
+        var ctlNameLen = ctlName.length;
+        var ctlNameEnd = ctlName.substring(ctlNameLen - 3)
+        var lblCtl = $("[data-id='lbl" + ctlNameEnd + "']")
+        if (ctl.checked) {
+            lblCtl.css('background', sGreenOK)
+        } else {
+            lblCtl.css('background', sRedSevere)
+        }
+    }
+
+    function subSetULSM() {
+        switch (iLBToGrade) {
+            case 1: // MFD
+            case 2: // MFD E2
+                CBPulU.options[1].selected = true
+                CBPulL.options[1].selected = true
+                CBPulM.options[1].selected = true
+                CBPulS.options[1].selected = true
+                break;
+            case 3:
+            case 4: // If changing to MLD and any of the ULMS values were not 2 then change to 3
+                if (CBPulU.options[1].selected == false) { CBPulU.options[2].selected = true }
+                if (CBPulL.options[1].selected == false) { CBPulL.options[2].selected = true }
+                if (CBPulM.options[1].selected == false) { CBPulM.options[2].selected = true }
+                if (CBPulS.options[1].selected == false) { CBPulS.options[2].selected = true }
+            default: // Leave if set
+        }
+    }
+
+    function subSetPGradeTempMDSAndReview() {
+        var bolReview1Y = false
+        var iMonths = 0
+
+        switch (iLBToGrade) {
+            case 1: // MFD
+                CBPulP.options[1].selected = true
+                TBPermTemp2.innerHTML = "N/A"
+                TBMDS.innerHTML = "Full"
+                iMonths = 1200
+                break;
+            case 2: // MFD E2
+                CBPulP.options[1].selected = true
+                TBPermTemp2.innerHTML = "PERM"
+                TBMDS.innerHTML = "Full"
+                bolReview1Y = true
+                break;
+            case 3: // P3 MLD Temp
+                CBPulP.options[2].selected = true
+                TBPermTemp2.innerHTML = "TEMP"
+                TBMDS.innerHTML = "Limited"
+                break;
+            case 4:
+                CBPulP.options[2].selected = true
+                TBPermTemp2.innerHTML = "PERM"
+                TBMDS.innerHTML = "Limited"
+                bolReview1Y = true
+                break;
+            case 5: // MND Temp 
+                CBPulP.options[4].selected = true
+                TBPermTemp2.innerHTML = "TEMP"
+                TBMDS.innerHTML = "None"
+                break;
+            case 6: // MND Perm 
+                CBPulP.options[4].selected = true
+                TBPermTemp2.innerHTML = "PERM"
+                TBMDS.innerHTML = "None"
+                bolReview1Y = true
+                break;
+            case 7: // MND Preg
+                CBPulP.options[3].selected = true
+                TBPermTemp2.innerHTML = "TEMP"
+                TBMDS.innerHTML = "None"
+                break;
+            case 8: // P0
+                CBPulP.options[6].selected = true
+                TBPermTemp2.innerHTML = "TEMP"
+                TBMDS.innerHTML = "None"
+                break;
+            case 9: // P8
+                CBPulP.options[5].selected = true
+                TBPermTemp2.innerHTML = "TEMP"
+                TBMDS.innerHTML = "None"
+                break;
+            case 10: // P7 MLD Temp 
+                CBPulP.options[4].selected = true
+                TBPermTemp2.innerHTML = "TEMP"
+                TBMDS.innerHTML = "Limited"
+                break;
+            case 11: // P7 MND Perm 
+                CBPulP.options[4].selected = true
+                TBPermTemp2.innerHTML = "PERM"
+                TBMDS.innerHTML = "Limited"
+                bolReview1Y = true
+                break;
+        }
+
+        // adjust review date - usually 6 months or 12 months
+        if (iMonths == 0) {
+            if (bolReview1Y) {
+                iMonths = 12
+            } else {
+                iMonths = 6
+            }
+        }
+
+        reviewDate = addMonths(currentDate, iMonths)
+        dtReview.value = fnGetUKDateAsString(reviewDate)
+        dtReview.dispatchEvent(new Event("keyup"))
+        dtReview.dispatchEvent(new Event("change"))
+
+    }
+
+    function subClinTypes() {
+        switch (iLBToGrade) {
+            case 1: // MFD
+                subResetClinTypes()
+                bolE2Enabled = false
+                bolLimitedEnabled = false
+                bolSevereEnabled = false
+                break;
+            case 2: // MFD E2
+                subResetClinTypes(true)
+                bolE2Enabled = true
+                bolLimitedEnabled = false
+                bolSevereEnabled = false
+                break;
+            case 3: // P3 MLD
+            case 4:
+                subTransferSeveretoLimited()
+                bolE2Enabled = true
+                bolLimitedEnabled = true
+                bolSevereEnabled = false
+                break;
+            default: // P7 MND
+                bolE2Enabled = true
+                bolLimitedEnabled = true
+                bolSevereEnabled = true
+        }
+    }
+
+    function subTransferSeveretoLimited() {
+        btnsSevere.forEach((btnSevere) => {
+            var ctlNum = fnCtlNumber(btnSevere)
+            var sBGColor = btnSevere.style.backgroundColor
+            btnSevere.style.backgroundColor = sClear
+            if (ctlNum < 9 && sBGColor == sSelected) {
+                var ctlGpLim = document.querySelector("[data-id='btnGpLimOpt0" + ctlNum + "']")
+                ctlGpLim.style.backgroundColor = sSelected
+            }
+
+        });
+
+        subWhichOptions()
+        subEvalULS()
+        subEvalLims()
+    }
+
+    function subResetClinTypes(bolNotE2) {
+
+        // Unset E2 options unless MFD E2
+        if (!bolNotE2) {
+            btnsE2.forEach((btnE2) => {
+                btnE2.style.backgroundColor = sClear
+            });
+        }
+
+        // Unset Limited
+        btnsGpLim.forEach((btnGpLim) => {
+            btnGpLim.style.backgroundColor = sClear
+        });
+
+        //Unset Severe
+        btnsSevere.forEach((btnSevere) => {
+            btnSevere.style.backgroundColor = sClear
+        });
+
+        subWhichOptions()
+        subEvalULS()
+        subEvalLims()
+    }
+
+    function subALME() {
+        subSetintLBs()
+
+        var aJMES;
+
+        switch (iLBToGrade) {
+            case 1: // MFD
+                aJMES = [4, 1, 4, 1]
+                break;
+            case 2: // MFD E2
+                aJMES = [4, 1, 4, 2]
+                break;
+            case 3: // P3 MLD
+            case 4:
+                aJMES = [4, 3, 4, 3]
+                break;
+            case 5: // P7 MND
+            case 6:
+                aJMES = [4, 5, 4, 4]
+                break;
+            case 7: // MND Preg
+                aJMES = [4, 5, 4, 6]
+                break;
+            case 8: // P0/P8
+            case 9:
+                aJMES = [4, 6, 6, 5]
+                break;
+            case 10: // P7 MLD (ROHT)
+            case 11:
+                aJMES = [4, 4, 4, 4]
+                break;
+        }
+
+        CBJMESA.options[aJMES[0]].selected = true
+        CBJMESL.options[aJMES[1]].selected = true
+        CBJMESM.options[aJMES[2]].selected = true
+        CBJMESE.options[aJMES[3]].selected = true
+    }
+
+    function subwarnings() {
+        subSetintLBs()
+        var sWarning = fnWarnings()
+        TBWarnings.val(sWarning)
+        if (sWarning == "") {
+            TBWarnings.css("background-color", sWhite);
+        } else {
+            TBWarnings.css("background-color", "#ffdddd")
+        }
+        var sAdvice = fnAdvice()
+        TBGuidance.val(sAdvice)
+    }
+
+    function fnAdvice() {
+        var sAdvice = ""
+
+        switch (iLBToGrade) {
+            case 1:
+                sAdvice = sAdvice + "All previous MedLims should be rescinded and therefore an Appx 9 is not required"
+                break;
+            case 2:
+                sAdvice = sAdvice + "ROHT ratification is required for E2 (P2 MFD) markers.  L2 is now MLD (no longer MFD)."
+                break;
+            case 3:
+            case 5:
+                sAdvice = sAdvice + "Temporarily DG in a Fitness for Work Assessment Board (Temporary). Fmed23 is not required."
+                break;
+            case 4:
+            case 6:
+                sAdvice = sAdvice + "FMed 23 needed for FWAB(P)s. Some regions require an Army GP/OM Consultant as either President or 2nd signature.  Seek advice from your ROHT if need be"
+                break;
+            case 7:
+                sAdvice = sAdvice + "Complete pregnancy set"
+                break;
+            case 8:
+                sAdvice = sAdvice + "SP unfit all duties beyond 28 days, including those unable to work 32.5 hours a week, are graded P0. Refer to ROHT by the 6 month point."
+                break;
+            case 9:
+                sAdvice = sAdvice + "At Full Medical Boards only"
+                break;
+            case 10:
+                sAdvice = sAdvice + "With Army Occ Med approval/ratification only unless agreed Temp extension"
+                break;
+            case 11:
+                sAdvice = sAdvice + "With Army Occ Med approval/ratification only unless Annual Review"
+        }
+
+        return sAdvice
+    }
+
+    function fnWarnings() {
+        var sWarning = "";
+        console.log("In fnwarnings, iLBFromGrade = " + iLBFromGrade);
+        console.log("In fnwarnings, iLBToGrade = " + iLBToGrade);
+
+        if (iLBFromGrade == 1 & + iLBToGrade == 1) {
+            sWarning = sWarning + "Was MFD E1 and making MFD E1, are you sure you need a board? "
+        } else {
+            console.log("In fnwarnings, iLBBoard = " + iLBBoard);
+            switch (iLBBoard) {
+                case 1: // Annual
+                    if (iLBFromGrade != iLBToGrade) { sWarning = sWarning + "Changing grade - Annual Review? " }
+                    if (iLBFromGrade == 1) { sWarning = sWarning + "If was MFD E1 then why Annual Review? " }
+                    if (iLBFromGrade == 3 || iLBFromGrade == 5) { sWarning = sWarning + "If was TEMP why Annual Review? " }
+                    if (iLBFromGrade == 7) { sWarning = sWarning + "If was Pregnant then why Annual Review? " }
+                    if (iLBToGrade == 1) { sWarning = sWarning + "If Annual Review why upgrading to MFD? " }
+                    if (iLBToGrade == 3 || iLBToGrade == 5) { sWarning = sWarning + "If Annual Review why making TEMP? " }
+                    if (iLBToGrade == 7) { sWarning = sWarning + "If (Annual Review why using Pregnancy grade? " }
+                    if ((iLBFromGrade == 4 & + iLBToGrade == 6) || (iLBFromGrade == 6 & + iLBToGrade == 4)) { sWarning = sWarning + "Annual Review for PERM grade change? " }
+                    if ((iLBFromGrade == 8) || (iLBFromGrade == 9) || (iLBToGrade == 8) || (iLBToGrade == 9)) { sWarning = sWarning + "Annual Review for P0/P8? " }
+                    break;
+                case 2: // OMMB/FWAB(T)
+                    if (iLBFromGrade == 4 || iLBFromGrade == 6) { sWarning = sWarning + "Currently PERM, why are you using FWAB(T)? " }
+                    if (iLBToGrade == 4 || iLBToGrade == 6) { sWarning = sWarning + "Why are you using FWAB(T) to make PERM? " }
+                    break;
+                case 3: // TMMB/FWAB(P)
+                    if (iLBFromGrade == 1) {
+                        if ((iLBToGrade == 3) || (iLBToGrade == 5)) { sWarning = sWarning + "Currently MFD  &+ making TEMP, why are you using FWAB(P)? " }
+                        if ((iLBToGrade == 4) || (iLBToGrade == 6)) { sWarning = sWarning + "Permissible with FWAB(P) but note currently MFD E1  &+ making PERM? " }
+                        if (iLBToGrade == 7) { sWarning = sWarning + "Don't normally need FWAB(P) to downgrade if (pregnant. " }
+                    }
+                    if (iLBFromGrade == 2) {
+                        if ((iLBToGrade == 3) || (iLBToGrade == 5)) { sWarning = sWarning + "Currently MFD E2  &+ making TEMP, why are you using FWAB(P)? " }
+                        if ((iLBToGrade == 4) || (iLBToGrade == 6)) { sWarning = sWarning + "Permissible with FWAB(P) but note currently MFD E2  &+ making PERM? " }
+                        if (iLBToGrade == 7) { sWarning = sWarning + "Don't normally need FWAB(P) to downgrade if (pregnant. " }
+                    }
+                    if (iLBFromGrade == 3) {
+                        if (iLBToGrade == 1) { sWarning = sWarning + "Why are you using FWAB(P) to change MLD TEMP To MFD? " }
+                        if (iLBToGrade == 2) { sWarning = sWarning + "Why are you using FWAB(P) to change MLD TEMP To MFD E2? " }
+                        if (iLBToGrade == 3) { sWarning = sWarning + "Why are you using FWAB(P) to change MLD TEMP To MLD TEMP? " }
+                        if (iLBToGrade == 5) { sWarning = sWarning + "Why are you using FWAB(P) to change MLD TEMP To MND TEMP? " }
+                    }
+                    if (iLBFromGrade == 5) {
+                        if (iLBToGrade == 1) { sWarning = sWarning + "Why are you using FWAB(P) to change MND TEMP To MFD? " }
+                        if (iLBToGrade == 2) { sWarning = sWarning + "Why are you using FWAB(P) to change MND TEMP To MFD E2? " }
+                        if (iLBToGrade == 3) { sWarning = sWarning + "Why are you using FWAB(P) to change MND TEMP To MLD TEMP? " }
+                        if (iLBToGrade == 5) { sWarning = sWarning + "Why are you using FWAB(P) to change MND TEMP To MND TEMP? " }
+                    }
+                    if (iLBFromGrade == 4 & + iLBToGrade == 4) { sWarning = sWarning + "No change in PERM grade, why not using Annual Review? " }
+                    if (iLBFromGrade == 6 & + iLBToGrade == 6) { sWarning = sWarning + "No change in PERM grade, why not using Annual Review? " }
+                    if ((iLBFromGrade == 7 & + iLBToGrade == 1) || (iLBFromGrade == 7 & + iLBToGrade == 2)) { sWarning = sWarning + "Unless reason don't normally need FWAB(P) to upgrade after pregnancy? " }
+                    break;
+                case 4:
+                    sWarning = sWarning + "FMB should only be used by ROHT. "
+                    break;
+                case 5:
+                    sWarning = sWarning + "MOD(A) should only be used by ROHT. "
+                    break;
+            }
+        }
+
+        return sWarning
+    }
+
+    function subBoardTypeEstimate() {
+        // set LBBoard to a suggested option by index (0-based)
+        // (previous code toggled 'active' classes on <a> children)
+        switch (iLBToGrade) {
+            case 1:
+            case 2:
+            case 3:
+            case 5:
+            switch (iLBFromGrade) {
+                case 1: case 2: case 3: case 5: case 7: case 11:
+                setSelectIndex(LBBoard, 1); // “Annual” (example)
+                break;
+                default:
+                setSelectIndex(LBBoard, 2); // “FWAB(T)” (example)
+            }
+            break;
+            case 4:
+            case 6:
+            case 11:
+            if (iLBToGrade == iLBFromGrade) {
+                setSelectIndex(LBBoard, 0); // maybe “None” / “Keep”
+            } else {
+                setSelectIndex(LBBoard, 2);
+            }
+            break;
+        }
+    }
+
+
+    function singleActive(ctlKids, iSel) {
+        ctlKids.each(function () {
+            if ($(this).index() == iSel) {
+                if ($(this).hasClass("active") == false) {
+                    $(this).addClass("active");
+                }
+            } else {
+                if ($(this).hasClass("active")) {
+                    $(this).removeClass("active");
+                }
+            }
+
+        });
+    }
+
+    function fnGetUKDateAsString(date) {
+        var result = date.toLocaleDateString("en-GB", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        })
+
+        return result
+    }
+
+    // From - https://stackoverflow.com/questions/2706125/javascript-function-to-add-x-months-to-a-date
+    function addMonths(date, months) {
+        reviewDate = new Date(date)
+        var d = reviewDate.getDate();
+        reviewDate.setMonth(reviewDate.getMonth() + +months);
+        if (reviewDate.getDate() != d) {
+            reviewDate.setDate(0);
+        }
+        return reviewDate;
+    }
+
+    function subInitLims() {
+        var arrLimsE2Shaving, arrLimsE2SCT
+        var arrLimsLimitedLower, arrLimsLimitedUpper, arrLimsLimitedBack, arrLimsLimitedHearing, arrLimsLimitedSGrade, arrLimsLimitedMedical, arrLimsLimitedHeat, arrLimsLimitedCold
+        var arrLimsSevereLower2, arrLimsSevereUpper2, arrLimsSevereBack2, arrLimsSevereHearing2, arrLimsSevereSGrade2, arrLimsSevereMedical2, arrLimsSevereHeat2, arrLimsSevereCold2, arrLimsSeverePreg, arrLimsSevereChampix, arrLimsSevereRoaccutane
+
+        var arrCommentsE2Shaving, arrCommentsE2SCT
+        var arrCommentsLimitedLower, arrCommentsLimitedUpper, arrCommentsLimitedBack, arrCommentsLimitedHearing, arrCommentsLimitedSGrade, arrCommentsLimitedMedical, arrCommentsLimitedHeat, arrCommentsLimitedCold
+        var arrCommentsSevereLower2, arrCommentsSevereUpper2, arrCommentsSevereBack2, arrCommentsSevereHearing2, arrCommentsSevereSGrade2, arrCommentsSevereMedical2, arrCommentsSevereHeat2, arrCommentsSevereCold2, arrCommentsSeverePreg, arrCommentsSevereChampix, arrCommentsSevereRoaccutane
+
+        arrLimsE2Shaving = [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9]
+        arrLimsE2SCT = [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9]
+        arrSGE2Lims = [arrLimsE2Shaving, arrLimsE2SCT]
+
+        arrLimsLimitedLower = [9, 9, 9, 9, 9, 2, 2, 2, 2, 2, 2, 2, 2, 3, 1, 3, 2, 9, 2, 9, 9, 9, 1, 1, 1, 1, 9, 9, 9, 9, 9, 9, 1, 9, 9, 9, 9, 9, 9, 9, 9, 3, 9, 9, 3, 9]
+        arrLimsLimitedUpper = [9, 9, 9, 9, 9, 2, 2, 2, 2, 2, 2, 2, 2, 3, 1, 3, 2, 9, 2, 9, 9, 9, 1, 1, 1, 1, 9, 9, 9, 9, 9, 9, 1, 9, 9, 9, 9, 9, 9, 9, 9, 3, 9, 9, 3, 9]
+        arrLimsLimitedBack = [9, 9, 9, 9, 9, 2, 2, 2, 2, 2, 2, 2, 2, 3, 1, 3, 2, 9, 2, 9, 9, 9, 1, 1, 1, 1, 9, 9, 9, 3, 9, 9, 1, 9, 9, 9, 9, 9, 9, 9, 9, 3, 9, 9, 3, 9]
+        arrLimsLimitedHearing = [9, 9, 9, 9, 9, 2, 2, 2, 9, 2, 2, 2, 2, 9, 9, 9, 9, 9, 9, 2, 9, 9, 1, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 2, 9, 9, 3, 9]
+        arrLimsLimitedSGrade = [9, 9, 9, 9, 9, 2, 2, 2, 9, 2, 2, 2, 2, 9, 9, 9, 9, 9, 9, 9, 9, 9, 1, 9, 9, 9, 9, 9, 9, 9, 3, 9, 9, 9, 9, 9, 9, 9, 4, 9, 9, 9, 9, 9, 3, 9]
+        arrLimsLimitedMedical = [9, 9, 9, 9, 9, 2, 2, 2, 9, 2, 2, 2, 2, 9, 9, 9, 9, 9, 9, 9, 9, 9, 1, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 3, 9]
+        arrLimsLimitedHeat = [9, 9, 9, 9, 9, 2, 2, 2, 9, 2, 2, 2, 2, 9, 9, 9, 9, 9, 9, 9, 1, 9, 1, 9, 9, 9, 9, 9, 9, 9, 9, 4, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 3, 9]
+        arrLimsLimitedCold = [9, 9, 9, 9, 9, 2, 2, 2, 9, 2, 2, 2, 2, 9, 9, 9, 9, 2, 9, 9, 1, 9, 1, 9, 9, 9, 9, 9, 9, 9, 9, 4, 9, 9, 1, 2, 9, 9, 9, 9, 9, 2, 9, 9, 3, 9]
+
+        arrSGLimitedLims = [arrLimsLimitedLower, arrLimsLimitedUpper, arrLimsLimitedBack, arrLimsLimitedHearing, arrLimsLimitedSGrade, arrLimsLimitedMedical, arrLimsLimitedHeat, arrLimsLimitedCold]
+
+        arrLimsSevereLower2 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 2, 1, 2, 9, 9, 9, 1, 1, 1, 1, 1, 9, 9, 9, 9, 1, 1, 1, 9, 9, 9, 9, 9, 9, 9, 1, 1, 9, 2, 9]
+        arrLimsSevereUpper2 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 2, 1, 2, 9, 9, 9, 1, 1, 1, 1, 1, 9, 9, 9, 9, 1, 1, 1, 9, 9, 9, 9, 9, 9, 1, 1, 1, 9, 2, 9]
+        arrLimsSevereBack2 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 2, 1, 2, 9, 9, 9, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 9, 9, 9, 9, 9, 9, 1, 1, 1, 9, 2, 9]
+        arrLimsSevereHearing2 = [9, 9, 9, 9, 9, 1, 1, 1, 9, 2, 2, 1, 1, 9, 9, 9, 9, 9, 9, 2, 9, 9, 1, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 5, 2, 9, 9, 2, 9]
+        arrLimsSevereSGrade2 = [9, 9, 9, 9, 1, 1, 1, 1, 9, 2, 2, 1, 1, 9, 9, 9, 9, 9, 9, 9, 9, 9, 1, 9, 9, 9, 9, 9, 9, 9, 2, 9, 9, 9, 9, 9, 9, 9, 2, 9, 2, 9, 9, 9, 2, 9]
+        arrLimsSevereMedical2 = [9, 9, 9, 9, 1, 1, 1, 1, 9, 2, 2, 1, 1, 9, 9, 9, 9, 9, 9, 9, 9, 9, 1, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 2, 9]
+        arrLimsSevereHeat2 = [9, 9, 9, 9, 9, 1, 1, 1, 9, 2, 2, 1, 1, 9, 9, 9, 9, 9, 9, 9, 1, 9, 1, 9, 9, 9, 9, 9, 9, 9, 9, 4, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 2, 9]
+        arrLimsSevereCold2 = [9, 9, 9, 9, 9, 1, 1, 1, 9, 2, 2, 1, 1, 9, 9, 9, 9, 2, 9, 9, 1, 9, 1, 9, 9, 9, 9, 9, 9, 9, 9, 4, 9, 9, 1, 2, 9, 9, 9, 9, 9, 2, 9, 9, 2, 9]
+        arrLimsSeverePreg = [1, 9, 9, 1, 1, 1, 1, 1, 9, 2, 1, 9, 1, 1, 1, 2, 2, 2, 1, 2, 1, 1, 1, 1, 9, 9, 1, 1, 9, 9, 9, 9, 1, 1, 9, 9, 1, 9, 3, 1, 3, 1, 9, 1, 2, 1]
+        arrLimsSevereChampix = [9, 9, 9, 9, 9, 2, 9, 2, 9, 9, 2, 9, 2, 9, 9, 9, 2, 9, 9, 9, 9, 9, 1, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 3, 1, 1, 1, 9, 9]
+        arrLimsSevereRoaccutane = [9, 9, 9, 9, 9, 9, 2, 1, 9, 1, 9, 1, 1, 9, 9, 9, 2, 1, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 2, 9, 9, 9, 9]
+
+        arrSGSevereLims = [arrLimsSevereLower2, arrLimsSevereUpper2, arrLimsSevereBack2, arrLimsSevereHearing2, arrLimsSevereSGrade2, arrLimsSevereMedical2, arrLimsSevereHeat2, arrLimsSevereCold2, arrLimsSeverePreg, arrLimsSevereChampix, arrLimsSevereRoaccutane]
+
+        // Comments
+        arrCommentsE2Shaving = ["", "Prolonged periods in CBRN PPE may lead to need for primary healthcare. See 'Other' section below.", "", "", "Unfit daily shaving. To maintain close cropped stubble or shave maximum of twice weekly.  Can shave prior to CBRN training e.g. MATT but prolonged periods in CBRN PPE may lead to need for primary healthcare.", "", "", "", "", "", "Can shave prior to single public parades e.g. Remembrance services but not daily e.g. ceremonial guards.", "", "", "", "Prolonged periods in CBRN PPE may lead to need for primary healthcare.", "", "", ""]
+        arrCommentsE2SCT = ["", "Something about SCT", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrSGE2Comments = [arrCommentsE2Shaving, arrCommentsE2SCT]
+
+        arrCommentsLimitedLower = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrCommentsLimitedUpper = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrCommentsLimitedBack = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrCommentsLimitedHearing = ["", "", "", "", "", "", "", "", "", "", "", "", "Must use double hearing protection", "", "", "", "", ""]
+        arrCommentsLimitedSGrade = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrCommentsLimitedMedical = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrCommentsLimitedHeat = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrCommentsLimitedCold = ["If done then warm kit", "If done then warm kit", "", "", "", "", "", "", "Appropriate", "If cold then Guardroom", "", "", "", "", "", "", "", ""]
+
+        arrSGLimitedComments = [arrCommentsLimitedLower, arrCommentsLimitedUpper, arrCommentsLimitedBack, arrCommentsLimitedHearing, arrCommentsLimitedSGrade, arrCommentsLimitedMedical, arrCommentsLimitedHeat, arrCommentsLimitedCold]
+
+
+        arrCommentsSevereLower2 = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrCommentsSevereUpper2 = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrCommentsSevereBack2 = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrCommentsSevereHearing2 = ["", "", "", "", "", "", "", "", "", "", "", "", "Must use double hearing protection", "", "", "", "", ""]
+        arrCommentsSevereSGrade2 = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrCommentsSevereMedical2 = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrCommentsSevereHeat2 = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
+        arrCommentsSevereCold2 = ["If done then warm kit", "If done then warm kit", "", "", "", "", "", "", "Appropriate", "If cold then Guardroom", "", "", "", "", "", "", "", ""]
+        arrCommentsSeverePreg = ["", "", "Not to be exposed to loud noises", "Avoid overheating or extreme cold", "No exposure to VHF/HF, No POL, No CBRN Trg", "Heavy lifting only as tolerated", "Requires frequent rest  breaks", "No work in vehicle parks or areas with idling vehicles", "", "", "Steady state PT only, no max effort, No 'green' PT, 'contact PT' or contact sports.", "Required for all potential COSHH exposures", "", "Not to deploy", "", "", "", ""]
+        arrCommentsSevereChampix = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "Not deployable. Temporary downgrade. Must attend medical centre for review to be upgraded.", "", "", ""]
+        arrCommentsSevereRoaccutane = ["", "", "", "", "", "", "", "", "", "", "will require access to issue sunglasses in bright light conditions", "", "Unable to work on safety critical tasks in reduced or bright light conditions. Unfit night ranges", "", "Not deployable during the course of treatment.  Will need to attend regular medical appointments. Likely to be upgraded to the previous grade once treatment completed.", "Avoid prolonged exposure to sunlight and ensure the individual wears sun cream if exposure cannot be prevented.", "", ""]
+
+        arrSGSevereComments = [arrCommentsSevereLower2, arrCommentsSevereUpper2, arrCommentsSevereBack2, arrCommentsSevereHearing2, arrCommentsSevereSGrade2, arrCommentsSevereMedical2, arrCommentsSevereHeat2, arrCommentsSevereCold2, arrCommentsSeverePreg, arrCommentsSevereChampix, arrCommentsSevereRoaccutane]
+    }
+
+    window.LBToGradeFunc = function (e) {
+        // nothing for now
+    }
+}
+
+
+</script>
+
+</body>
+</html>
+
+{% endblock %}
