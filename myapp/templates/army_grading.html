@@ -763,6 +763,7 @@
       }
       case 8: { // Label
         common.classList.add('label');
+        common.dataset.id = ctrl.CID;
         if (aClass) common.classList.add(aClass);
         common.innerHTML = (ctrl.TEXT || '').replaceAll('&lt;br&gt;','<br>');
         parentNode.appendChild(common);
@@ -851,6 +852,7 @@
       case 2: { // Calendar
         const tx = document.createElement('div');
         tx.className = 'textbox';
+        tx.dataset.id = ctrl.CID;
         tx.textContent = props.DEFAULT ? String(props.DEFAULT) : 'yyyy-mm-dd';
         common.appendChild(tx);
         parentNode.appendChild(common);
@@ -1015,8 +1017,8 @@ function setSelectIndex(sel, idx) {
     const CBPulM = document.querySelector("[data-id='CBPulM']");
     const CBPulS = document.querySelector("[data-id='CBPulS']");
     //const CBPulP = $("[data-id='CBPulP']");
-    const TBPermTemp2 = document.querySelector("[data-id='TBPermTemp2'] div"); // actually a label
-    const TBMDS = document.querySelector("[data-id='TBMDS'] div"); // actually a label
+    const TBPermTemp2 = document.querySelector("[data-id='TBPermTemp2']"); // actually a label
+    const TBMDS = document.querySelector("[data-id='TBMDS']"); // actually a label
     const dtReview = document.querySelector("[data-id='dtReview']");
 
     // Set event handlers for groups of controls - similar in VBA to assigning them all to a class event.
@@ -1547,7 +1549,7 @@ function setSelectIndex(sel, idx) {
                 break;
             case 3: // P3 MLD Temp
                 CBPulP.options[2].selected = true
-                TBPermTemp2.innerHTML = "TEMP"
+                TBPermTemp2.innerHTML= "TEMP"
                 TBMDS.innerHTML = "Limited"
                 break;
             case 4:
