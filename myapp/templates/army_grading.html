@@ -68,14 +68,14 @@
     {"ID":"OPT2106", "CID":"Label10", "CTYPE":8, "PARENT":"PG23271", "TEXT":"P8", "X":49, "Y":246, "FSIZE":9.0, "BCOL":-16192, "H":20, "W":51, "TAB":11, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2107", "CID":"Label11", "CTYPE":8, "PARENT":"PG23271", "TEXT":"P7 MLD T", "X":44, "Y":269, "FSIZE":9.0, "BCOL":-2894893, "H":20, "W":62, "TAB":12, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2108", "CID":"Label12", "CTYPE":8, "PARENT":"PG23271", "TEXT":"P7 MLD P", "X":44, "Y":292, "FSIZE":9.0, "BCOL":-2894893, "H":20, "W":62, "TAB":13, "DISPLAY":true, "STYLE":"eformLabel"},
-    {"ID":"OPT2109", "CID":"Label13", "CTYPE":8, "PARENT":"PG23271", "TEXT":"To", "X":104, "Y":36, "FSIZE":8.25, "BCOL":-657956, "H":23, "W":37, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2109", "CID":"Label13", "CTYPE":8, "PARENT":"PG23271", "TEXT":"To", "X":104, "Y":44, "FSIZE":8.25, "BCOL":-657956, "H":23, "W":37, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2110", "CID":"Label14", "CTYPE":8, "PARENT":"PG23271", "TEXT":"E2", "X":145, "Y":37, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":74, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
-    {"ID":"OPT2111", "CID":"Label13", "CTYPE":8, "PARENT":"PG23271", "TEXT":"From", "X":12, "Y":36, "FSIZE":8.25, "BCOL":-657956, "H":23, "W":37, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2111", "CID":"Label13", "CTYPE":8, "PARENT":"PG23271", "TEXT":"From", "X":12, "Y":44, "FSIZE":8.25, "BCOL":-657956, "H":23, "W":37, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2112", "CID":"Label15", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Limited", "X":225, "Y":37, "FSIZE":8.25, "BCOL":-64, "H":23, "W":84, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2114", "CID":"Label16", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Severe", "X":315, "Y":36, "FSIZE":8.25, "BCOL":-8000, "H":23, "W":84, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2116", "CID":"btnReset", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Reset to Original Values", "X":10, "Y":11, "FSIZE":9.0, "BCOL":-32640, "H":23, "W":167, "TAB":0, "DISPLAY":true, "STYLE":"eformButton"},
     {"ID":"OPT2117", "CID":"chkBolSet", "CTYPE":3, "PARENT":"PG23271", "TEXT":"CheckBox1", "X":191, "Y":10, "FSIZE":9.0, "BCOL":-657956, "H":24, "W":28, "TAB":0, "DISPLAY":true, "STYLE":"eformCheckBox"},
-    {"ID":"OPT2118", "CID":"Label17", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Add to current lims", "X":207, "Y":9, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":123, "TAB":23, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2118", "CID":"Label17", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Add to current lims", "X":208, "Y":9, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":123, "TAB":23, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2119", "CID":"CBPulP", "CTYPE":4, "PARENT":"PG23271", "X":437, "Y":38, "FSIZE":9.0, "BCOL":-1, "H":23, "W":38, "TAB":25, "DISPLAY":true, "STYLE":"eformDropDownList"},
     {"ID":"OPT2120", "CID":"Label18", "CTYPE":8, "PARENT":"PG23271", "TEXT":"P", "X":407, "Y":37, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2121", "CID":"Label19", "CTYPE":8, "PARENT":"PG23271", "TEXT":"U", "X":407, "Y":66, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
@@ -807,14 +807,25 @@
         const sel = document.createElement('select');
         sel.className = 'select';
         sel.dataset.id = ctrl.CID; 
-        sel.style.width='95%'; sel.style.height='100%';
+        sel.style.width = '100%';
+        sel.style.height = '100%';
         sel.style.fontSize = fs + 'px';
-        // NEW: populate from tpcp
+        sel.style.paddingRight = '1.2em';         // <-- add some space for the arrow
+        sel.style.boxSizing = 'border-box';       // ensure it stays same overall width
+        sel.style.appearance = 'none';            // optional: hide native arrow (Chrome/Edge)
+        sel.style.webkitAppearance = 'none';      // Safari/Chrome
+        sel.style.mozAppearance = 'none';         // Firefox
+        sel.style.backgroundImage = 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'6\'><path fill=\'black\' d=\'M0,0 L10,0 L5,6 Z\'/></svg>")';
+        sel.style.backgroundRepeat = 'no-repeat';
+        sel.style.backgroundPosition = 'right 4px center';
+        sel.style.backgroundSize = '10px 6px';
+
         fillOptionsFromProps(sel, propMap.get(ctrl.ID));
+
         common.appendChild(sel);
         parentNode.appendChild(common);
         break;
-}
+        }
       case 10: { // ListBox (custom list-group with <a> items)
         // outer wrapper <div class="abs"> is already positioned/sized via `common`
         const box = document.createElement('div');
