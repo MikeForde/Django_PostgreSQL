@@ -807,7 +807,8 @@
         const sel = document.createElement('select');
         sel.className = 'select';
         sel.dataset.id = ctrl.CID; 
-        sel.style.width='100%'; sel.style.height='100%';
+        sel.style.width='95%'; sel.style.height='100%';
+        sel.style.fontSize = fs + 'px';
         // NEW: populate from tpcp
         fillOptionsFromProps(sel, propMap.get(ctrl.ID));
         common.appendChild(sel);
