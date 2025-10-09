@@ -3,18 +3,31 @@
 {% block title %}Welcome to TT-Mick-P{% endblock %}
 
 {% block content %}
-<h1>Welcome to TT-Mick-P</h1>
-<p>This WebApp is designed to demonstrate key aspects of data/clinical code entry</p>
-<p>That is to say, the underlying database structure of the data when stored and the input mechanisms</p>
-<p>It also showcases some POC data input ideas as food-for-thought for future implementations</p>
+<div class="home-content">
+    <div class="home-spacer">
+        <h1>Welcome to TT-Mick-P</h1>
+        <p>This WebApp is designed to demonstrate key aspects of data/clinical code entry</p>
+        <p>That is to say, the underlying database structure of the data when stored and the input mechanisms</p>
+        <p>It also showcases some POC data input ideas as food-for-thought for future implementations</p>
 
-<ul>
-    <li><a href="{% url 'event_list' %}">View Events Data Examples</a></li>
-    <li><a href="{% url 'consultation_list' %}">View Consultation Data Examples</a></li>
-    <!-- <li><a href="/admin/">Go to Admin Site</a></li> -->
-    <li><a href="/import-tex/">Input Template rendering and associated Read codes</a></li>
-    <li><a href="/dental/">Dental Chart rendering and associated Read codes</a></li>
-    <li><a href="/audio/">Audiometry POC - Input, Comparison and Analysis Combined</a></li>
-    <li><a href="/army/grading">Army Advanded Grading Concept (AGC) - POC</a></li>
-</ul>
+        <ul>
+            <li><a href="{% url 'event_list' %}">View Events Data Examples</a></li>
+            <li><a href="{% url 'consultation_list' %}">View Consultation Data Examples</a></li>
+            <!-- <li><a href="/admin/">Go to Admin Site</a></li> -->
+            <li><a href="/import-tex/">Input Template rendering and associated Read codes</a></li>
+            <li><a href="/dental/">Dental Chart rendering and associated Read codes</a></li>
+            <li><a href="/audio/">Audiometry POC - Input, Comparison and Analysis Combined</a></li>
+            <li><a href="/army/grading">Army Advanded Grading Concept (AGC) - POC</a></li>
+        </ul>
+    </div>
+</div>
+
+<style>
+    .home-content {
+        display: flex;
+        justify-content: center;   /* horizontally centre */
+        width: 100%;
+    }
+
+</style>
 {% endblock %}
