@@ -44,7 +44,7 @@ $(document).ready(function () {
         const cssTargetWidth = container.clientWidth || window.innerWidth;
 
         // Don’t upscale above design size; scale down on smaller screens
-        uiScale = uiScale = cssTargetWidth / DESIGN.width;
+        uiScale = uiScale = cssTargetWidth / DESIGN.width * 0.9;
 
         // Set CSS (display) size
         chartCanvas.style.width = (DESIGN.width * uiScale) + 'px';
