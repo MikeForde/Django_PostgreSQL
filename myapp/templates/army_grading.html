@@ -68,6 +68,8 @@
         position:absolute;
         top:0; left:0;
         transform-origin: top left;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
     }
   </style>
 </head>
@@ -2223,10 +2225,9 @@ function wireListGroup(el) {
     }
 
     function fitPage() {
-        const outer  = document.getElementById('page-outer');
-        const spacer = document.getElementById('page-spacer');
-        const page   = document.getElementById('page');
-        if (!outer || !spacer || !page) return;
+        const outer = document.getElementById('page-outer');
+        const page  = document.getElementById('page');
+        if (!outer || !page) return;
 
         const { w: natW, h: natH } = measureAbsCanvas(page);
 
@@ -2234,19 +2235,28 @@ function wireListGroup(el) {
         const availH = Math.max(1, outer.clientHeight - VIEWPORT_PADDING);
 
         const rawScale = Math.min(availW / natW, availH / natH);
-        const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, rawScale || 1));
+        const SCALE_MARGIN = 0.96; // your safety margin
+        const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, rawScale)) * SCALE_MARGIN;
 
-        page.style.transform = `scale(${scale * 0.96})`;
+        // Prefer CSS zoom (crisp text in Chromium/Edge). Fallback to transform for Firefox.
+        if (CSS.supports('zoom', '1')) {
+            page.style.zoom = String(scale);
+            page.style.transform = '';                   // clear transform
+            page.style.transformOrigin = '';
+        } else {
+            page.style.zoom = '';                        // clear zoom
+            page.style.transformOrigin = 'top left';
+            page.style.transform = `scale(${scale})`;
+        }
 
-        // size the spacer so scrollbars (when needed) expose the full right/bottom
+        // Keep scroll area correct either way
         const scaledW = Math.ceil(natW * scale);
         const scaledH = Math.ceil(natH * scale);
-        spacer.style.width  = scaledW + 'px';
-        spacer.style.height = scaledH + 'px';
-
-        // also expose values to CSS if you like
         outer.style.setProperty('--scaled-w', scaledW + 'px');
         outer.style.setProperty('--scaled-h', scaledH + 'px');
+
+        outer.style.justifyContent = scaledW < outer.clientWidth  ? 'center' : 'flex-start';
+        outer.style.alignItems     = scaledH < outer.clientHeight ? 'start'  : 'flex-start';
     }
 
     // Run once on load (after CSS is applied)
