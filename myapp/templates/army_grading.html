@@ -905,14 +905,21 @@
         break;
         }
       case 2: { // Calendar
-        const tx = document.createElement('div');
-        tx.className = 'textbox';
-        tx.dataset.id = ctrl.CID;
-        tx.textContent = props.DEFAULT ? String(props.DEFAULT) : 'yyyy-mm-dd';
-        common.appendChild(tx);
+        const inp = document.createElement('input');
+        inp.type = 'date';
+        inp.className = 'eformCalendar eformTextBox';
+        inp.setAttribute('data-id', ctrl.CID || ctrl.ID);
+        inp.style.width = '100%';
+        inp.style.height = '100%';
+        // optional: seed from DEFAULT if present and parsable
+        if (props.DEFAULT) {
+            const d = new Date(props.DEFAULT);
+            if (!Number.isNaN(d.getTime())) inp.value = toDateInputValue(d);
+        }
+        common.appendChild(inp);
         parentNode.appendChild(common);
         break;
-      }
+        }
       default: {
         // Fallback box
         common.classList.add('label');
@@ -1727,7 +1734,8 @@ function wireListGroup(el) {
         }
 
         reviewDate = addMonths(currentDate, iMonths)
-        dtReview.value = fnGetUKDateAsString(reviewDate)
+        console.log("Review Date: " + reviewDate)
+        dtReview.value = toDateInputValue(reviewDate)
         dtReview.dispatchEvent(new Event("keyup"))
         dtReview.dispatchEvent(new Event("change"))
 
@@ -2007,6 +2015,11 @@ function wireListGroup(el) {
         })
 
         return result
+    }
+
+    function toDateInputValue(d) {
+        const pad = n => String(n).padStart(2,'0');
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; // yyyy-mm-dd
     }
 
     // From - https://stackoverflow.com/questions/2706125/javascript-function-to-add-x-months-to-a-date
