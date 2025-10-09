@@ -10,7 +10,9 @@
         gap: 16px;
         align-items: flex-start;
         flex-wrap: wrap;
+        width: 100%;
         max-width: 2200px;
+        margin: 0 auto;
     }
 
     .canvas-col {
@@ -67,33 +69,40 @@
         font-size: 12px
     }
 
+    .dental-wrapper {
+        display: flex;
+        justify-content: center;   /* horizontally centre */
+        width: 100%;
+    }
+
 </style>
+<div class="dental-wrapper">
+    <div class="dental-layout">
+        <div class="canvas-col">
 
-<div class="dental-layout">
-    <div class="canvas-col">
+            <canvas id="chartCanvas" width="800" height="400"></canvas>
 
-        <canvas id="chartCanvas" width="800" height="400"></canvas>
+            <div id="tabControls" style="margin:10px 0;">
+                <button style="background-color: rgb(236, 234, 234);"
+                    onclick="setActiveTab('Observations')">Observations</button>
+                <button onclick="setActiveTab('Existing Restorations')">Existing Restorations</button>
+                <button onclick="setActiveTab('Planned Restorations')">Planned Restorations</button>
+                <button onclick="setActiveTab('Replace Restorations')">Replace Restorations</button>
+            </div>
 
-        <div id="tabControls" style="margin:10px 0;">
-            <button style="background-color: rgb(236, 234, 234);"
-                onclick="setActiveTab('Observations')">Observations</button>
-            <button onclick="setActiveTab('Existing Restorations')">Existing Restorations</button>
-            <button onclick="setActiveTab('Planned Restorations')">Planned Restorations</button>
-            <button onclick="setActiveTab('Replace Restorations')">Replace Restorations</button>
+            <canvas id="itemsCanvas" width="800" height="200"></canvas>
         </div>
 
-        <canvas id="itemsCanvas" width="800" height="200"></canvas>
+        <aside class="panel-col">
+            <h4>Selections</h4>
+            <div class="muted" id="panelMeta">0 items</div>
+            <div id="problemsPanel"></div>
+            <div class="panel-actions">
+                <button id="clearAllBtn" type="button">Clear all</button>
+                <button id="copyJsonBtn" type="button">Copy JSON</button>
+            </div>
+        </aside>
     </div>
-
-    <aside class="panel-col">
-        <h4>Selections</h4>
-        <div class="muted" id="panelMeta">0 items</div>
-        <div id="problemsPanel"></div>
-        <div class="panel-actions">
-            <button id="clearAllBtn" type="button">Clear all</button>
-            <button id="copyJsonBtn" type="button">Copy JSON</button>
-        </div>
-    </aside>
 </div>
 
 <!-- jQuery + chart JS remain the same -->

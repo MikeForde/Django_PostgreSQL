@@ -70,6 +70,7 @@
         transform-origin: top left;
         -webkit-font-smoothing: antialiased;
         text-rendering: optimizeLegibility;
+        margin-left: -30px;
     }
   </style>
 </head>
@@ -2199,7 +2200,7 @@ function wireListGroup(el) {
 // ---- constants (declare ONCE) ----
     const MIN_SCALE = 0.75;
     const MAX_SCALE = 1.5;
-    const VIEWPORT_PADDING = 16; // avoid touching edges / account for small chrome
+    const VIEWPORT_PADDING = 10; // avoid touching edges / account for small chrome
 
     // Measure the absolute-positioned canvas by scanning direct children.
     // Falls back to CSS --page-w/--page-h if children aren't there yet.
@@ -2235,7 +2236,7 @@ function wireListGroup(el) {
         const availH = Math.max(1, outer.clientHeight - VIEWPORT_PADDING);
 
         const rawScale = Math.min(availW / natW, availH / natH);
-        const SCALE_MARGIN = 0.96; // your safety margin
+        const SCALE_MARGIN = 0.94; // your safety margin
         const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, rawScale)) * SCALE_MARGIN;
 
         // Prefer CSS zoom (crisp text in Chromium/Edge). Fallback to transform for Firefox.

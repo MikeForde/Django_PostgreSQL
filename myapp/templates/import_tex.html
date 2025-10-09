@@ -4,260 +4,213 @@
 {% block title %}Templates | TT-Mick-P{% endblock %}
 {% block content %}
 
-<div class="tex-layout">
-  <form id="tex-controls" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="controls-row">
-      <div>
-        <label for="{{ form.tex_file.id_for_label }}"><strong>Upload TEX</strong></label><br>
-        {{ form.tex_file }}
-      </div>
-
-      <div>
-        <label><strong>Or pick from library</strong></label><br>
-
-        <!-- Hover trigger + radios -->
-        <div id="lib-trigger" style="display:inline-flex; gap:8px; align-items:center; position:relative;">
-          <label style="margin:0;">
-            <input type="radio" name="libmode" value="list" {% if request.POST.libmode == 'list' or not request.POST.libmode %}checked{% endif %}>
-            List
-          </label>
-          <label style="margin:0;">
-            <input type="radio" name="libmode" value="search" {% if request.POST.libmode == 'search' %}checked{% endif %}>
-            Search
-          </label>
-          <label style="margin:0;">
-            <input type="radio" name="libmode" value="tree" {% if request.POST.libmode == 'tree' %}checked{% endif %}>
-            Tree
-          </label>
-
-          <!-- Flyout panel (only used for search/tree) -->
-          <div id="lib-flyout" style="display:none;">
-            <!-- Mode 2: search as you type -->
-            <div id="lib-pane-search" style="display:none; max-width:480px;">
-              <input id="lib-search-input" type="text" placeholder="Search by name, filename, or TARGETPATH…"
-                    style="width:100%; box-sizing:border-box; padding:4px 6px; font-size:12px;">
-              <div id="lib-search-results"
-                  style="margin-top:6px; max-height:220px; overflow:auto; border:1px solid #ddd; font-size:12px; line-height:1.3;"></div>
-            </div>
-
-            <!-- Mode 3: tree / folder view -->
-            <div id="lib-pane-tree"
-                style="display:none; max-width:480px; border:1px solid #ddd; padding:6px; max-height:260px; overflow:auto;
-                        font-size:12px; line-height:1.3;">
-              <div id="lib-tree"></div>
-            </div>
-          </div>
+<div class="tex-wrapper">
+  <div class="tex-spacer">
+  <div class="tex-layout">
+    <form id="tex-controls" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="controls-row">
+        <div>
+          <label for="{{ form.tex_file.id_for_label }}"><strong>Upload TEX</strong></label><br>
+          {{ form.tex_file }}
         </div>
 
-        <!-- Mode 1: the original long list (remains inline) -->
-        <div id="lib-pane-list" style="margin-top:6px;">
-          {{ form.library_choice }}
-        </div>
-      </div>
-      <div>
-        <strong>Then render:</strong>
-        <span id="selected-tex-label" style="font-weight:800;">no tex file selected</span><br>
-        <button type="submit">Render</button>
-      </div>
-      </div>
-  </form>
+        <div>
+          <label><strong>Or pick from library</strong></label><br>
 
-  {% if controls %}
-  <form d="tex-render" method="post" action="{% url 'submit_tex_form' %}">
-    {% csrf_token %}
-    <div class="tex-work">
+          <!-- Hover trigger + radios -->
+          <div id="lib-trigger" style="display:inline-flex; gap:8px; align-items:center; position:relative;">
+            <label style="margin:0;">
+              <input type="radio" name="libmode" value="list" {% if request.POST.libmode == 'list' or not request.POST.libmode %}checked{% endif %}>
+              List
+            </label>
+            <label style="margin:0;">
+              <input type="radio" name="libmode" value="search" {% if request.POST.libmode == 'search' %}checked{% endif %}>
+              Search
+            </label>
+            <label style="margin:0;">
+              <input type="radio" name="libmode" value="tree" {% if request.POST.libmode == 'tree' %}checked{% endif %}>
+              Tree
+            </label>
 
-    {# Canvas (left) #}
-    <div
-      style="position:relative; flex:0 0 auto; border:1px solid #ccc; width:{{ canvas.width }}px; height:{{ canvas.height }}px; font-family:sans-serif, 'MS Sans Serif', Tahoma, Arial; font-size:10px; line-height:1.2; background:#fff;">
-
-      {% for c in controls %}
-      {% if c.props.Visible != 'False' %}
-      <div class="ctrl readcode-host"
-          data-readcodes="{{ c.hover_codes|default:''|escapejs }}"
-          style="position:absolute; left:{{ c.x }}px; top:{{ c.y }}px; width:{{ c.width|add:6 }}px; height:{{ c.height }}px; overflow:visible;">
-
-        {# Labels #}
-        {% if 'Label' in c.type %}
-          <label style="display:block; width:{{ c.width|add:10 }}px;
-                        {% if c.font_name %}font-family:{% if ' ' in c.font_name %}'{{ c.font_name }}'{% else %}{{ c.font_name }}{% endif %}, sans-serif;{% endif %}
-                        {% if c.font_size_pt %}font-size:{{ c.font_size_pt|add:-1 }}pt;{% endif %}
-                        {% if c.font_color %}color:{{ c.font_color }};{% endif %}
-                        font-weight:{% if c.is_bold %}700{% else %}400{% endif %};background-color:#fff;">
-            {{ c.caption|default:c.name }}
-          </label>
-
-        {# Buttons #}
-        {% elif 'Button' in c.type %}
-          <button type="button" name="{{ c.name }}" tabindex="{{ c.props.TabOrder|default:'0' }}" style="font-size: 10px;">
-            {{ c.caption|default:c.name }}
-          </button>
-
-        {# Read lists (classic + minimised). Add machine-readable labels/captions for export. #}
-        {% elif 'ReadList' in c.type %}
-          <div class="rl-wrap"
-              style="white-space:normal;"
-              data-name="{{ c.name }}"
-              data-caption="{{ c.caption|default:'' }}">
-            {# Visible caption for classic (non-minimised) lists. Give it a class to find easily. #}
-            {% if c.caption and not c.rl_minimised %}
-              <div class="rl-caption" style="font-weight:600; margin-bottom:-1px;">{{ c.caption }}</div>
-            {% endif %}
-
-            {% if c.rl_minimised and c.rl_multi %}
-              {# Minimized MULTI (custom multiselect) #}
-              <div class="ms" id="ms_{{ c.name }}"
-                  style="position:relative; display:inline-block; min-width:140px;"
-                  data-caption="{{ c.caption|default:'' }}">
-                <button type="button"
-                        class="ms-btn"
-                        aria-haspopup="listbox"
-                        aria-expanded="false"
-                        aria-label="{{ c.caption|default:'Select options' }}"
-                        style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-width:140px; padding:0px 6px; border:1px solid #888; background:#fff; cursor:pointer; font-size: 10.5px;">
-                  <span class="ms-label">{{ c.caption|default:"Select…" }}</span><span aria-hidden="true">▾</span>
-                </button>
-                <div class="ms-panel"
-                    style="position:absolute; top:100%; left:0; z-index:1000; display:none; border:1px solid #888; background:#fff; max-height:180px; overflow:auto; min-width:220px; padding:6px; box-shadow:0 2px 6px rgba(0,0,0,.15);">
-                  {% for opt in c.options %}
-                    <label style="display:block; white-space:nowrap;">
-                      <input type="checkbox"
-                            name="{{ c.name }}[]"
-                            value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
-                      {{ opt.label }}
-                    </label>
-                  {% endfor %}
-                </div>
+            <!-- Flyout panel (only used for search/tree) -->
+            <div id="lib-flyout" style="display:none;">
+              <!-- Mode 2: search as you type -->
+              <div id="lib-pane-search" style="display:none; max-width:480px;">
+                <input id="lib-search-input" type="text" placeholder="Search by name, filename, or TARGETPATH…"
+                      style="width:100%; box-sizing:border-box; padding:4px 6px; font-size:12px;">
+                <div id="lib-search-results"
+                    style="margin-top:6px; max-height:220px; overflow:auto; border:1px solid #ddd; font-size:12px; line-height:1.3;"></div>
               </div>
 
-            {% elif c.rl_minimised %}
-              {# Minimized SINGLE (native select, size=1). Add aria/data-caption. #}
-              <select name="{{ c.name }}"
-                      id="{{ c.name }}"
-                      size="1"
-                      tabindex="{{ c.props.TabOrder|default:'0' }}"
-                      style="min-width:140px; font-size: 10.5px;"
-                      aria-label="{{ c.caption|default:'Select…' }}"
-                      data-caption="{{ c.caption|default:'' }}">
-                <option value="" selected disabled hidden>{{ c.caption|default:"Select…" }}</option>
-                {% for opt in c.options %}
-                  <option value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
-                    {{ opt.label }}
-                  </option>
-                {% endfor %}
-              </select>
-
-            {% else %}
-              {# Classic list (single or multi via multiple attribute). Add class + aria/data-caption. #}
-              <select name="{{ c.name }}{% if c.rl_multi %}[]{% endif %}"
-                      id="{{ c.name }}"
-                      class="rl-classic"
-                      {% if c.rl_multi %}multiple{% endif %}
-                      size="{{ c.rl_size|default:5 }}"
-                      tabindex="{{ c.props.TabOrder|default:'0' }}"
-                      style="min-width:120px; font-size: 10.5px;"
-                      aria-label="{{ c.caption|default:c.name }}"
-                      data-caption="{{ c.caption|default:'' }}">
-                {% for opt in c.options %}
-                  <option value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
-                    {{ opt.label }}
-                  </option>
-                {% endfor %}
-              </select>
-            {% endif %}
-
-            {% if c.rl_date_prompt %}
-              <div style="margin-top:6px;">
-                <label for="{{ c.name }}_date" style="margin-right:6px;">Date:</label>
-                <input id="{{ c.name }}_date"
-                      name="{{ c.name }}_date"
-                      type="date"
-                      tabindex="{{ c.props.TabOrder|default:'0' }}"
-                      aria-label="{{ c.caption|default:c.name }} date"
-                      data-caption="{{ c.caption|default:'' }}">
+              <!-- Mode 3: tree / folder view -->
+              <div id="lib-pane-tree"
+                  style="display:none; max-width:480px; border:1px solid #ddd; padding:6px; max-height:260px; overflow:auto;
+                          font-size:12px; line-height:1.3;">
+                <div id="lib-tree"></div>
               </div>
-            {% endif %}
+            </div>
           </div>
 
-        {# ReadCode: for TEmisReadCode and TEmisQuestionReadCode #}
-        {% elif 'ReadCode' in c.type %}
-        <div class="rc-row readcode-host"
-            data-readcodes="{{ c.rc_code|default:'' }} — {{ c.rc_term|default:'' }}{% if c.rc_has_negation %}\n\n{{ c.rc_neg_prefix }}{{ c.rc_code }} — Not - {{ c.rc_term }}{% endif %}{% if c.props.TextAuto %}\nAuto-Entered Text: {{ c.props.TextAuto }}{% endif %}"
-            style="white-space:normal;">
+          <!-- Mode 1: the original long list (remains inline) -->
+          <div id="lib-pane-list" style="margin-top:6px;">
+            {{ form.library_choice }}
+          </div>
+        </div>
+        <div>
+          <strong>Then render:</strong>
+          <span id="selected-tex-label" style="font-weight:800;">no tex file selected</span><br>
+          <button type="submit">Render</button>
+        </div>
+        </div>
+    </form>
 
-          <div class="rc-wrap">
-            {# Prompt / caption #}
-            <label class="rc-prompt" for="{{ c.name }}_yes">{{ c.rc_prompt }}</label>
+    {% if controls %}
+    <form d="tex-render" method="post" action="{% url 'submit_tex_form' %}">
+      {% csrf_token %}
+      <div class="tex-work">
 
-            {# --- CASE A: Question with Negation (unchanged) ------------------------- #}
-            {% if c.rc_is_question and c.rc_has_negation %}
-              <label class="rc-yes-label">
-                <input id="{{ c.name }}_yes"
-                      class="rc-yesno"
-                      data-pair="{{ c.name }}_no"
-                      name="{{ c.name }}_checked_yes"
-                      type="checkbox"
-                      value="{{ c.rc_code|default:'' }}"
-                      tabindex="{{ c.props.TabOrder|default:'0' }}"
-                      style="vertical-align:middle;"
-                      {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
-                yes
-              </label>
+      {# Canvas (left) #}
+      <div
+        style="position:relative; flex:0 0 auto; border:1px solid #ccc; width:{{ canvas.width }}px; height:{{ canvas.height }}px; font-family:sans-serif, 'MS Sans Serif', Tahoma, Arial; font-size:10px; line-height:1.2; background:#fff;">
 
-              <label class="rc-no-label">
-                <input id="{{ c.name }}_no"
-                      class="rc-yesno"
-                      data-pair="{{ c.name }}_yes"
-                      name="{{ c.name }}_checked_no"
-                      type="checkbox"
-                      value="{% if c.rc_code %}{{ c.rc_neg_prefix }}{{ c.rc_code }}{% endif %}"
-                      tabindex="{{ c.props.TabOrder|default:'0' }}"
-                      style="vertical-align:middle;"
-                      {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
-                no
-              </label>
+        {% for c in controls %}
+        {% if c.props.Visible != 'False' %}
+        <div class="ctrl readcode-host"
+            data-readcodes="{{ c.hover_codes|default:''|escapejs }}"
+            style="position:absolute; left:{{ c.x }}px; top:{{ c.y }}px; width:{{ c.width|add:6 }}px; height:{{ c.height }}px; overflow:visible;">
 
-              {% if c.rc_has_text %}
-                <input id="{{ c.name }}_text"
-                      name="{{ c.name }}_text"
-                      type="text"
-                      {% if c.rc_required %}required{% endif %}
-                      disabled
-                      value="{{ c.props.TextPrompt|default:'' }}"
-                      style="width:{% if c.rc_prompt_width_ch %}{% widthratio c.rc_prompt_width_ch 10 8 %}ch{% else %}100px{% endif %}; vertical-align:middle; font-size:85%;">
+          {# Labels #}
+          {% if 'Label' in c.type %}
+            <label style="display:block; width:{{ c.width|add:10 }}px;
+                          {% if c.font_name %}font-family:{% if ' ' in c.font_name %}'{{ c.font_name }}'{% else %}{{ c.font_name }}{% endif %}, sans-serif;{% endif %}
+                          {% if c.font_size_pt %}font-size:{{ c.font_size_pt|add:-1 }}pt;{% endif %}
+                          {% if c.font_color %}color:{{ c.font_color }};{% endif %}
+                          font-weight:{% if c.is_bold %}700{% else %}400{% endif %};background-color:#fff;">
+              {{ c.caption|default:c.name }}
+            </label>
+
+          {# Buttons #}
+          {% elif 'Button' in c.type %}
+            <button type="button" name="{{ c.name }}" tabindex="{{ c.props.TabOrder|default:'0' }}" style="font-size: 10px;">
+              {{ c.caption|default:c.name }}
+            </button>
+
+          {# Read lists (classic + minimised). Add machine-readable labels/captions for export. #}
+          {% elif 'ReadList' in c.type %}
+            <div class="rl-wrap"
+                style="white-space:normal;"
+                data-name="{{ c.name }}"
+                data-caption="{{ c.caption|default:'' }}">
+              {# Visible caption for classic (non-minimised) lists. Give it a class to find easily. #}
+              {% if c.caption and not c.rl_minimised %}
+                <div class="rl-caption" style="font-weight:600; margin-bottom:-1px;">{{ c.caption }}</div>
               {% endif %}
 
-            {# --- CASE B: Pure value-only ReadCode (no checkbox; enabled by default) - #}
-            {% elif c.rc_has_value and not c.rc_is_question and not c.rc_has_text %}
-              <input id="{{ c.name }}_val"
-                    name="{{ c.name }}_val"
-                    type="text"
-                    inputmode="decimal"
-                    class="rc-val"
-                    style="vertical-align:middle;">
-              {% if c.rc_value_unit %}<span>{{ c.rc_value_unit }}</span>{% endif %}
+              {% if c.rl_minimised and c.rl_multi %}
+                {# Minimized MULTI (custom multiselect) #}
+                <div class="ms" id="ms_{{ c.name }}"
+                    style="position:relative; display:inline-block; min-width:140px;"
+                    data-caption="{{ c.caption|default:'' }}">
+                  <button type="button"
+                          class="ms-btn"
+                          aria-haspopup="listbox"
+                          aria-expanded="false"
+                          aria-label="{{ c.caption|default:'Select options' }}"
+                          style="display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; min-width:140px; padding:0px 6px; border:1px solid #888; background:#fff; cursor:pointer; font-size: 10.5px;">
+                    <span class="ms-label">{{ c.caption|default:"Select…" }}</span><span aria-hidden="true">▾</span>
+                  </button>
+                  <div class="ms-panel"
+                      style="position:absolute; top:100%; left:0; z-index:1000; display:none; border:1px solid #888; background:#fff; max-height:180px; overflow:auto; min-width:220px; padding:6px; box-shadow:0 2px 6px rgba(0,0,0,.15);">
+                    {% for opt in c.options %}
+                      <label style="display:block; white-space:nowrap;">
+                        <input type="checkbox"
+                              name="{{ c.name }}[]"
+                              value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
+                        {{ opt.label }}
+                      </label>
+                    {% endfor %}
+                  </div>
+                </div>
 
-            {# --- CASE C: Simple ReadCode -------------------------------------------- #}
-            {% else %}
-              {% if c.rc_qual_present and 'Negation' in c.rc_qualifiers|default:'' %}
+              {% elif c.rl_minimised %}
+                {# Minimized SINGLE (native select, size=1). Add aria/data-caption. #}
+                <select name="{{ c.name }}"
+                        id="{{ c.name }}"
+                        size="1"
+                        tabindex="{{ c.props.TabOrder|default:'0' }}"
+                        style="min-width:140px; font-size: 10.5px;"
+                        aria-label="{{ c.caption|default:'Select…' }}"
+                        data-caption="{{ c.caption|default:'' }}">
+                  <option value="" selected disabled hidden>{{ c.caption|default:"Select…" }}</option>
+                  {% for opt in c.options %}
+                    <option value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
+                      {{ opt.label }}
+                    </option>
+                  {% endfor %}
+                </select>
+
+              {% else %}
+                {# Classic list (single or multi via multiple attribute). Add class + aria/data-caption. #}
+                <select name="{{ c.name }}{% if c.rl_multi %}[]{% endif %}"
+                        id="{{ c.name }}"
+                        class="rl-classic"
+                        {% if c.rl_multi %}multiple{% endif %}
+                        size="{{ c.rl_size|default:5 }}"
+                        tabindex="{{ c.props.TabOrder|default:'0' }}"
+                        style="min-width:120px; font-size: 10.5px;"
+                        aria-label="{{ c.caption|default:c.name }}"
+                        data-caption="{{ c.caption|default:'' }}">
+                  {% for opt in c.options %}
+                    <option value="{% if opt.code and opt.code not in '01TrueFalse' %}{{ opt.code }}{% else %}{{ opt.label }}{% endif %}">
+                      {{ opt.label }}
+                    </option>
+                  {% endfor %}
+                </select>
+              {% endif %}
+
+              {% if c.rl_date_prompt %}
+                <div style="margin-top:6px;">
+                  <label for="{{ c.name }}_date" style="margin-right:6px;">Date:</label>
+                  <input id="{{ c.name }}_date"
+                        name="{{ c.name }}_date"
+                        type="date"
+                        tabindex="{{ c.props.TabOrder|default:'0' }}"
+                        aria-label="{{ c.caption|default:c.name }} date"
+                        data-caption="{{ c.caption|default:'' }}">
+                </div>
+              {% endif %}
+            </div>
+
+          {# ReadCode: for TEmisReadCode and TEmisQuestionReadCode #}
+          {% elif 'ReadCode' in c.type %}
+          <div class="rc-row readcode-host"
+              data-readcodes="{{ c.rc_code|default:'' }} — {{ c.rc_term|default:'' }}{% if c.rc_has_negation %}\n\n{{ c.rc_neg_prefix }}{{ c.rc_code }} — Not - {{ c.rc_term }}{% endif %}{% if c.props.TextAuto %}\nAuto-Entered Text: {{ c.props.TextAuto }}{% endif %}"
+              style="white-space:normal;">
+
+            <div class="rc-wrap">
+              {# Prompt / caption #}
+              <label class="rc-prompt" for="{{ c.name }}_yes">{{ c.rc_prompt }}</label>
+
+              {# --- CASE A: Question with Negation (unchanged) ------------------------- #}
+              {% if c.rc_is_question and c.rc_has_negation %}
                 <label class="rc-yes-label">
-                  <input id="{{ c.name }}_yes_simple"
+                  <input id="{{ c.name }}_yes"
                         class="rc-yesno"
-                        data-pair="{{ c.name }}_no_simple"
+                        data-pair="{{ c.name }}_no"
                         name="{{ c.name }}_checked_yes"
                         type="checkbox"
                         value="{{ c.rc_code|default:'' }}"
                         tabindex="{{ c.props.TabOrder|default:'0' }}"
                         style="vertical-align:middle;"
                         {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
-                  <span class="sr-only">yes</span>  {# keep for logic; not visible #}
+                  yes
                 </label>
 
-                <label class="rc-no-label" style="margin-left:6px;">
-                  <input id="{{ c.name }}_no_simple"
+                <label class="rc-no-label">
+                  <input id="{{ c.name }}_no"
                         class="rc-yesno"
-                        data-pair="{{ c.name }}_yes_simple"
+                        data-pair="{{ c.name }}_yes"
                         name="{{ c.name }}_checked_no"
                         type="checkbox"
                         value="{% if c.rc_code %}{{ c.rc_neg_prefix }}{{ c.rc_code }}{% endif %}"
@@ -266,932 +219,990 @@
                         {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
                   no
                 </label>
-              {% else %}
-                {# Fallback: single checkbox toggles dependent fields #}
-                <input id="{{ c.name }}_chk"
-                      class="rc-chk"
-                      data-targets="{% if c.rc_has_text %}{{ c.name }}_text{% endif %}{% if c.rc_has_value %}{% if c.rc_has_text %},{% endif %}{{ c.name }}_val{% endif %}{% if c.rc_has_datepicker %}{% if c.rc_has_text or c.rc_has_value %},{% endif %}{{ c.name }}_date{% endif %}"
-                      name="{{ c.name }}_checked"
-                      type="checkbox"
-                      tabindex="{{ c.props.TabOrder|default:'0' }}"
-                      style="vertical-align:middle;"
-                      {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
-              {% endif %}
 
-              {% if c.rc_has_text %}
-                <input id="{{ c.name }}_text"
-                      name="{{ c.name }}_text"
-                      type="text"
-                      {% if c.rc_required %}required{% endif %}
-                      disabled
-                      value="{{ c.props.TextPrompt|default:'' }}"
-                       style="width:{% if c.rc_prompt_width_ch %}{% widthratio c.rc_prompt_width_ch 10 8 %}ch{% else %}100px{% endif %}; vertical-align:middle;">
-              {% endif %}
+                {% if c.rc_has_text %}
+                  <input id="{{ c.name }}_text"
+                        name="{{ c.name }}_text"
+                        type="text"
+                        {% if c.rc_required %}required{% endif %}
+                        disabled
+                        value="{{ c.props.TextPrompt|default:'' }}"
+                        style="width:{% if c.rc_prompt_width_ch %}{% widthratio c.rc_prompt_width_ch 10 8 %}ch{% else %}100px{% endif %}; vertical-align:middle; font-size:85%;">
+                {% endif %}
 
-              {% if c.rc_has_value %}
+              {# --- CASE B: Pure value-only ReadCode (no checkbox; enabled by default) - #}
+              {% elif c.rc_has_value and not c.rc_is_question and not c.rc_has_text %}
                 <input id="{{ c.name }}_val"
                       name="{{ c.name }}_val"
                       type="text"
                       inputmode="decimal"
-                      disabled
                       class="rc-val"
                       style="vertical-align:middle;">
                 {% if c.rc_value_unit %}<span>{{ c.rc_value_unit }}</span>{% endif %}
+
+              {# --- CASE C: Simple ReadCode -------------------------------------------- #}
+              {% else %}
+                {% if c.rc_qual_present and 'Negation' in c.rc_qualifiers|default:'' %}
+                  <label class="rc-yes-label">
+                    <input id="{{ c.name }}_yes_simple"
+                          class="rc-yesno"
+                          data-pair="{{ c.name }}_no_simple"
+                          name="{{ c.name }}_checked_yes"
+                          type="checkbox"
+                          value="{{ c.rc_code|default:'' }}"
+                          tabindex="{{ c.props.TabOrder|default:'0' }}"
+                          style="vertical-align:middle;"
+                          {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
+                    <span class="sr-only">yes</span>  {# keep for logic; not visible #}
+                  </label>
+
+                  <label class="rc-no-label" style="margin-left:6px;">
+                    <input id="{{ c.name }}_no_simple"
+                          class="rc-yesno"
+                          data-pair="{{ c.name }}_yes_simple"
+                          name="{{ c.name }}_checked_no"
+                          type="checkbox"
+                          value="{% if c.rc_code %}{{ c.rc_neg_prefix }}{{ c.rc_code }}{% endif %}"
+                          tabindex="{{ c.props.TabOrder|default:'0' }}"
+                          style="vertical-align:middle;"
+                          {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
+                    no
+                  </label>
+                {% else %}
+                  {# Fallback: single checkbox toggles dependent fields #}
+                  <input id="{{ c.name }}_chk"
+                        class="rc-chk"
+                        data-targets="{% if c.rc_has_text %}{{ c.name }}_text{% endif %}{% if c.rc_has_value %}{% if c.rc_has_text %},{% endif %}{{ c.name }}_val{% endif %}{% if c.rc_has_datepicker %}{% if c.rc_has_text or c.rc_has_value %},{% endif %}{{ c.name }}_date{% endif %}"
+                        name="{{ c.name }}_checked"
+                        type="checkbox"
+                        tabindex="{{ c.props.TabOrder|default:'0' }}"
+                        style="vertical-align:middle;"
+                        {% if c.props.bPresentQualChecked == 'True' %}checked{% endif %}>
+                {% endif %}
+
+                {% if c.rc_has_text %}
+                  <input id="{{ c.name }}_text"
+                        name="{{ c.name }}_text"
+                        type="text"
+                        {% if c.rc_required %}required{% endif %}
+                        disabled
+                        value="{{ c.props.TextPrompt|default:'' }}"
+                        style="width:{% if c.rc_prompt_width_ch %}{% widthratio c.rc_prompt_width_ch 10 8 %}ch{% else %}100px{% endif %}; vertical-align:middle;">
+                {% endif %}
+
+                {% if c.rc_has_value %}
+                  <input id="{{ c.name }}_val"
+                        name="{{ c.name }}_val"
+                        type="text"
+                        inputmode="decimal"
+                        disabled
+                        class="rc-val"
+                        style="vertical-align:middle;">
+                  {% if c.rc_value_unit %}<span>{{ c.rc_value_unit }}</span>{% endif %}
+                {% endif %}
+
               {% endif %}
 
-            {% endif %}
+              {% comment %} {# --- Optional line-break before qualifiers/date if TEX says "new line" -- #}
+              {% if c.rc_qual_newline %}<i class="rc-break"></i>{% endif %} {% endcomment %}
 
-            {% comment %} {# --- Optional line-break before qualifiers/date if TEX says "new line" -- #}
-            {% if c.rc_qual_newline %}<i class="rc-break"></i>{% endif %} {% endcomment %}
+              {# Date picker (if applicable) #}
+              {% if c.rc_has_datepicker %}
+                <input id="{{ c.name }}_date"
+                      name="{{ c.name }}_date"
+                      type="date"
+                      class="rc-date"
+                      tabindex="{{ c.props.TabOrder|default:'0' }}"
+                      style="vertical-align:middle;">
+              {% endif %}
 
-            {# Date picker (if applicable) #}
-            {% if c.rc_has_datepicker %}
-              <input id="{{ c.name }}_date"
-                    name="{{ c.name }}_date"
-                    type="date"
-                    class="rc-date"
-                    tabindex="{{ c.props.TabOrder|default:'0' }}"
-                    style="vertical-align:middle;">
-            {% endif %}
-
-            {# Hidden input to carry the readcode itself #}
-            {% if c.rc_code %}
-              <input type="hidden" name="{{ c.name }}_readcode" value="{{ c.rc_code }}">
-            {% endif %}
-          </div>
-        </div>
-
-        {# DiaryEntry (unchanged) #}
-        {% elif 'DiaryEntry' in c.type %}
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:nowrap; white-space:nowrap; width:100%;">
-            <label for="{{ c.name }}_date" style="font-weight:600; margin-right:6px; white-space:nowrap;">
-              {{ c.diary_prompt }}
-            </label>
-            <input id="{{ c.name }}_date" name="{{ c.name }}_date" type="date" tabindex="{{ c.props.TabOrder|default:'0' }}" style="vertical-align:middle; font-size: 10.5px;">
-            {% if c.diary_editbox and not c.diary_prompt_below %}
-              <input id="{{ c.name }}_text" name="{{ c.name }}_text" type="text" tabindex="{{ c.props.TabOrder|default:'0' }}"
-                    {% if c.diary_editbox_chars %} style="width: {{ c.diary_editbox_chars }}ch;" {% else %} style="width: 24ch;" {% endif %}>
-            {% endif %}
-          </div>
-          {% if c.diary_editbox and c.diary_prompt_below %}
-            <div style="margin-top:4px;">
-              <input id="{{ c.name }}_text" name="{{ c.name }}_text" type="text" tabindex="{{ c.props.TabOrder|default:'0' }}"
-                    {% if c.diary_editbox_chars %} style="width: {{ c.diary_editbox_chars }}ch;" {% else %} style="width: 24ch;" {% endif %}>
+              {# Hidden input to carry the readcode itself #}
+              {% if c.rc_code %}
+                <input type="hidden" name="{{ c.name }}_readcode" value="{{ c.rc_code }}">
+              {% endif %}
             </div>
-          {% endif %}
-          {% if c.diary_readcode %}
-            <input type="hidden" name="{{ c.name }}_readcode" value="{{ c.diary_readcode }}">
-          {% endif %}
+          </div>
 
-        {# TTplLastEntry: read-only date, no label, optional tooltip of its read code #}
-        {% elif 'LastEntry' in c.type or c.is_lastentry %}
-        <input
-          type="date"
-          class="tpl-lastentry readcode-host"
-          {% if c.le_code or c.le_term %}
-            data-readcodes="Last Entry for {{ c.le_code|default:'' }}{% if c.le_term %} — {{ c.le_term }}{% endif %}"
-            title="{{ c.le_code|default:'' }}{% if c.le_term %} — {{ c.le_term }}{% endif %}"
-          {% endif %}
-          disabled
-          style="width: 100px; font-size: 10px;">
-        
-        {% elif 'Panel' in c.type %}
+          {# DiaryEntry (unchanged) #}
+          {% elif 'DiaryEntry' in c.type %}
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:nowrap; white-space:nowrap; width:100%;">
+              <label for="{{ c.name }}_date" style="font-weight:600; margin-right:6px; white-space:nowrap;">
+                {{ c.diary_prompt }}
+              </label>
+              <input id="{{ c.name }}_date" name="{{ c.name }}_date" type="date" tabindex="{{ c.props.TabOrder|default:'0' }}" style="vertical-align:middle; font-size: 10.5px;">
+              {% if c.diary_editbox and not c.diary_prompt_below %}
+                <input id="{{ c.name }}_text" name="{{ c.name }}_text" type="text" tabindex="{{ c.props.TabOrder|default:'0' }}"
+                      {% if c.diary_editbox_chars %} style="width: {{ c.diary_editbox_chars }}ch;" {% else %} style="width: 24ch;" {% endif %}>
+              {% endif %}
+            </div>
+            {% if c.diary_editbox and c.diary_prompt_below %}
+              <div style="margin-top:4px;">
+                <input id="{{ c.name }}_text" name="{{ c.name }}_text" type="text" tabindex="{{ c.props.TabOrder|default:'0' }}"
+                      {% if c.diary_editbox_chars %} style="width: {{ c.diary_editbox_chars }}ch;" {% else %} style="width: 24ch;" {% endif %}>
+              </div>
+            {% endif %}
+            {% if c.diary_readcode %}
+              <input type="hidden" name="{{ c.name }}_readcode" value="{{ c.diary_readcode }}">
+            {% endif %}
 
-        {% elif 'Bevel' in c.type %}
+          {# TTplLastEntry: read-only date, no label, optional tooltip of its read code #}
+          {% elif 'LastEntry' in c.type or c.is_lastentry %}
+          <input
+            type="date"
+            class="tpl-lastentry readcode-host"
+            {% if c.le_code or c.le_term %}
+              data-readcodes="Last Entry for {{ c.le_code|default:'' }}{% if c.le_term %} — {{ c.le_term }}{% endif %}"
+              title="{{ c.le_code|default:'' }}{% if c.le_term %} — {{ c.le_term }}{% endif %}"
+            {% endif %}
+            disabled
+            style="width: 100px; font-size: 10px;">
+          
+          {% elif 'Panel' in c.type %}
 
-        {% elif 'FORM' in c.type %}
+          {% elif 'Bevel' in c.type %}
 
-        {% elif 'Group' in c.type %}
+          {% elif 'FORM' in c.type %}
 
-        {% elif 'Btn' in c.type %}
-          <button type="button" name="{{ c.name }}" tabindex="{{ c.props.TabOrder|default:'0' }}" style="font-size: 9px;">
-            Prev Data
-          </button>
+          {% elif 'Group' in c.type %}
 
-        {# TTplAvgBP: fixed read-only average blood pressure #}
-        {% elif 'AvgBP' in c.type %}
-        <span class="tpl-avgbp" style="font-size: 10.5px;padding-left: 10px">
-            125/85
-        </span>
+          {% elif 'Btn' in c.type %}
+            <button type="button" name="{{ c.name }}" tabindex="{{ c.props.TabOrder|default:'0' }}" style="font-size: 9px;">
+              Prev Data
+            </button>
 
-        {# --- TTplIdealWeight ---------------------------------------------------- #}
-        {% elif 'IdealWeight' in c.type %}
-        <div class="rc-row readcode-host" style="white-space:nowrap;" data-readcodes="66CB. — Ideal Weight">
-          <label for="{{ c.name }}_chk" style="margin-right:4px;">Ideal Weight</label>
-          <input id="{{ c.name }}_chk" name="{{ c.name }}_checked" type="checkbox"
-                tabindex="{{ c.props.TabOrder|default:'0' }}"
-                style="margin-right:0px; vertical-align:middle;">
-          <input id="{{ c.name }}_value" name="{{ c.name }}_value" type="text"
-                readonly style="width:20px; vertical-align:middle;">
-          <span style="margin-left:2px;">kg</span>
-        </div>
+          {# TTplAvgBP: fixed read-only average blood pressure #}
+          {% elif 'AvgBP' in c.type %}
+          <span class="tpl-avgbp" style="font-size: 10.5px;padding-left: 10px">
+              125/85
+          </span>
 
-        {# --- TTplBMI ------------------------------------------------------------ #}
-        {% elif 'BMI' in c.type %}
-        <div class="rc-row readcode-host" style="white-space:nowrap;" data-readcodes="22K.. — Body Mass Index">
-          <label for="{{ c.name }}_chk" style="margin-right:4px;">BMI</label>
-          <input id="{{ c.name }}_chk" name="{{ c.name }}_checked" type="checkbox"
-                tabindex="{{ c.props.TabOrder|default:'0' }}"
-                style="margin-right:0px; vertical-align:middle;">
-          <input id="{{ c.name }}_value" name="{{ c.name }}_value" type="text"
-                readonly style="width:25px; vertical-align:middle;">
-          <span style="margin-left:2px;">kg/m²</span>
-        </div>
+          {# --- TTplIdealWeight ---------------------------------------------------- #}
+          {% elif 'IdealWeight' in c.type %}
+          <div class="rc-row readcode-host" style="white-space:nowrap;" data-readcodes="66CB. — Ideal Weight">
+            <label for="{{ c.name }}_chk" style="margin-right:4px;">Ideal Weight</label>
+            <input id="{{ c.name }}_chk" name="{{ c.name }}_checked" type="checkbox"
+                  tabindex="{{ c.props.TabOrder|default:'0' }}"
+                  style="margin-right:0px; vertical-align:middle;">
+            <input id="{{ c.name }}_value" name="{{ c.name }}_value" type="text"
+                  readonly style="width:20px; vertical-align:middle;">
+            <span style="margin-left:2px;">kg</span>
+          </div>
 
-        {# --- TTplExpPeakFlow ---------------------------------------------------- #}
-        {% elif 'ExpPeakFlow' in c.type %}
-        <div class="rc-row readcode-host" style="white-space:nowrap;" data-readcodes="339p. — Expected PEFR">
-          <label for="{{ c.name }}_chk" style="margin-right:6px;">Predicted PEFR</label>
-          <input id="{{ c.name }}_chk" name="{{ c.name }}_checked" type="checkbox"
-                tabindex="{{ c.props.TabOrder|default:'0' }}"
-                style="margin-right:8px; vertical-align:middle;">
-          <input id="{{ c.name }}_value" name="{{ c.name }}_value" type="text"
-                readonly style="width:25px; vertical-align:middle;">
-          <span style="margin-left:2px;">L/min</span>
-        </div>
+          {# --- TTplBMI ------------------------------------------------------------ #}
+          {% elif 'BMI' in c.type %}
+          <div class="rc-row readcode-host" style="white-space:nowrap;" data-readcodes="22K.. — Body Mass Index">
+            <label for="{{ c.name }}_chk" style="margin-right:4px;">BMI</label>
+            <input id="{{ c.name }}_chk" name="{{ c.name }}_checked" type="checkbox"
+                  tabindex="{{ c.props.TabOrder|default:'0' }}"
+                  style="margin-right:0px; vertical-align:middle;">
+            <input id="{{ c.name }}_value" name="{{ c.name }}_value" type="text"
+                  readonly style="width:25px; vertical-align:middle;">
+            <span style="margin-left:2px;">kg/m²</span>
+          </div>
 
-        {# import_tex.html #}
-        {% elif 'PULHHEEMS' in c.type %}
-          <div class="pulhheems-widget"
-              style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box; padding:10px;margin-top:5px;">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; height:100%;">
-              {# LEFT SIDE #}
-              <div class="pul-left" style="display:grid; grid-auto-rows:min-content; row-gap:8px;">
+          {# --- TTplExpPeakFlow ---------------------------------------------------- #}
+          {% elif 'ExpPeakFlow' in c.type %}
+          <div class="rc-row readcode-host" style="white-space:nowrap;" data-readcodes="339p. — Expected PEFR">
+            <label for="{{ c.name }}_chk" style="margin-right:6px;">Predicted PEFR</label>
+            <input id="{{ c.name }}_chk" name="{{ c.name }}_checked" type="checkbox"
+                  tabindex="{{ c.props.TabOrder|default:'0' }}"
+                  style="margin-right:8px; vertical-align:middle;">
+            <input id="{{ c.name }}_value" name="{{ c.name }}_value" type="text"
+                  readonly style="width:25px; vertical-align:middle;">
+            <span style="margin-left:2px;">L/min</span>
+          </div>
 
-                <div class="row readcode-host" style="display:grid; grid-template-columns: 80px 40px 20px auto; align-items:center; gap:6px;margin-top:7px;" 
-                    data-readcodes="RAFPUP01 — P0\u000ARAFPUP02 — P0R\u000ARAFPUP21 — P2\u000ARAFPUP22 — P2R\u000ARAFPUP31 — P3\u000ARAFPUP32 — P3R\u000ARAFPUP41 — P4\u000ARAFPUP42 — P4R\u000ARAFPUP71 — P7\u000ARAFPUP72 — P7R\u000ARAFPUP81 — P8\u000ARAFPUP82 — P8R">
-                  <label>Physical</label>
-                  <select name="{{ c.name }}_physical" style="width:40px;">
-                    <option>2</option><option>3</option>
-                    <option>4</option><option>7</option><option>8</option><option>0</option>
-                  </select>
-                  <input type="checkbox" name="{{ c.name }}_physical_remedial">
-                  <label>Remedial</label>
-                </div>
+          {# import_tex.html #}
+          {% elif 'PULHHEEMS' in c.type %}
+            <div class="pulhheems-widget"
+                style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box; padding:10px;margin-top:5px;">
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; height:100%;">
+                {# LEFT SIDE #}
+                <div class="pul-left" style="display:grid; grid-auto-rows:min-content; row-gap:8px;">
 
-                <div class="row readcode-host"
-                  style="display:grid; grid-template-columns: 80px 40px 20px auto; align-items:center; gap:6px; margin-top:7px;"
-                  data-readcodes="RAFPUU01 — U0\u000ARAFPUU02 — U0R\u000ARAFPUU21 — U2\u000ARAFPUU22 — U2R\u000ARAFPUU31 — U3\u000ARAFPUU32 — U3R\u000ARAFPUU71 — U7\u000ARAFPUU72 — U7R\u000ARAFPUU81 — U8\u000ARAFPUU82 — U8R">
-                  <label>Upper Limbs</label>
-                  <select name="{{ c.name }}_upper" style="width:40px;">
-                    <option>2</option><option>3</option>
-                    <option>7</option><option>8</option><option>0</option>
-                  </select>
-                  <input type="checkbox" name="{{ c.name }}_upper_remedial">
-                  <label>Remedial</label>
-                </div>
+                  <div class="row readcode-host" style="display:grid; grid-template-columns: 80px 40px 20px auto; align-items:center; gap:6px;margin-top:7px;" 
+                      data-readcodes="RAFPUP01 — P0\u000ARAFPUP02 — P0R\u000ARAFPUP21 — P2\u000ARAFPUP22 — P2R\u000ARAFPUP31 — P3\u000ARAFPUP32 — P3R\u000ARAFPUP41 — P4\u000ARAFPUP42 — P4R\u000ARAFPUP71 — P7\u000ARAFPUP72 — P7R\u000ARAFPUP81 — P8\u000ARAFPUP82 — P8R">
+                    <label>Physical</label>
+                    <select name="{{ c.name }}_physical" style="width:40px;">
+                      <option>2</option><option>3</option>
+                      <option>4</option><option>7</option><option>8</option><option>0</option>
+                    </select>
+                    <input type="checkbox" name="{{ c.name }}_physical_remedial">
+                    <label>Remedial</label>
+                  </div>
 
-                <div class="row readcode-host"
+                  <div class="row readcode-host"
                     style="display:grid; grid-template-columns: 80px 40px 20px auto; align-items:center; gap:6px; margin-top:7px;"
-                    data-readcodes="RAFPUL01 — L0\u000ARAFPUL02 — L0R\u000ARAFPUL21 — L2\u000ARAFPUL22 — L2R\u000ARAFPUL31 — L3\u000ARAFPUL32 — L3R\u000ARAFPUL71 — L7\u000ARAFPUL72 — L7R\u000ARAFPUL81 — L8\u000ARAFPUL82 — L8R">
-                  <label>Lower Limbs</label>
-                  <select name="{{ c.name }}_lower">
-                    <option>2</option><option>3</option>
-                    <option>7</option><option>8</option><option>0</option>
-                  </select>
-                  <input type="checkbox" name="{{ c.name }}_lower_remedial">
-                  <label>Remedial</label>
-                </div>      
+                    data-readcodes="RAFPUU01 — U0\u000ARAFPUU02 — U0R\u000ARAFPUU21 — U2\u000ARAFPUU22 — U2R\u000ARAFPUU31 — U3\u000ARAFPUU32 — U3R\u000ARAFPUU71 — U7\u000ARAFPUU72 — U7R\u000ARAFPUU81 — U8\u000ARAFPUU82 — U8R">
+                    <label>Upper Limbs</label>
+                    <select name="{{ c.name }}_upper" style="width:40px;">
+                      <option>2</option><option>3</option>
+                      <option>7</option><option>8</option><option>0</option>
+                    </select>
+                    <input type="checkbox" name="{{ c.name }}_upper_remedial">
+                    <label>Remedial</label>
+                  </div>
 
-                <div class="row" style="display:grid; grid-template-columns: 70px 85px 80px; align-items:center; margin-top:14px;">
+                  <div class="row readcode-host"
+                      style="display:grid; grid-template-columns: 80px 40px 20px auto; align-items:center; gap:6px; margin-top:7px;"
+                      data-readcodes="RAFPUL01 — L0\u000ARAFPUL02 — L0R\u000ARAFPUL21 — L2\u000ARAFPUL22 — L2R\u000ARAFPUL31 — L3\u000ARAFPUL32 — L3R\u000ARAFPUL71 — L7\u000ARAFPUL72 — L7R\u000ARAFPUL81 — L8\u000ARAFPUL82 — L8R">
+                    <label>Lower Limbs</label>
+                    <select name="{{ c.name }}_lower">
+                      <option>2</option><option>3</option>
+                      <option>7</option><option>8</option><option>0</option>
+                    </select>
+                    <input type="checkbox" name="{{ c.name }}_lower_remedial">
+                    <label>Remedial</label>
+                  </div>      
+
+                  <div class="row" style="display:grid; grid-template-columns: 70px 85px 80px; align-items:center; margin-top:14px;">
+                    <span></span>
+                    <strong style="text-align:center;">Right</strong>
+                    <strong style="text-align:center;">Left</strong>
+                  </div>
+
+                  <div class="row" style="display:grid; grid-template-columns: 80px 80px 80px; align-items:center; gap:6px;margin-top:14px;">
+                    <label>Hearing</label>
+                    <input type="text" value="2" readonly style="width:40px; text-align:center;">
+                    <input type="text" value="2" readonly style="width:40px; text-align:center;">
+                  </div>
+
+                  <div class="row" style="display:grid; grid-template-columns: 70px 80px 80px; align-items:center; gap:6px;margin-top:14px;">
+                    <span></span>
+                    <div style="display:flex; justify-content:space-around; width:100%;">
+                      <label>U</label><label>C</label>
+                    </div>
+                    <div style="display:flex; justify-content:space-around; width:100%;">
+                      <label>U</label><label>C</label>
+                    </div>
+                  </div>
+
+                  <div class="row" style="display:grid; grid-template-columns: 70px 80px 80px; align-items:center; gap:7px;margin-top:5px;">
+                    <label>Eyes</label>
+                    <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
+                      <input type="text" value="2" readonly style="width:24px; text-align:center;">
+                      <input type="text" value="" readonly style="width:24px; text-align:center;">
+                    </div>
+                    <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
+                      <input type="text" value="2" readonly style="width:24px; text-align:center;">
+                      <input type="text" value="" readonly style="width:24px; text-align:center;">
+                    </div>
+                  </div>
+
+                  <div class="row readcode-host"
+                      style="display:grid; grid-template-columns: 80px 40px; align-items:center; gap:6px; margin-top:14px;"
+                      data-readcodes="RAFPUM21 — M2\u000ARAFPUM31 — M3\u000ARAFPUM71 — M7\u000ARAFPUM81 — M8">
+                    <label>Mental</label>
+                    <select name="{{ c.name }}_mental" style="width:40px;">
+                      <option>2</option><option>3</option><option>7</option><option>8</option>
+                    </select>
+                  </div>
+
+                  <div class="row readcode-host"
+                      style="display:grid; grid-template-columns: 80px 40px 20px auto; align-items:center; gap:6px; margin-top:7px;"
+                      data-readcodes="RAFPUS01 — S0\u000ARAFPUS02 — S0R\u000ARAFPUS21 — S2\u000ARAFPUS22 — S2R\u000ARAFPUS31 — S3\u000ARAFPUS32 — S3R\u000ARAFPUS71 — S7\u000ARAFPUS72 — S7R\u000ARAFPUS81 — S8\u000ARAFPUS82 — S8R">
+                    <label>Stability</label>
+                    <select name="{{ c.name }}_stability" style="width:40px;">
+                      <option>2</option><option>3</option><option>7</option><option>8</option><option>0</option>
+                    </select>
+                    <input type="checkbox" name="{{ c.name }}_stability_remedial">
+                    <label>Remedial</label>
+                  </div>
+                </div>
+
+
+              {# RIGHT SIDE #}
+              <div class="pul-right" style="display:grid; grid-auto-rows:min-content; row-gap:10px;">
+                <fieldset class="readcode-host"
+                          style="padding:6px 8px;"
+                          data-readcodes="TRIQQNMF1 — MFD - Medically Fully Deployable\u000ATRIQQNML1 — MLD - Medically Limited Deployable\u000ATRIQQNMN1 — MND - Medically Not Deployable">
+                  <legend>Medical Deployability</legend>
+                  <label><input type="radio" name="{{ c.name }}_deploy" value="Full"> Full</label>
+                  <label style="margin-left:12px;"><input type="radio" name="{{ c.name }}_deploy" value="Limited"> Limited</label>
+                  <label style="margin-left:12px;"><input type="radio" name="{{ c.name }}_deploy" value="Not"> Not</label>
+                </fieldset>
+
+                <label>JMES</label>
+                <div class="jmes-row" style="display:grid; grid-template-columns:auto auto auto auto auto auto auto auto; align-items:center; gap:6px;margin-top:3px;">
+                  <label>A</label>
+                  <select name="{{ c.name }}_jmes_A" class="readcode-host"
+                          data-readcodes="TRIQQNA11 — A1 - Fit for flying duties without restriction\u000ATRIQQNA21 — A2 - Fit for flying duties but has reduced hearing or eyesight\u000ATRIQQNA31 — A3 - Fit for duties in the air within the stated employment or MedLims\u000ATRIQQNA41 — A4 - Fit to be flown in a passenger aircraft\u000ATRIQQNA51 — A5 - Unfit to be taken in the air\u000ATRIQQNA61 — A6 - Unfit for any duties in the aviation environment">
+                    {% for i in "123456"|make_list %}
+                      <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                  </select>
+                  <label>L</label>
+                  <select name="{{ c.name }}_jmes_L" class="readcode-host"
+                          data-readcodes="TRIQQNL11 — L1 - Fit for unrestricted duty\u000ATRIQQNL21 — L2 - Fit for high readiness roles with minor limitations\u000ATRIQQNL31 — L3 - Fit for limited duties but with some restriction subject to MRA\u000ATRIQQNL41 — L4 - Fit for certain deployed roles into well-established MOB locations subject to Consultant Occupational Physician MRA\u000ATRIQQNL51 — L5 - Unfit deployment. Fit for branch/trade and limited UK operations\u000ATRIQQNL61 — L6 - Unfit for service in the land environment">
+                    {% for i in "123456"|make_list %}
+                      <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                  </select>
+
+                  <label>M</label>
+                  <select name="{{ c.name }}_jmes_M" class="readcode-host"
+                          data-readcodes="TRIQQNM11 — M1 - Fit for unrestricted duties\u000ATRIQQNM21 — M2 - Fit for restricted duties afloat within the limitations as stated\u000ATRIQQNM31 — M3 - Fit for restricted duties in a vessel in harbour or alongside with the limitations as stated\u000ATRIQQNM41 — M4 - Fit to be carried as embarked forces in transit\u000ATRIQQNM51 — M5 - Fit for restricted duties ashore within the limitations as stated\u000ATRIQQNM61 — M6 - Unfit for any duties in the maritime environment">
+                    {% for i in "123456"|make_list %}
+                      <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                  </select>
+
+                  <label>E</label>
+                  <select name="{{ c.name }}_jmes_E" class="readcode-host"
+                          data-readcodes="TRIQQNE11 — E1 - Fit for worldwide service in all environments\u000ATRIQQNE21 — E2 - Fit for unrestricted duties but with a medical risk marker\u000ATRIQQNE31 — E3 - Restricted employment outside UK due to medical support or environmental requirements\u000ATRIQQNE41 — E4 - Only to be employed out of the UK with access to established, 'NHS equivalent or better' Primary and Secondary Healthcare\u000ATRIQQNE51 — E5 - May be employed within the UK only\u000ATRIQQNE61 — E6 - Pregnancy/Maternity">
+                    {% for i in "123456"|make_list %}
+                      <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                  </select>
+
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;margin-top:5px;">
+                  <label>JMES Status</label>
+                  <select name="{{ c.name }}_jmes_status" class="readcode-host"
+                          data-readcodes="RAFMETE5 — Temporary MES\u000ARAFMEPE1 — Permanent MES\u000ARAFMENO3 — Not Applicable">
+                    <option>Temporary</option>
+                    <option>Permanent</option>
+                    <option>Not Applicable</option>
+                  </select>
+                </div>
+
+
+                <div style="display:flex; align-items:center; gap:8px;margin-top:5px;">
+                  <label>Review Date</label>
+                  <input type="date" name="{{ c.name }}_review_date" class="readcode-host"
+                        data-diary="1"
+                        data-readcodes="RAFPUPU1 — Diary entry for PULHHEEMS Profile">
+                </div>
+
+                <div style="margin-top:5px;">
+                  <label>Notes</label>
+                  <textarea name="{{ c.name }}_notes" rows="1" style="width:100%; box-sizing:border-box;margin-top:10px;"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% elif 'VisualAcuity' in c.type %}
+          <div class="visual-acuity-widget"
+              style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box; padding:10px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr 180px; column-gap:14px; row-gap:10px; height:100%;">
+
+              {# ---- Top row: Uncorrected ---- #}
+              <div>
+                <div style="font-weight:600; margin-bottom:4px;">Right Eye Uncorrected</div>
+                <select name="{{ c.name }}_right_uncorr" size="7" style="width:100%;"
+                        class="readcode-host"
+                        data-readcodes="2B6D — O/E - visual acuity R-eye=6/4\u000A2B61 — O/E - visual acuity R-eye =6/5\u000A2B62 — O/E - visual acuity R-eye =6/6\u000A2B6d — O/E - visual acuity right eye = 6/7.5\u000A2B63 — O/E - visual acuity R-eye =6/9\u000A2B64 — O/E - visual acuity R-eye=6/12\u000A2B6b — O/E- visual acuity R-eye =6/15\u000A2B65 — O/E - visual acuity R-eye=6/18\u000A2B66 — O/E - visual acuity R-eye=6/24\u000A2B67 — O/E - visual acuity R-eye=6/36\u000A2B6e — O/E - visual acuity right eye = 6/48\u000A2B68 — O/E - visual acuity R-eye=6/60\u000A2B69 — O/E -R-eye counts fingers only\u000A2B6C — O/E - R-eye sees hand movements\u000A2B6A — O/E-R-eye perceives light only\u000A2B6A — O/E - blind R-eye\u000A2B6B — O/E - R-eye completely blind">
+                  <option>O/E - visual acuity R-eye=6/4</option>
+                  <option>O/E - visual acuity R-eye =6/5</option>
+                  <option>O/E - visual acuity R-eye =6/6</option>
+                  <option>O/E - visual acuity right eye = 6/7.5</option>
+                  <option>O/E - visual acuity R-eye =6/9</option>
+                  <option>O/E - visual acuity R-eye=6/12</option>
+                  <option>O/E- visual acuity R-eye =6/15</option>
+                  <option>O/E - visual acuity R-eye=6/18</option>
+                  <option>O/E - visual acuity R-eye=6/24</option>
+                  <option>O/E - visual acuity R-eye=6/36</option>
+                  <option>O/E - visual acuity right eye = 6/48</option>
+                  <option>O/E - visual acuity R-eye=6/60</option>
+                  <option>O/E -R-eye counts fingers only</option>
+                  <option>O/E - R-eye sees hand movements</option>
+                  <option>O/E-R-eye perceives light only</option>
+                  <option>O/E - blind R-eye</option>
+                  <option>O/E - R-eye completely blind</option>
+                </select>
+              </div>
+
+              <div>
+                <div style="font-weight:600; margin-bottom:4px;">Left Eye Uncorrected</div>
+                <select name="{{ c.name }}_left_uncorr" size="7" style="width:100%;"
+                        class="readcode-host"
+                        data-readcodes="2B7D — O/E - visual acuity L-eye =6/4\u000A2B71 — O/E - visual acuity L-eye =6/5\u000A2B72 — O/E - visual acuity L-eye =6/6\u000A2B7e — O/E - visual acuity left eye = 6/7.5\u000A2B73 — O/E - visual acuity L-eye =6/9\u000A2B74 — O/E - visual acuity L-eye=6/12\u000A2B7b — O/E- visual acuity L-eye =6/15\u000A2B75 — O/E - visual acuity L-eye=6/18\u000A2B76 — O/E - visual acuity L-eye=6/24\u000A2B77 — O/E - visual acuity L-eye=6/36\u000A2B7d — O/E - visual acuity left eye = 6/48\u000A2B78 — O/E - visual acuity L-eye=6/60\u000A2B79 — O/E -L-eye counts fingers only\u000A2B7C — O/E - L-eye sees hand movements\u000A2B7A — O/E-L-eye perceives light only\u000A2B7A — O/E - blind L-eye\u000A2B7B — O/E - L-eye completely blind">
+                  <option>O/E - visual acuity L-eye =6/4</option>
+                  <option>O/E - visual acuity L-eye =6/5</option>
+                  <option>O/E - visual acuity L-eye =6/6</option>
+                  <option>O/E - visual acuity left eye = 6/7.5</option>
+                  <option>O/E - visual acuity L-eye =6/9</option>
+                  <option>O/E - visual acuity L-eye=6/12</option>
+                  <option>O/E- visual acuity L-eye =6/15</option>
+                  <option>O/E - visual acuity L-eye=6/18</option>
+                  <option>O/E - visual acuity L-eye=6/24</option>
+                  <option>O/E - visual acuity L-eye=6/36</option>
+                  <option>O/E - visual acuity left eye = 6/48</option>
+                  <option>O/E - visual acuity L-eye=6/60</option>
+                  <option>O/E -L-eye counts fingers only</option>
+                  <option>O/E - L-eye sees hand movements</option>
+                  <option>O/E-L-eye perceives light only</option>
+                  <option>O/E - blind L-eye</option>
+                  <option>O/E - L-eye completely blind</option>
+                </select>
+              </div>
+
+              {# ---- Summary column (independently offset vertically) ---- #}
+              <div class="summary-col" style="padding-top:60px;">
+                <div class="row" style="display:grid; grid-template-columns: 70px 1fr 1fr; align-items:center; margin-top:2px;">
                   <span></span>
                   <strong style="text-align:center;">Right</strong>
                   <strong style="text-align:center;">Left</strong>
                 </div>
 
-                <div class="row" style="display:grid; grid-template-columns: 80px 80px 80px; align-items:center; gap:6px;margin-top:14px;">
-                  <label>Hearing</label>
-                  <input type="text" value="2" readonly style="width:40px; text-align:center;">
-                  <input type="text" value="2" readonly style="width:40px; text-align:center;">
-                </div>
-
-                <div class="row" style="display:grid; grid-template-columns: 70px 80px 80px; align-items:center; gap:6px;margin-top:14px;">
+                <div class="row" style="display:grid; grid-template-columns: 70px 1fr 1fr; align-items:center; gap:6px; margin-top:10px;">
                   <span></span>
-                  <div style="display:flex; justify-content:space-around; width:100%;">
-                    <label>U</label><label>C</label>
-                  </div>
-                  <div style="display:flex; justify-content:space-around; width:100%;">
-                    <label>U</label><label>C</label>
-                  </div>
+                  <div style="display:flex; justify-content:space-around; width:100%;"><label>U</label><label>C</label></div>
+                  <div style="display:flex; justify-content:space-around; width:100%;"><label>U</label><label>C</label></div>
                 </div>
 
-                <div class="row" style="display:grid; grid-template-columns: 70px 80px 80px; align-items:center; gap:7px;margin-top:5px;">
+                <div class="row" style="display:grid; grid-template-columns: 70px 1fr 1fr; align-items:center; gap:6px; margin-top:6px;">
                   <label>Eyes</label>
-                  <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
-                    <input type="text" value="2" readonly style="width:24px; text-align:center;">
-                    <input type="text" value="" readonly style="width:24px; text-align:center;">
-                  </div>
-                  <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
-                    <input type="text" value="2" readonly style="width:24px; text-align:center;">
-                    <input type="text" value="" readonly style="width:24px; text-align:center;">
-                  </div>
-                </div>
 
-                <div class="row readcode-host"
-                    style="display:grid; grid-template-columns: 80px 40px; align-items:center; gap:6px; margin-top:14px;"
-                    data-readcodes="RAFPUM21 — M2\u000ARAFPUM31 — M3\u000ARAFPUM71 — M7\u000ARAFPUM81 — M8">
-                  <label>Mental</label>
-                  <select name="{{ c.name }}_mental" style="width:40px;">
-                    <option>2</option><option>3</option><option>7</option><option>8</option>
-                  </select>
-                </div>
+                  {# Right U/C summary boxes with their own code lists #}
+                  <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
+                    <input type="text" name="{{ c.name }}_right_U" readonly style="width:12px; text-align:center;"
+                          class="readcode-host"
+                          data-readcodes="RAFPUER1 — Eur1\u000ARAFPUER2 — Eur2\u000ARAFPUER3 — Eur3\u000ARAFPUER4 — Eur4\u000ARAFPUER5 — Eur5\u000ARAFPUER6 — Eur6\u000ARAFPUER7 — Eur7\u000ARAFPUER8 — Eur8">
+                    <input type="text" name="{{ c.name }}_right_C" readonly style="width:12px; text-align:center;"
+                          class="readcode-host"
+                          data-readcodes="RAFPUEC17 — Ecr1\u000ARAFPUEC2 — Ecr2\u000ARAFPUEC3 — Ecr3\u000ARAFPUEC4 — Ecr4\u000ARAFPUEC5 — Ecr5\u000ARAFPUEC6 — Ecr6\u000ARAFPUEC7 — Ecr7\u000ARAFPUEC8 — Ecr8">
+                  </div>
 
-                <div class="row readcode-host"
-                    style="display:grid; grid-template-columns: 80px 40px 20px auto; align-items:center; gap:6px; margin-top:7px;"
-                    data-readcodes="RAFPUS01 — S0\u000ARAFPUS02 — S0R\u000ARAFPUS21 — S2\u000ARAFPUS22 — S2R\u000ARAFPUS31 — S3\u000ARAFPUS32 — S3R\u000ARAFPUS71 — S7\u000ARAFPUS72 — S7R\u000ARAFPUS81 — S8\u000ARAFPUS82 — S8R">
-                  <label>Stability</label>
-                  <select name="{{ c.name }}_stability" style="width:40px;">
-                    <option>2</option><option>3</option><option>7</option><option>8</option><option>0</option>
-                  </select>
-                  <input type="checkbox" name="{{ c.name }}_stability_remedial">
-                  <label>Remedial</label>
+                  {# Left U/C summary boxes with their own code lists #}
+                  <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
+                    <input type="text" name="{{ c.name }}_left_U" readonly style="width:12px; text-align:center;"
+                          class="readcode-host"
+                          data-readcodes="RAFPUEL3 — Eul1\u000ARAFPUEL4 — Eul2\u000ARAFPUEL5 — Eul3\u000ARAFPUEL6 — Eul4\u000ARAFPUEL7 — Eul5\u000ARAFPUEL8 — Eul6\u000ARAFPUEL9 — Eul7\u000ARAFPUEU1 — Eul8">
+                    <input type="text" name="{{ c.name }}_left_C" readonly style="width:12px; text-align:center;"
+                          class="readcode-host"
+                          data-readcodes="RAFPUEC1 — Ecl1\u000ARAFPUEC10 — Ecl2\u000ARAFPUEC11 — Ecl3\u000ARAFPUEC12 — Ecl4\u000ARAFPUEC13 — Ecl5\u000ARAFPUEC14 — Ecl6\u000ARAFPUEC15 — Ecl7\u000ARAFPUEC16 — Ecl8">
+                  </div>
                 </div>
               </div>
 
+              {# ---- Second row: Corrected ---- #}
+              <div>
+                <div style="font-weight:600; margin:8px 0 4px;">Right Eye Corrected</div>
+                <select name="{{ c.name }}_right_corr" size="7" style="width:100%;"
+                        class="readcode-host"
+                        data-readcodes="TRIQQOE57 — O/E - visual acuity (corrected) R-eye 6/4\u000ATRISOZ2 — O/E - visual acuity (corrected) R-eye 6/5\u000ATRISOZ3 — O/E - visual acuity (corrected) R-eye 6/6\u000ATRISOZ4 — O/E - visual acuity (corrected) R-eye 6/9\u000ATRISOZ5 — O/E - visual acuity (corrected) R-eye 6/12\u000ATRISOZ6 — O/E - visual acuity (corrected) R-eye 6/18\u000ATRISOZ7 — O/E - visual acuity (corrected) R-eye 6/24\u000ATRISOZ8 — O/E - visual acuity (corrected) R-eye 6/36\u000ATRISOZ9 — O/E - visual acuity (corrected) R-eye 6/60">
+                  <option>O/E - visual acuity (corrected) R-eye 6/4</option>
+                  <option>O/E - visual acuity (corrected) R-eye 6/5</option>
+                  <option>O/E - visual acuity (corrected) R-eye 6/6</option>
+                  <option>O/E - visual acuity (corrected) R-eye 6/9</option>
+                  <option>O/E - visual acuity (corrected) R-eye 6/12</option>
+                  <option>O/E - visual acuity (corrected) R-eye 6/18</option>
+                  <option>O/E - visual acuity (corrected) R-eye 6/24</option>
+                  <option>O/E - visual acuity (corrected) R-eye 6/36</option>
+                  <option>O/E - visual acuity (corrected) R-eye 6/60</option>
+                </select>
+              </div>
 
-            {# RIGHT SIDE #}
-            <div class="pul-right" style="display:grid; grid-auto-rows:min-content; row-gap:10px;">
-              <fieldset class="readcode-host"
-                        style="padding:6px 8px;"
-                        data-readcodes="TRIQQNMF1 — MFD - Medically Fully Deployable\u000ATRIQQNML1 — MLD - Medically Limited Deployable\u000ATRIQQNMN1 — MND - Medically Not Deployable">
-                <legend>Medical Deployability</legend>
-                <label><input type="radio" name="{{ c.name }}_deploy" value="Full"> Full</label>
-                <label style="margin-left:12px;"><input type="radio" name="{{ c.name }}_deploy" value="Limited"> Limited</label>
-                <label style="margin-left:12px;"><input type="radio" name="{{ c.name }}_deploy" value="Not"> Not</label>
+              <div>
+                <div style="font-weight:600; margin:8px 0 4px;">Left Eye Corrected</div>
+                <select name="{{ c.name }}_left_corr" size="7" style="width:100%;"
+                        class="readcode-host"
+                        data-readcodes="TRIQQOE56 — O/E - visual acuity (corrected) L-eye 6/4\u000ATRISO/39 — O/E - visual acuity (corrected) L-eye 6/5\u000ATRISO/40 — O/E - visual acuity (corrected) L-eye 6/6\u000ATRISO/41 — O/E - visual acuity (corrected) L-eye 6/9\u000ATRISO/44 — O/E - visual acuity (corrected) L-eye 6/12\u000ATRISO/46 — O/E - visual acuity (corrected) L-eye 6/18\u000ATRISO/48 — O/E - visual acuity (corrected) L-eye 6/24\u000ATRISO/61 — O/E - visual acuity (corrected) L-eye 6/36\u000ATRISO/65 — O/E - visual acuity (corrected) L-eye 6/60">
+                  <option>O/E - visual acuity (corrected) L-eye 6/4</option>
+                  <option>O/E - visual acuity (corrected) L-eye 6/5</option>
+                  <option>O/E - visual acuity (corrected) L-eye 6/6</option>
+                  <option>O/E - visual acuity (corrected) L-eye 6/9</option>
+                  <option>O/E - visual acuity (corrected) L-eye 6/12</option>
+                  <option>O/E - visual acuity (corrected) L-eye 6/18</option>
+                  <option>O/E - visual acuity (corrected) L-eye 6/24</option>
+                  <option>O/E - visual acuity (corrected) L-eye 6/36</option>
+                  <option>O/E - visual acuity (corrected) L-eye 6/60</option>
+                </select>
+              </div>
+
+              {# spacer #}
+              <div></div>
+            </div>
+          </div>
+
+          {% elif 'AudiometryCompare' in c.type %}
+          <div class="audio-compare-widget"
+              style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box; padding:10px;">
+
+            <!-- Top: two identical panels with Hz rows & sums (readonly) -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+
+              <!-- First audiogram (left) -->
+              <fieldset style="border:0;padding:10px;">
+                <legend style="position:relative; left:180px;">First audiogram:</legend>
+
+                <div style="display:grid; grid-auto-rows:min-content; row-gap:8px; align-items:center; max-width:320px;">
+                <!-- Date/Time dropdown (no label) -->
+                <select name="{{ c.name }}_a1_dt" style="max-width:170px;position:relative; left:120px;">
+                  <option>05/04/2024 14:58</option>
+                  <option>25/11/2015 09:12</option>
+                </select>
+
+                <!-- Age row -->
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <label style="min-width:60px;position:relative; left:70px;">Age:</label>
+                  <input type="text" value="44" name="{{ c.name }}_a1_age" style="width:48px;position:relative; left:50px;" readonly>
+                </div>
+
+                <!-- Reason row -->
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <label style="min-width:90px;position:relative; left:53px;">Reason:</label>
+                  <input value="Routine Audiometry" type="text" name="{{ c.name }}_a1_reason" style="width:180px;position:relative; left:20px;" readonly>
+                </div>
+
+                <!-- Hz headers + Right/Left rows (identical widths to Audiometry widget) -->
+                <div style="margin-top:10px;">
+                  <div style="display:grid; grid-template-columns: 30px repeat(7, 30px); gap:8px 20px; align-items:center;">
+                    <span></span>
+                    <div style="text-align:center;">500Hz</div>
+                    <div style="text-align:center;">1KHz</div>
+                    <div style="text-align:center;">2KHz</div>
+                    <div style="text-align:center;">3KHz</div>
+                    <div style="text-align:center;">4KHz</div>
+                    <div style="text-align:center;">6KHz</div>
+                    <div style="text-align:center;">8KHz</div>
+
+                    <div>R (dB)</div>
+                    {% for val in ac_1_r %}
+                      <input type="text"
+                            name="{{ c.name }}_a1_r{{ forloop.counter }}"
+                            value="{{ val }}"
+                            style="width:30px; height:18px; text-align:center;"
+                            readonly>
+                    {% endfor %}
+
+                    <div>L (dB)</div>
+                    {% for val in ac_1_l %}
+                      <input type="text" name="{{ c.name }}_a1_l{{ forloop.counter }}" 
+                              value="{{ val }}"
+                              style="width:30px; height:18px; text-align:center;" 
+                              readonly>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <!-- Sums / H grade (same labels & widths) -->
+                <div style="display:grid; grid-template-columns: 60px repeat(3, 70px); gap:8px 20px; align-items:center; margin-top:10px;">
+                  <span></span><div>Sum of Low</div><div>Sum of High</div><div>H Grade</div>
+
+                  <div style="position:relative; left:50px;">R</div>
+                  <input type="text" name="{{ c.name }}_a1_r_sum_low"  value="30" style="width:30px; height:18px; text-align:center;" readonly>
+                  <input type="text" name="{{ c.name }}_a1_r_sum_high" value="75" style="width:30px; height:18px; text-align:center;" readonly>
+                  <input type="text" name="{{ c.name }}_a1_r_hgrade"   value="2" style="width:30px; height:18px; text-align:center;" readonly>
+
+                  <div style="position:relative; left:50px;">L</div>
+                  <input type="text" name="{{ c.name }}_a1_l_sum_low"  value="25" style="width:30px; height:18px; text-align:center;" readonly>
+                  <input type="text" name="{{ c.name }}_a1_l_sum_high" value="55" style="width:30px; height:18px; text-align:center;" readonly>
+                  <input type="text" name="{{ c.name }}_a1_l_hgrade"   value="2" style="width:30px; height:18px; text-align:center;" readonly>
+                </div>
               </fieldset>
 
-              <label>JMES</label>
-              <div class="jmes-row" style="display:grid; grid-template-columns:auto auto auto auto auto auto auto auto; align-items:center; gap:6px;margin-top:3px;">
-                <label>A</label>
-                <select name="{{ c.name }}_jmes_A" class="readcode-host"
-                        data-readcodes="TRIQQNA11 — A1 - Fit for flying duties without restriction\u000ATRIQQNA21 — A2 - Fit for flying duties but has reduced hearing or eyesight\u000ATRIQQNA31 — A3 - Fit for duties in the air within the stated employment or MedLims\u000ATRIQQNA41 — A4 - Fit to be flown in a passenger aircraft\u000ATRIQQNA51 — A5 - Unfit to be taken in the air\u000ATRIQQNA61 — A6 - Unfit for any duties in the aviation environment">
-                  {% for i in "123456"|make_list %}
-                    <option value="{{ i }}">{{ i }}</option>
-                  {% endfor %}
-                </select>
-                <label>L</label>
-                <select name="{{ c.name }}_jmes_L" class="readcode-host"
-                        data-readcodes="TRIQQNL11 — L1 - Fit for unrestricted duty\u000ATRIQQNL21 — L2 - Fit for high readiness roles with minor limitations\u000ATRIQQNL31 — L3 - Fit for limited duties but with some restriction subject to MRA\u000ATRIQQNL41 — L4 - Fit for certain deployed roles into well-established MOB locations subject to Consultant Occupational Physician MRA\u000ATRIQQNL51 — L5 - Unfit deployment. Fit for branch/trade and limited UK operations\u000ATRIQQNL61 — L6 - Unfit for service in the land environment">
-                  {% for i in "123456"|make_list %}
-                    <option value="{{ i }}">{{ i }}</option>
-                  {% endfor %}
-                </select>
-
-                <label>M</label>
-                <select name="{{ c.name }}_jmes_M" class="readcode-host"
-                        data-readcodes="TRIQQNM11 — M1 - Fit for unrestricted duties\u000ATRIQQNM21 — M2 - Fit for restricted duties afloat within the limitations as stated\u000ATRIQQNM31 — M3 - Fit for restricted duties in a vessel in harbour or alongside with the limitations as stated\u000ATRIQQNM41 — M4 - Fit to be carried as embarked forces in transit\u000ATRIQQNM51 — M5 - Fit for restricted duties ashore within the limitations as stated\u000ATRIQQNM61 — M6 - Unfit for any duties in the maritime environment">
-                  {% for i in "123456"|make_list %}
-                    <option value="{{ i }}">{{ i }}</option>
-                  {% endfor %}
-                </select>
-
-                <label>E</label>
-                <select name="{{ c.name }}_jmes_E" class="readcode-host"
-                        data-readcodes="TRIQQNE11 — E1 - Fit for worldwide service in all environments\u000ATRIQQNE21 — E2 - Fit for unrestricted duties but with a medical risk marker\u000ATRIQQNE31 — E3 - Restricted employment outside UK due to medical support or environmental requirements\u000ATRIQQNE41 — E4 - Only to be employed out of the UK with access to established, 'NHS equivalent or better' Primary and Secondary Healthcare\u000ATRIQQNE51 — E5 - May be employed within the UK only\u000ATRIQQNE61 — E6 - Pregnancy/Maternity">
-                  {% for i in "123456"|make_list %}
-                    <option value="{{ i }}">{{ i }}</option>
-                  {% endfor %}
-                </select>
-
-              </div>
-              <div style="display:flex; align-items:center; gap:8px;margin-top:5px;">
-                <label>JMES Status</label>
-                <select name="{{ c.name }}_jmes_status" class="readcode-host"
-                        data-readcodes="RAFMETE5 — Temporary MES\u000ARAFMEPE1 — Permanent MES\u000ARAFMENO3 — Not Applicable">
-                  <option>Temporary</option>
-                  <option>Permanent</option>
-                  <option>Not Applicable</option>
-                </select>
-              </div>
-
-
-              <div style="display:flex; align-items:center; gap:8px;margin-top:5px;">
-                <label>Review Date</label>
-                <input type="date" name="{{ c.name }}_review_date" class="readcode-host"
-                      data-diary="1"
-                      data-readcodes="RAFPUPU1 — Diary entry for PULHHEEMS Profile">
-              </div>
-
-              <div style="margin-top:5px;">
-                <label>Notes</label>
-                <textarea name="{{ c.name }}_notes" rows="1" style="width:100%; box-sizing:border-box;margin-top:10px;"></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {% elif 'VisualAcuity' in c.type %}
-        <div class="visual-acuity-widget"
-            style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box; padding:10px;">
-          <div style="display:grid; grid-template-columns: 1fr 1fr 180px; column-gap:14px; row-gap:10px; height:100%;">
-
-            {# ---- Top row: Uncorrected ---- #}
-            <div>
-              <div style="font-weight:600; margin-bottom:4px;">Right Eye Uncorrected</div>
-              <select name="{{ c.name }}_right_uncorr" size="7" style="width:100%;"
-                      class="readcode-host"
-                      data-readcodes="2B6D — O/E - visual acuity R-eye=6/4\u000A2B61 — O/E - visual acuity R-eye =6/5\u000A2B62 — O/E - visual acuity R-eye =6/6\u000A2B6d — O/E - visual acuity right eye = 6/7.5\u000A2B63 — O/E - visual acuity R-eye =6/9\u000A2B64 — O/E - visual acuity R-eye=6/12\u000A2B6b — O/E- visual acuity R-eye =6/15\u000A2B65 — O/E - visual acuity R-eye=6/18\u000A2B66 — O/E - visual acuity R-eye=6/24\u000A2B67 — O/E - visual acuity R-eye=6/36\u000A2B6e — O/E - visual acuity right eye = 6/48\u000A2B68 — O/E - visual acuity R-eye=6/60\u000A2B69 — O/E -R-eye counts fingers only\u000A2B6C — O/E - R-eye sees hand movements\u000A2B6A — O/E-R-eye perceives light only\u000A2B6A — O/E - blind R-eye\u000A2B6B — O/E - R-eye completely blind">
-                <option>O/E - visual acuity R-eye=6/4</option>
-                <option>O/E - visual acuity R-eye =6/5</option>
-                <option>O/E - visual acuity R-eye =6/6</option>
-                <option>O/E - visual acuity right eye = 6/7.5</option>
-                <option>O/E - visual acuity R-eye =6/9</option>
-                <option>O/E - visual acuity R-eye=6/12</option>
-                <option>O/E- visual acuity R-eye =6/15</option>
-                <option>O/E - visual acuity R-eye=6/18</option>
-                <option>O/E - visual acuity R-eye=6/24</option>
-                <option>O/E - visual acuity R-eye=6/36</option>
-                <option>O/E - visual acuity right eye = 6/48</option>
-                <option>O/E - visual acuity R-eye=6/60</option>
-                <option>O/E -R-eye counts fingers only</option>
-                <option>O/E - R-eye sees hand movements</option>
-                <option>O/E-R-eye perceives light only</option>
-                <option>O/E - blind R-eye</option>
-                <option>O/E - R-eye completely blind</option>
-              </select>
-            </div>
-
-            <div>
-              <div style="font-weight:600; margin-bottom:4px;">Left Eye Uncorrected</div>
-              <select name="{{ c.name }}_left_uncorr" size="7" style="width:100%;"
-                      class="readcode-host"
-                      data-readcodes="2B7D — O/E - visual acuity L-eye =6/4\u000A2B71 — O/E - visual acuity L-eye =6/5\u000A2B72 — O/E - visual acuity L-eye =6/6\u000A2B7e — O/E - visual acuity left eye = 6/7.5\u000A2B73 — O/E - visual acuity L-eye =6/9\u000A2B74 — O/E - visual acuity L-eye=6/12\u000A2B7b — O/E- visual acuity L-eye =6/15\u000A2B75 — O/E - visual acuity L-eye=6/18\u000A2B76 — O/E - visual acuity L-eye=6/24\u000A2B77 — O/E - visual acuity L-eye=6/36\u000A2B7d — O/E - visual acuity left eye = 6/48\u000A2B78 — O/E - visual acuity L-eye=6/60\u000A2B79 — O/E -L-eye counts fingers only\u000A2B7C — O/E - L-eye sees hand movements\u000A2B7A — O/E-L-eye perceives light only\u000A2B7A — O/E - blind L-eye\u000A2B7B — O/E - L-eye completely blind">
-                <option>O/E - visual acuity L-eye =6/4</option>
-                <option>O/E - visual acuity L-eye =6/5</option>
-                <option>O/E - visual acuity L-eye =6/6</option>
-                <option>O/E - visual acuity left eye = 6/7.5</option>
-                <option>O/E - visual acuity L-eye =6/9</option>
-                <option>O/E - visual acuity L-eye=6/12</option>
-                <option>O/E- visual acuity L-eye =6/15</option>
-                <option>O/E - visual acuity L-eye=6/18</option>
-                <option>O/E - visual acuity L-eye=6/24</option>
-                <option>O/E - visual acuity L-eye=6/36</option>
-                <option>O/E - visual acuity left eye = 6/48</option>
-                <option>O/E - visual acuity L-eye=6/60</option>
-                <option>O/E -L-eye counts fingers only</option>
-                <option>O/E - L-eye sees hand movements</option>
-                <option>O/E-L-eye perceives light only</option>
-                <option>O/E - blind L-eye</option>
-                <option>O/E - L-eye completely blind</option>
-              </select>
-            </div>
-
-            {# ---- Summary column (independently offset vertically) ---- #}
-            <div class="summary-col" style="padding-top:60px;">
-              <div class="row" style="display:grid; grid-template-columns: 70px 1fr 1fr; align-items:center; margin-top:2px;">
-                <span></span>
-                <strong style="text-align:center;">Right</strong>
-                <strong style="text-align:center;">Left</strong>
-              </div>
-
-              <div class="row" style="display:grid; grid-template-columns: 70px 1fr 1fr; align-items:center; gap:6px; margin-top:10px;">
-                <span></span>
-                <div style="display:flex; justify-content:space-around; width:100%;"><label>U</label><label>C</label></div>
-                <div style="display:flex; justify-content:space-around; width:100%;"><label>U</label><label>C</label></div>
-              </div>
-
-              <div class="row" style="display:grid; grid-template-columns: 70px 1fr 1fr; align-items:center; gap:6px; margin-top:6px;">
-                <label>Eyes</label>
-
-                {# Right U/C summary boxes with their own code lists #}
-                <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
-                  <input type="text" name="{{ c.name }}_right_U" readonly style="width:12px; text-align:center;"
-                        class="readcode-host"
-                        data-readcodes="RAFPUER1 — Eur1\u000ARAFPUER2 — Eur2\u000ARAFPUER3 — Eur3\u000ARAFPUER4 — Eur4\u000ARAFPUER5 — Eur5\u000ARAFPUER6 — Eur6\u000ARAFPUER7 — Eur7\u000ARAFPUER8 — Eur8">
-                  <input type="text" name="{{ c.name }}_right_C" readonly style="width:12px; text-align:center;"
-                        class="readcode-host"
-                        data-readcodes="RAFPUEC17 — Ecr1\u000ARAFPUEC2 — Ecr2\u000ARAFPUEC3 — Ecr3\u000ARAFPUEC4 — Ecr4\u000ARAFPUEC5 — Ecr5\u000ARAFPUEC6 — Ecr6\u000ARAFPUEC7 — Ecr7\u000ARAFPUEC8 — Ecr8">
-                </div>
-
-                {# Left U/C summary boxes with their own code lists #}
-                <div style="display:flex; justify-content:space-around; width:100%; gap:6px;">
-                  <input type="text" name="{{ c.name }}_left_U" readonly style="width:12px; text-align:center;"
-                        class="readcode-host"
-                        data-readcodes="RAFPUEL3 — Eul1\u000ARAFPUEL4 — Eul2\u000ARAFPUEL5 — Eul3\u000ARAFPUEL6 — Eul4\u000ARAFPUEL7 — Eul5\u000ARAFPUEL8 — Eul6\u000ARAFPUEL9 — Eul7\u000ARAFPUEU1 — Eul8">
-                  <input type="text" name="{{ c.name }}_left_C" readonly style="width:12px; text-align:center;"
-                        class="readcode-host"
-                        data-readcodes="RAFPUEC1 — Ecl1\u000ARAFPUEC10 — Ecl2\u000ARAFPUEC11 — Ecl3\u000ARAFPUEC12 — Ecl4\u000ARAFPUEC13 — Ecl5\u000ARAFPUEC14 — Ecl6\u000ARAFPUEC15 — Ecl7\u000ARAFPUEC16 — Ecl8">
-                </div>
-              </div>
-            </div>
-
-            {# ---- Second row: Corrected ---- #}
-            <div>
-              <div style="font-weight:600; margin:8px 0 4px;">Right Eye Corrected</div>
-              <select name="{{ c.name }}_right_corr" size="7" style="width:100%;"
-                      class="readcode-host"
-                      data-readcodes="TRIQQOE57 — O/E - visual acuity (corrected) R-eye 6/4\u000ATRISOZ2 — O/E - visual acuity (corrected) R-eye 6/5\u000ATRISOZ3 — O/E - visual acuity (corrected) R-eye 6/6\u000ATRISOZ4 — O/E - visual acuity (corrected) R-eye 6/9\u000ATRISOZ5 — O/E - visual acuity (corrected) R-eye 6/12\u000ATRISOZ6 — O/E - visual acuity (corrected) R-eye 6/18\u000ATRISOZ7 — O/E - visual acuity (corrected) R-eye 6/24\u000ATRISOZ8 — O/E - visual acuity (corrected) R-eye 6/36\u000ATRISOZ9 — O/E - visual acuity (corrected) R-eye 6/60">
-                <option>O/E - visual acuity (corrected) R-eye 6/4</option>
-                <option>O/E - visual acuity (corrected) R-eye 6/5</option>
-                <option>O/E - visual acuity (corrected) R-eye 6/6</option>
-                <option>O/E - visual acuity (corrected) R-eye 6/9</option>
-                <option>O/E - visual acuity (corrected) R-eye 6/12</option>
-                <option>O/E - visual acuity (corrected) R-eye 6/18</option>
-                <option>O/E - visual acuity (corrected) R-eye 6/24</option>
-                <option>O/E - visual acuity (corrected) R-eye 6/36</option>
-                <option>O/E - visual acuity (corrected) R-eye 6/60</option>
-              </select>
-            </div>
-
-            <div>
-              <div style="font-weight:600; margin:8px 0 4px;">Left Eye Corrected</div>
-              <select name="{{ c.name }}_left_corr" size="7" style="width:100%;"
-                      class="readcode-host"
-                      data-readcodes="TRIQQOE56 — O/E - visual acuity (corrected) L-eye 6/4\u000ATRISO/39 — O/E - visual acuity (corrected) L-eye 6/5\u000ATRISO/40 — O/E - visual acuity (corrected) L-eye 6/6\u000ATRISO/41 — O/E - visual acuity (corrected) L-eye 6/9\u000ATRISO/44 — O/E - visual acuity (corrected) L-eye 6/12\u000ATRISO/46 — O/E - visual acuity (corrected) L-eye 6/18\u000ATRISO/48 — O/E - visual acuity (corrected) L-eye 6/24\u000ATRISO/61 — O/E - visual acuity (corrected) L-eye 6/36\u000ATRISO/65 — O/E - visual acuity (corrected) L-eye 6/60">
-                <option>O/E - visual acuity (corrected) L-eye 6/4</option>
-                <option>O/E - visual acuity (corrected) L-eye 6/5</option>
-                <option>O/E - visual acuity (corrected) L-eye 6/6</option>
-                <option>O/E - visual acuity (corrected) L-eye 6/9</option>
-                <option>O/E - visual acuity (corrected) L-eye 6/12</option>
-                <option>O/E - visual acuity (corrected) L-eye 6/18</option>
-                <option>O/E - visual acuity (corrected) L-eye 6/24</option>
-                <option>O/E - visual acuity (corrected) L-eye 6/36</option>
-                <option>O/E - visual acuity (corrected) L-eye 6/60</option>
-              </select>
-            </div>
-
-            {# spacer #}
-            <div></div>
-          </div>
-        </div>
-
-        {% elif 'AudiometryCompare' in c.type %}
-        <div class="audio-compare-widget"
-            style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box; padding:10px;">
-
-          <!-- Top: two identical panels with Hz rows & sums (readonly) -->
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-
-            <!-- First audiogram (left) -->
+              <!-- Second audiogram (right) -->
             <fieldset style="border:0;padding:10px;">
-              <legend style="position:relative; left:180px;">First audiogram:</legend>
+                <legend style="position:relative; left:180px;">Second audiogram:</legend>
 
-              <div style="display:grid; grid-auto-rows:min-content; row-gap:8px; align-items:center; max-width:320px;">
-              <!-- Date/Time dropdown (no label) -->
-              <select name="{{ c.name }}_a1_dt" style="max-width:170px;position:relative; left:120px;">
-                <option>05/04/2024 14:58</option>
-                <option>25/11/2015 09:12</option>
-              </select>
+                <div style="display:grid; grid-auto-rows:min-content; row-gap:8px; align-items:center; max-width:420px;">
+                <!-- Date/Time dropdown (no label) -->
+                <select name="{{ c.name }}_a2_dt" style="max-width:180px;position:relative; left:120px;">
+                  <option>05/04/2024 14:58</option>
+                  <option selected>25/11/2015 09:12</option>
+                </select>
 
-              <!-- Age row -->
-              <div style="display:flex; gap:8px; align-items:center;">
-                <label style="min-width:60px;position:relative; left:70px;">Age:</label>
-                <input type="text" value="44" name="{{ c.name }}_a1_age" style="width:48px;position:relative; left:50px;" readonly>
-              </div>
+                <!-- Age row -->
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <label style="min-width:110px;position:relative; left:70px;">Age:</label>
+                  <input type="text" value="35" name="{{ c.name }}_a2_age" style="width:48px;" readonly>
+                  <label style="min-width:110px;">Age Difference:</label>
+                  <input type="text" value="8/4" name="{{ c.name }}_age_diff" style="width:48px;" readonly>
+                </div>
 
-              <!-- Reason row -->
-              <div style="display:flex; gap:8px; align-items:center;">
-                <label style="min-width:90px;position:relative; left:53px;">Reason:</label>
-                <input value="Routine Audiometry" type="text" name="{{ c.name }}_a1_reason" style="width:180px;position:relative; left:20px;" readonly>
-              </div>
+                <!-- Reason row -->
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <label style="min-width:110px;position:relative; left:53px;">Reason:</label>
+                  <input value="Routine Audiometry" type="text" name="{{ c.name }}_a2_reason" style="width:180px;" readonly>
+                </div>
 
-              <!-- Hz headers + Right/Left rows (identical widths to Audiometry widget) -->
-              <div style="margin-top:10px;">
-                <div style="display:grid; grid-template-columns: 30px repeat(7, 30px); gap:8px 20px; align-items:center;">
-                  <span></span>
-                  <div style="text-align:center;">500Hz</div>
-                  <div style="text-align:center;">1KHz</div>
-                  <div style="text-align:center;">2KHz</div>
-                  <div style="text-align:center;">3KHz</div>
-                  <div style="text-align:center;">4KHz</div>
-                  <div style="text-align:center;">6KHz</div>
-                  <div style="text-align:center;">8KHz</div>
+                <!-- Hz headers + Right/Left rows (identical to left) -->
+                <div style="margin-top:10px;">
+                  <div style="display:grid; grid-template-columns: 30px repeat(7, 30px); gap:8px 20px; align-items:center;">
+                    <span></span>
+                    <div style="text-align:center;">500Hz</div>
+                    <div style="text-align:center;">1KHz</div>
+                    <div style="text-align:center;">2KHz</div>
+                    <div style="text-align:center;">3KHz</div>
+                    <div style="text-align:center;">4KHz</div>
+                    <div style="text-align:center;">6KHz</div>
+                    <div style="text-align:center;">8KHz</div>
 
-                  <div>R (dB)</div>
-                  {% for val in ac_1_r %}
-                    <input type="text"
-                          name="{{ c.name }}_a1_r{{ forloop.counter }}"
-                          value="{{ val }}"
-                          style="width:30px; height:18px; text-align:center;"
-                          readonly>
-                  {% endfor %}
-
-                  <div>L (dB)</div>
-                  {% for val in ac_1_l %}
-                    <input type="text" name="{{ c.name }}_a1_l{{ forloop.counter }}" 
+                    <div>R (dB)</div>
+                    {% for val in ac_2_r %}
+                      <input type="text" 
+                            name="{{ c.name }}_a2_r{{ forloop.counter }}" 
                             value="{{ val }}"
                             style="width:30px; height:18px; text-align:center;" 
                             readonly>
-                  {% endfor %}
-                </div>
-              </div>
+                    {% endfor %}
 
-              <!-- Sums / H grade (same labels & widths) -->
-              <div style="display:grid; grid-template-columns: 60px repeat(3, 70px); gap:8px 20px; align-items:center; margin-top:10px;">
-                <span></span><div>Sum of Low</div><div>Sum of High</div><div>H Grade</div>
-
-                <div style="position:relative; left:50px;">R</div>
-                <input type="text" name="{{ c.name }}_a1_r_sum_low"  value="30" style="width:30px; height:18px; text-align:center;" readonly>
-                <input type="text" name="{{ c.name }}_a1_r_sum_high" value="75" style="width:30px; height:18px; text-align:center;" readonly>
-                <input type="text" name="{{ c.name }}_a1_r_hgrade"   value="2" style="width:30px; height:18px; text-align:center;" readonly>
-
-                <div style="position:relative; left:50px;">L</div>
-                <input type="text" name="{{ c.name }}_a1_l_sum_low"  value="25" style="width:30px; height:18px; text-align:center;" readonly>
-                <input type="text" name="{{ c.name }}_a1_l_sum_high" value="55" style="width:30px; height:18px; text-align:center;" readonly>
-                <input type="text" name="{{ c.name }}_a1_l_hgrade"   value="2" style="width:30px; height:18px; text-align:center;" readonly>
-              </div>
-            </fieldset>
-
-            <!-- Second audiogram (right) -->
-          <fieldset style="border:0;padding:10px;">
-              <legend style="position:relative; left:180px;">Second audiogram:</legend>
-
-              <div style="display:grid; grid-auto-rows:min-content; row-gap:8px; align-items:center; max-width:420px;">
-              <!-- Date/Time dropdown (no label) -->
-              <select name="{{ c.name }}_a2_dt" style="max-width:180px;position:relative; left:120px;">
-                <option>05/04/2024 14:58</option>
-                <option selected>25/11/2015 09:12</option>
-              </select>
-
-              <!-- Age row -->
-              <div style="display:flex; gap:8px; align-items:center;">
-                <label style="min-width:110px;position:relative; left:70px;">Age:</label>
-                <input type="text" value="35" name="{{ c.name }}_a2_age" style="width:48px;" readonly>
-                <label style="min-width:110px;">Age Difference:</label>
-                <input type="text" value="8/4" name="{{ c.name }}_age_diff" style="width:48px;" readonly>
-              </div>
-
-              <!-- Reason row -->
-              <div style="display:flex; gap:8px; align-items:center;">
-                <label style="min-width:110px;position:relative; left:53px;">Reason:</label>
-                <input value="Routine Audiometry" type="text" name="{{ c.name }}_a2_reason" style="width:180px;" readonly>
-              </div>
-
-              <!-- Hz headers + Right/Left rows (identical to left) -->
-              <div style="margin-top:10px;">
-                <div style="display:grid; grid-template-columns: 30px repeat(7, 30px); gap:8px 20px; align-items:center;">
-                  <span></span>
-                  <div style="text-align:center;">500Hz</div>
-                  <div style="text-align:center;">1KHz</div>
-                  <div style="text-align:center;">2KHz</div>
-                  <div style="text-align:center;">3KHz</div>
-                  <div style="text-align:center;">4KHz</div>
-                  <div style="text-align:center;">6KHz</div>
-                  <div style="text-align:center;">8KHz</div>
-
-                  <div>R (dB)</div>
-                  {% for val in ac_2_r %}
-                    <input type="text" 
-                          name="{{ c.name }}_a2_r{{ forloop.counter }}" 
+                    <div>L (dB)</div>
+                    {% for val in ac_2_l %}
+                      <input type="text" 
+                          name="{{ c.name }}_a2_l{{ forloop.counter }}" 
                           value="{{ val }}"
                           style="width:30px; height:18px; text-align:center;" 
                           readonly>
-                  {% endfor %}
+                    {% endfor %}
+                  </div>
+                </div>
 
-                  <div>L (dB)</div>
-                  {% for val in ac_2_l %}
-                    <input type="text" 
-                        name="{{ c.name }}_a2_l{{ forloop.counter }}" 
-                        value="{{ val }}"
-                        style="width:30px; height:18px; text-align:center;" 
-                        readonly>
-                  {% endfor %}
+                <!-- Sums / H grade (identical) -->
+                <div style="display:grid; grid-template-columns: 60px repeat(3, 70px); gap:8px 20px; align-items:center; margin-top:10px;">
+                  <span></span><div>Sum of Low</div><div>Sum of High</div><div>H Grade</div>
+
+                  <div style="position:relative; left:50px;">R</div>
+                  <input type="text" name="{{ c.name }}_a2_r_sum_low"  value="15" style="width:30px; height:18px; text-align:center;" readonly>
+                  <input type="text" name="{{ c.name }}_a2_r_sum_high" value="15" style="width:30px; height:18px; text-align:center;" readonly>
+                  <input type="text" name="{{ c.name }}_a2_r_hgrade"   value="1" style="width:30px; height:18px; text-align:center;" readonly>
+
+                  <div style="position:relative; left:50px;">L</div>
+                  <input type="text" name="{{ c.name }}_a2_l_sum_low"  value="15" style="width:30px; height:18px; text-align:center;" readonly>
+                  <input type="text" name="{{ c.name }}_a2_l_sum_high" value="15" style="width:30px; height:18px; text-align:center;" readonly>
+                  <input type="text" name="{{ c.name }}_a2_l_hgrade"   value="1" style="width:30px; height:18px; text-align:center;" readonly>
+                </div>
+              </fieldset>
+
+            </div>
+
+            <!-- Bottom -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:14px; justify-items:start;">
+
+              <!-- Left chart -->
+              <div class="audio-frame" style="position:relative; width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
+                <!-- Plot area with gutters identical to entry widget -->
+                <div class="plot-pane"
+                    style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;
+                            background:#fff;
+                            border-left:3px solid #000;   /* Y axis */
+                            border-bottom:3px solid #000; /* X axis */
+                            border-top:1px solid #999; border-right:1px solid #999;"></div>
+
+                <!-- Canvas slot (JS will size/position the canvas here) -->
+                <div class="audio-canvas-slot"
+                    style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;"></div>
+
+                <!-- Legend in right gutter -->
+                <div style="position:absolute; right:14px; top:14px;
+                            background:#fff; border:1px solid #000; padding:3px 6px; font-size:11px;
+                            box-shadow:3px 3px 0 #000;">
+                  <div>
+                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>
+                    Right ear
+                  </div>
+                  <div style="margin-top:2px;">
+                    <span style="display:inline-block; width:8px; height:8px; margin-right:6px; position:relative;">
+                      <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(45deg);  transform-origin:center;"></span>
+                      <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(-45deg); transform-origin:center;"></span>
+                    </span>
+                    Left ear
+                  </div>
+                </div>
+
+                <!-- Axis titles (left/bottom gutters) -->
+                <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
+                  Hearing Level (dB)
+                </div>
+                <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
+                  Frequency (Hz)
                 </div>
               </div>
 
-              <!-- Sums / H grade (identical) -->
-              <div style="display:grid; grid-template-columns: 60px repeat(3, 70px); gap:8px 20px; align-items:center; margin-top:10px;">
-                <span></span><div>Sum of Low</div><div>Sum of High</div><div>H Grade</div>
+              <!-- Right chart -->
+              <div class="audio-frame" style="position:relative; width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
+                <div class="plot-pane"
+                    style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;
+                            background:#fff;
+                            border-left:3px solid #000;
+                            border-bottom:3px solid #000;
+                            border-top:1px solid #999; border-right:1px solid #999;"></div>
 
-                <div style="position:relative; left:50px;">R</div>
-                <input type="text" name="{{ c.name }}_a2_r_sum_low"  value="15" style="width:30px; height:18px; text-align:center;" readonly>
-                <input type="text" name="{{ c.name }}_a2_r_sum_high" value="15" style="width:30px; height:18px; text-align:center;" readonly>
-                <input type="text" name="{{ c.name }}_a2_r_hgrade"   value="1" style="width:30px; height:18px; text-align:center;" readonly>
+                <div class="audio-canvas-slot"
+                    style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;"></div>
 
-                <div style="position:relative; left:50px;">L</div>
-                <input type="text" name="{{ c.name }}_a2_l_sum_low"  value="15" style="width:30px; height:18px; text-align:center;" readonly>
-                <input type="text" name="{{ c.name }}_a2_l_sum_high" value="15" style="width:30px; height:18px; text-align:center;" readonly>
-                <input type="text" name="{{ c.name }}_a2_l_hgrade"   value="1" style="width:30px; height:18px; text-align:center;" readonly>
+                <div style="position:absolute; right:14px; top:14px;
+                            background:#fff; border:1px solid #000; padding:3px 6px; font-size:11px;
+                            box-shadow:3px 3px 0 #000;">
+                  <div>
+                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>
+                    Right ear
+                  </div>
+                  <div style="margin-top:2px;">
+                    <span style="display:inline-block; width:8px; height:8px; margin-right:6px; position:relative;">
+                      <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(45deg);  transform-origin:center;"></span>
+                      <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(-45deg); transform-origin:center;"></span>
+                    </span>
+                    Left ear
+                  </div>
+                </div>
+
+                <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
+                  Hearing Level (dB)
+                </div>
+                <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
+                  Frequency (Hz)
+                </div>
+              </div>
+            </div>
+
+            <div style="text-align:center; margin-top:10px;">
+              <button type="button" id="btn-comp-analysis">Analyse</button>
+            </div>
+            <form id="analysis-form2" target="_blank" method="post" action="{% url 'audiogram_analysis' %}" style="display:none;">
+              {% csrf_token %}
+              <input type="hidden" name="payload" id="analysis-payload">
+            </form>
+          </div>
+
+
+          {% elif 'Audiometry' in c.type %}
+          <div class="audiometry-widget" style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box;">
+            
+            {# --- Graph / chart frame (with explicit gutters) ----------------------- #}
+            <div style="position:absolute; left:140px; top:40px; width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
+
+              {# Gutter sizes to match the screenshot #}
+              {% comment %} top=12, left=56 for y-label & ticks, bottom=42 for x-label & ticks, right=110 for legend {% endcomment %}
+
+              {# Plot pane: where the canvas goes (thick left/bottom axes, thin top/right) #}
+              <div class="plot-pane"
+                  style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;
+                          background:#fff;
+                          border-left:3px solid #000;      /* Y axis */
+                          border-bottom:3px solid #000;    /* X axis */
+                          border-top:1px solid #999; 
+                          border-right:1px solid #999;">
+              </div>
+
+              {# Canvas slot — ensure JS sizes/positions the canvas to fill this slot #}
+              <div class="audio-canvas-slot"
+                  style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;"></div>
+
+              {# Legend sits in the right gutter, not overlapping the plot #}
+              <div style="position:absolute; right:14px; top:14px;
+                          background:#fff; border:1px solid #000; padding:3px 6px; font-size:11px;
+                          box-shadow:3px 3px 0 #000;">
+                <div>
+                  <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>
+                  Right ear
+                </div>
+                <div style="margin-top:2px;">
+                  <span style="display:inline-block; width:8px; height:8px; margin-right:6px; position:relative;">
+                    <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(45deg); transform-origin:center;"></span>
+                    <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(-45deg); transform-origin:center;"></span>
+                  </span>
+                  Left ear
+                </div>
+              </div>
+
+              {# Axis titles occupy the left/bottom gutters #}
+              <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
+                Hearing Level (dB)
+              </div>
+              <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
+                Frequency (Hz)
+              </div>
+            </div>
+
+
+            {# --- Column headers (Hz) ------------------------------------------------ #}
+            <div style="position:absolute; left:113px; top:425px; width:30px; text-align:center;">500Hz</div>
+            <div style="position:absolute; left:163px; top:425px; width:30px; text-align:center;">1000Hz</div>
+            <div style="position:absolute; left:213px; top:425px; width:30px; text-align:center;">2000Hz</div>
+            <div style="position:absolute; left:263px; top:425px; width:30px; text-align:center;">3000Hz</div>
+            <div style="position:absolute; left:313px; top:425px; width:30px; text-align:center;">4000Hz</div>
+            <div style="position:absolute; left:363px; top:425px; width:30px; text-align:center;">6000Hz</div>
+            <div style="position:absolute; left:413px; top:425px; width:30px; text-align:center;">8000Hz</div>
+
+            {# --- Row labels --------------------------------------------------------- #}
+            <div style="position:absolute; left:60px; top:446px;">Right (dB)</div>
+            <div style="position:absolute; left:60px; top:476px;">Left (dB)</div>
+
+            {# --- Right ear inputs (y=454) ------------------------------------------ #}
+            <input class="readcode-host" data-readcodes="RAFAURI17 — Right Ear (Air)  500 Hz"
+                  name="{{ c.name }}_r_500"   type="text"
+                  style="position:absolute; left:113px; top:444px; width:30px; height:18px;">
+            <input class="readcode-host" data-readcodes="RAFAURI16 — Right Ear (Air)  1000 Hz"
+                  name="{{ c.name }}_r_1000"  type="text"
+                  style="position:absolute; left:163px; top:444px; width:30px; height:18px;">
+            <input class="readcode-host" data-readcodes="RAFAURI15 — Right Ear (Air)  2000 Hz"
+                  name="{{ c.name }}_r_2000"  type="text"
+                  style="position:absolute; left:213px; top:444px; width:30px; height:18px;">
+            <input class="readcode-host" data-readcodes="RAFAURI19 — Right Ear (Air)  3000 Hz"
+                  name="{{ c.name }}_r_3000"  type="text"
+                  style="position:absolute; left:263px; top:444px; width:30px; height:18px;">
+            <input class="readcode-host" data-readcodes="RAFAURI14 — Right Ear (Air)  4000 Hz"
+                  name="{{ c.name }}_r_4000"  type="text"
+                  style="position:absolute; left:313px; top:444px; width:30px; height:18px;">
+            <input class="readcode-host" data-readcodes="RAFAURI13 — Right Ear (Air)  6000 Hz"
+                  name="{{ c.name }}_r_6000"  type="text"
+                  style="position:absolute; left:363px; top:444px; width:30px; height:18px;">
+            <input class="readcode-host" data-readcodes="RAFAURI12 — Right Ear (Air)  8000 Hz"
+                  name="{{ c.name }}_r_8000"  type="text"
+                  style="position:absolute; left:413px; top:444px; width:30px; height:18px;">
+
+            {# --- Left ear inputs (y=484) ------------------------------------------- #}
+            <input class="readcode-host" data-readcodes="RAFAULE17 — Left Ear (Air)  500 Hz"
+                  name="{{ c.name }}_l_500"   type="text"
+                  style="position:absolute; left:113px; top:474px; width:30px; height:18px;">
+            <input class="readcode-host" data-readcodes="RAFAULE16 — Left Ear (Air)  1000 Hz"
+                  name="{{ c.name }}_l_1000"  type="text"
+                  style="position:absolute; left:163px; top:474px; width:30px; height:18px;">
+            <input class="readcode-host" data-readcodes="RAFAULE15 — Left Ear (Air)  2000 Hz"
+                  name="{{ c.name }}_l_2000"  type="text"
+                  style="position:absolute; left:213px; top:474px; width:30px; height:18px;">
+            <input class="readcode-host" data-readcodes="RAFAULE20 — Left Ear (Air)  3000 Hz"
+                  name="{{ c.name }}_l_3000"  type="text"
+                  style="position:absolute; left:263px; top:474px; width:30px; height:18px;">
+            <input class="readcode-host" data-readcodes="RAFAULE14 — Left Ear (Air)  4000 Hz"
+                  name="{{ c.name }}_l_4000"  type="text"
+                  style="position:absolute; left:313px; top:474px; width:30px; height:18px;">
+            <input class="readcode-host" data-readcodes="RAFAULE13 — Left Ear (Air)  6000 Hz"
+                  name="{{ c.name }}_l_6000"  type="text"
+                  style="position:absolute; left:363px; top:474px; width:30px; height:18px;">
+            <input class="readcode-host" data-readcodes="RAFAULE12 — Left Ear (Air)  8000 Hz"
+                  name="{{ c.name }}_l_8000"  type="text"
+                  style="position:absolute; left:413px; top:474px; width:30px; height:18px;">
+
+
+            {# --- Repeat audiogram block (unchanged legend etc.) --- #}
+            <fieldset style="position:absolute; left:482px; top:430px; width:164px; height:75px; padding:4px 5px;">
+              <div class="readcode-host" data-readcodes="DMSAC009 — Repeat audiogram">
+                <legend>Is this a repeat audiogram?</legend>
+                <label style="margin-right:14px;"><input type="radio" name="{{ c.name }}_repeat" value="Yes"> Yes</label>
+                <label><input type="radio" name="{{ c.name }}_repeat" value="No"> No</label>
+                </div>
+                <div style="margin-top:8px;margin-left: 34px;">
+                  <button id="btn-initial-analysis" type="button" class="readcode-host"
+                        data-readcodes="DMSACA02 — Significant change from previous audiogram\u000ADMSACA04 — Audiogram shows acute change\u000ADMSACA05 — Audiogram shows unilateral hearing loss\u000ADMSACA06 — Audiogram shows change in H grade\u000ADMSACA07 — Audiogram is consistent with HCP pass and below the warning level\u000ADMSACA08 — Audiogram is consistent with HCP pass, but is greater than or equal to the warning level\u000ADMSACA09 — Audiogram indicates hearing loss exceeding the HCP action required level">Initial Analysis</button>
+                </div>
+            </fieldset>
+
+            {# Hidden form to open analysis page in a new tab #}
+            <form id="analysis-form" target="_blank" method="post" action="{% url 'audiogram_analysis' %}" style="display:none;">
+              {% csrf_token %}
+              <input type="hidden" name="payload" id="analysis-payload">
+            </form>
+
+            {# --- Sums / H grade (Right row y=544; Left row y=584) ------------------ #}
+            <div style="position:absolute; left:113px; top:526px;">Sum L Freq.</div>
+            <div style="position:absolute; left:180px; top:526px;">Sum H Freq.</div>
+            <div style="position:absolute; left:250px; top:526px;">H Grade</div>
+
+            <div style="position:absolute; left:60px; top:546px;">Right</div>
+            <input class="readcode-host" data-readcodes="CABESSU2 — Sum low frequency right ear"
+          name="{{ c.name }}_r_sum_low"  type="text" readonly
+          style="position:absolute; left:113px; top:544px; width:30px; height:18px;">
+
+          <input class="readcode-host" data-readcodes="CABESSU1 — Sum high frequency right ear"
+                name="{{ c.name }}_r_sum_high" type="text" readonly
+                style="position:absolute; left:180px; top:544px; width:30px; height:18px;">
+
+          <input class="readcode-host" data-readcodes="RAFPUH11 — Hr1\u000ARAFPUH21 — Hr2\u000ARAFPUH31 — Hr3\u000ARAFPUHR1 — Hr4\u000ARAFPUHR2 — Hr8"
+                name="{{ c.name }}_r_hgrade"   type="text" readonly
+                style="position:absolute; left:250px; top:544px; width:30px; height:18px;">
+
+          <div style="position:absolute; left:60px; top:576px;">Left</div>
+
+          <input class="readcode-host" data-readcodes="CABESSU4 — Sum low frequency left ear"
+                name="{{ c.name }}_l_sum_low"  type="text" readonly
+                style="position:absolute; left:113px; top:570px; width:30px; height:18px;">
+
+          <input class="readcode-host" data-readcodes="CABESSU3 — Sum high frequency left ear"
+                name="{{ c.name }}_l_sum_high" type="text" readonly
+                style="position:absolute; left:180px; top:570px; width:30px; height:18px;">
+
+          <input class="readcode-host" data-readcodes="RAFPUHL1 — Hl1\u000ARAFPUHL2 — Hl2\u000ARAFPUHL3 — Hl3\u000ARAFPUHL4 — Hl4\u000ARAFPUHL5 — Hl8"
+                name="{{ c.name }}_l_hgrade"   type="text" readonly
+                style="position:absolute; left:250px; top:570px; width:30px; height:18px;">
+
+
+            {# --- Right/Left/Points/Lines/Print block (452,543)-(676,607) ----------- #}
+            <fieldset style="position:absolute; left:452px; top:523px; width:224px; height:60px; padding:4px 5px;">
+              <div style="display:grid; grid-template-columns:auto auto min-content; grid-template-rows:auto auto; column-gap:12px; row-gap:3px; align-items:center; height:100%;">
+                <label><input type="checkbox" name="{{ c.name }}_show_right" checked> Right</label>
+                <label><input type="checkbox" name="{{ c.name }}_show_points"> Points</label>
+
+                {# Print button to the right, centered between rows #}
+                <button type="button" style="grid-column:3; grid-row:1 / span 2; align-self:center; justify-self:center;">Print</button>
+
+                <label><input type="checkbox" name="{{ c.name }}_show_left" checked> Left</label>
+                <label><input type="checkbox" name="{{ c.name }}_show_lines"> Lines</label>
               </div>
             </fieldset>
 
           </div>
 
-          <!-- Bottom -->
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:14px; justify-items:start;">
-
-            <!-- Left chart -->
-            <div class="audio-frame" style="position:relative; width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
-              <!-- Plot area with gutters identical to entry widget -->
-              <div class="plot-pane"
-                  style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;
-                          background:#fff;
-                          border-left:3px solid #000;   /* Y axis */
-                          border-bottom:3px solid #000; /* X axis */
-                          border-top:1px solid #999; border-right:1px solid #999;"></div>
-
-              <!-- Canvas slot (JS will size/position the canvas here) -->
-              <div class="audio-canvas-slot"
-                  style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;"></div>
-
-              <!-- Legend in right gutter -->
-              <div style="position:absolute; right:14px; top:14px;
-                          background:#fff; border:1px solid #000; padding:3px 6px; font-size:11px;
-                          box-shadow:3px 3px 0 #000;">
-                <div>
-                  <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>
-                  Right ear
-                </div>
-                <div style="margin-top:2px;">
-                  <span style="display:inline-block; width:8px; height:8px; margin-right:6px; position:relative;">
-                    <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(45deg);  transform-origin:center;"></span>
-                    <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(-45deg); transform-origin:center;"></span>
-                  </span>
-                  Left ear
-                </div>
-              </div>
-
-              <!-- Axis titles (left/bottom gutters) -->
-              <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
-                Hearing Level (dB)
-              </div>
-              <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
-                Frequency (Hz)
-              </div>
-            </div>
-
-            <!-- Right chart -->
-            <div class="audio-frame" style="position:relative; width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
-              <div class="plot-pane"
-                  style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;
-                          background:#fff;
-                          border-left:3px solid #000;
-                          border-bottom:3px solid #000;
-                          border-top:1px solid #999; border-right:1px solid #999;"></div>
-
-              <div class="audio-canvas-slot"
-                  style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;"></div>
-
-              <div style="position:absolute; right:14px; top:14px;
-                          background:#fff; border:1px solid #000; padding:3px 6px; font-size:11px;
-                          box-shadow:3px 3px 0 #000;">
-                <div>
-                  <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>
-                  Right ear
-                </div>
-                <div style="margin-top:2px;">
-                  <span style="display:inline-block; width:8px; height:8px; margin-right:6px; position:relative;">
-                    <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(45deg);  transform-origin:center;"></span>
-                    <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(-45deg); transform-origin:center;"></span>
-                  </span>
-                  Left ear
-                </div>
-              </div>
-
-              <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
-                Hearing Level (dB)
-              </div>
-              <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
-                Frequency (Hz)
-              </div>
-            </div>
-          </div>
-
-          <div style="text-align:center; margin-top:10px;">
-            <button type="button" id="btn-comp-analysis">Analyse</button>
-          </div>
-          <form id="analysis-form2" target="_blank" method="post" action="{% url 'audiogram_analysis' %}" style="display:none;">
-            {% csrf_token %}
-            <input type="hidden" name="payload" id="analysis-payload">
-          </form>
-        </div>
-
-
-        {% elif 'Audiometry' in c.type %}
-        <div class="audiometry-widget" style="position:relative; left:0; top:0; width:100%; height:100%; box-sizing:border-box;">
           
-          {# --- Graph / chart frame (with explicit gutters) ----------------------- #}
-          <div style="position:absolute; left:140px; top:40px; width:432px; height:370px; border:1px solid #bbb; background:#fafafa;">
+          {# Hyperlink #}
+          {% elif 'HyperLink' in c.type %}
+          <a href="{{ c.props.strURL|default:'#' }}" target="_blank" rel="noopener"
+            style="display:inline-block; text-decoration:underline; cursor:pointer;">
+            {{ c.props.strHyperLink|default:c.props.strNormal|default:c.name }}
+          </a>
 
-            {# Gutter sizes to match the screenshot #}
-            {% comment %} top=12, left=56 for y-label & ticks, bottom=42 for x-label & ticks, right=110 for legend {% endcomment %}
+          {% else %}
+          <div style="border:1px solid #000;">{{ c.type }}: {{ c.name }}</div>
 
-            {# Plot pane: where the canvas goes (thick left/bottom axes, thin top/right) #}
-            <div class="plot-pane"
-                style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;
-                        background:#fff;
-                        border-left:3px solid #000;      /* Y axis */
-                        border-bottom:3px solid #000;    /* X axis */
-                        border-top:1px solid #999; 
-                        border-right:1px solid #999;">
-            </div>
-
-            {# Canvas slot — ensure JS sizes/positions the canvas to fill this slot #}
-            <div class="audio-canvas-slot"
-                style="position:absolute; left:56px; top:12px; right:110px; bottom:42px;"></div>
-
-            {# Legend sits in the right gutter, not overlapping the plot #}
-            <div style="position:absolute; right:14px; top:14px;
-                        background:#fff; border:1px solid #000; padding:3px 6px; font-size:11px;
-                        box-shadow:3px 3px 0 #000;">
-              <div>
-                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#d00; margin-right:6px;"></span>
-                Right ear
-              </div>
-              <div style="margin-top:2px;">
-                <span style="display:inline-block; width:8px; height:8px; margin-right:6px; position:relative;">
-                  <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(45deg); transform-origin:center;"></span>
-                  <span style="position:absolute; top:0; left:50%; width:2px; height:100%; background:#06c; transform:rotate(-45deg); transform-origin:center;"></span>
-                </span>
-                Left ear
-              </div>
-            </div>
-
-            {# Axis titles occupy the left/bottom gutters #}
-            <div style="position:absolute; left:6px; top:50%; transform:translateY(-50%) rotate(-90deg); transform-origin:left top; font-size:11px; color:#333;">
-              Hearing Level (dB)
-            </div>
-            <div style="position:absolute; left:50%; bottom:6px; transform:translateX(-50%); font-size:11px; color:#333;">
-              Frequency (Hz)
-            </div>
-          </div>
-
-
-          {# --- Column headers (Hz) ------------------------------------------------ #}
-          <div style="position:absolute; left:113px; top:425px; width:30px; text-align:center;">500Hz</div>
-          <div style="position:absolute; left:163px; top:425px; width:30px; text-align:center;">1000Hz</div>
-          <div style="position:absolute; left:213px; top:425px; width:30px; text-align:center;">2000Hz</div>
-          <div style="position:absolute; left:263px; top:425px; width:30px; text-align:center;">3000Hz</div>
-          <div style="position:absolute; left:313px; top:425px; width:30px; text-align:center;">4000Hz</div>
-          <div style="position:absolute; left:363px; top:425px; width:30px; text-align:center;">6000Hz</div>
-          <div style="position:absolute; left:413px; top:425px; width:30px; text-align:center;">8000Hz</div>
-
-          {# --- Row labels --------------------------------------------------------- #}
-          <div style="position:absolute; left:60px; top:446px;">Right (dB)</div>
-          <div style="position:absolute; left:60px; top:476px;">Left (dB)</div>
-
-          {# --- Right ear inputs (y=454) ------------------------------------------ #}
-          <input class="readcode-host" data-readcodes="RAFAURI17 — Right Ear (Air)  500 Hz"
-                name="{{ c.name }}_r_500"   type="text"
-                style="position:absolute; left:113px; top:444px; width:30px; height:18px;">
-          <input class="readcode-host" data-readcodes="RAFAURI16 — Right Ear (Air)  1000 Hz"
-                name="{{ c.name }}_r_1000"  type="text"
-                style="position:absolute; left:163px; top:444px; width:30px; height:18px;">
-          <input class="readcode-host" data-readcodes="RAFAURI15 — Right Ear (Air)  2000 Hz"
-                name="{{ c.name }}_r_2000"  type="text"
-                style="position:absolute; left:213px; top:444px; width:30px; height:18px;">
-          <input class="readcode-host" data-readcodes="RAFAURI19 — Right Ear (Air)  3000 Hz"
-                name="{{ c.name }}_r_3000"  type="text"
-                style="position:absolute; left:263px; top:444px; width:30px; height:18px;">
-          <input class="readcode-host" data-readcodes="RAFAURI14 — Right Ear (Air)  4000 Hz"
-                name="{{ c.name }}_r_4000"  type="text"
-                style="position:absolute; left:313px; top:444px; width:30px; height:18px;">
-          <input class="readcode-host" data-readcodes="RAFAURI13 — Right Ear (Air)  6000 Hz"
-                name="{{ c.name }}_r_6000"  type="text"
-                style="position:absolute; left:363px; top:444px; width:30px; height:18px;">
-          <input class="readcode-host" data-readcodes="RAFAURI12 — Right Ear (Air)  8000 Hz"
-                name="{{ c.name }}_r_8000"  type="text"
-                style="position:absolute; left:413px; top:444px; width:30px; height:18px;">
-
-          {# --- Left ear inputs (y=484) ------------------------------------------- #}
-          <input class="readcode-host" data-readcodes="RAFAULE17 — Left Ear (Air)  500 Hz"
-                name="{{ c.name }}_l_500"   type="text"
-                style="position:absolute; left:113px; top:474px; width:30px; height:18px;">
-          <input class="readcode-host" data-readcodes="RAFAULE16 — Left Ear (Air)  1000 Hz"
-                name="{{ c.name }}_l_1000"  type="text"
-                style="position:absolute; left:163px; top:474px; width:30px; height:18px;">
-          <input class="readcode-host" data-readcodes="RAFAULE15 — Left Ear (Air)  2000 Hz"
-                name="{{ c.name }}_l_2000"  type="text"
-                style="position:absolute; left:213px; top:474px; width:30px; height:18px;">
-          <input class="readcode-host" data-readcodes="RAFAULE20 — Left Ear (Air)  3000 Hz"
-                name="{{ c.name }}_l_3000"  type="text"
-                style="position:absolute; left:263px; top:474px; width:30px; height:18px;">
-          <input class="readcode-host" data-readcodes="RAFAULE14 — Left Ear (Air)  4000 Hz"
-                name="{{ c.name }}_l_4000"  type="text"
-                style="position:absolute; left:313px; top:474px; width:30px; height:18px;">
-          <input class="readcode-host" data-readcodes="RAFAULE13 — Left Ear (Air)  6000 Hz"
-                name="{{ c.name }}_l_6000"  type="text"
-                style="position:absolute; left:363px; top:474px; width:30px; height:18px;">
-          <input class="readcode-host" data-readcodes="RAFAULE12 — Left Ear (Air)  8000 Hz"
-                name="{{ c.name }}_l_8000"  type="text"
-                style="position:absolute; left:413px; top:474px; width:30px; height:18px;">
-
-
-          {# --- Repeat audiogram block (unchanged legend etc.) --- #}
-          <fieldset style="position:absolute; left:482px; top:430px; width:164px; height:75px; padding:4px 5px;">
-            <div class="readcode-host" data-readcodes="DMSAC009 — Repeat audiogram">
-              <legend>Is this a repeat audiogram?</legend>
-              <label style="margin-right:14px;"><input type="radio" name="{{ c.name }}_repeat" value="Yes"> Yes</label>
-              <label><input type="radio" name="{{ c.name }}_repeat" value="No"> No</label>
-              </div>
-              <div style="margin-top:8px;margin-left: 34px;">
-                <button id="btn-initial-analysis" type="button" class="readcode-host"
-                      data-readcodes="DMSACA02 — Significant change from previous audiogram\u000ADMSACA04 — Audiogram shows acute change\u000ADMSACA05 — Audiogram shows unilateral hearing loss\u000ADMSACA06 — Audiogram shows change in H grade\u000ADMSACA07 — Audiogram is consistent with HCP pass and below the warning level\u000ADMSACA08 — Audiogram is consistent with HCP pass, but is greater than or equal to the warning level\u000ADMSACA09 — Audiogram indicates hearing loss exceeding the HCP action required level">Initial Analysis</button>
-              </div>
-          </fieldset>
-
-          {# Hidden form to open analysis page in a new tab #}
-          <form id="analysis-form" target="_blank" method="post" action="{% url 'audiogram_analysis' %}" style="display:none;">
-            {% csrf_token %}
-            <input type="hidden" name="payload" id="analysis-payload">
-          </form>
-
-          {# --- Sums / H grade (Right row y=544; Left row y=584) ------------------ #}
-          <div style="position:absolute; left:113px; top:526px;">Sum L Freq.</div>
-          <div style="position:absolute; left:180px; top:526px;">Sum H Freq.</div>
-          <div style="position:absolute; left:250px; top:526px;">H Grade</div>
-
-          <div style="position:absolute; left:60px; top:546px;">Right</div>
-          <input class="readcode-host" data-readcodes="CABESSU2 — Sum low frequency right ear"
-        name="{{ c.name }}_r_sum_low"  type="text" readonly
-        style="position:absolute; left:113px; top:544px; width:30px; height:18px;">
-
-        <input class="readcode-host" data-readcodes="CABESSU1 — Sum high frequency right ear"
-              name="{{ c.name }}_r_sum_high" type="text" readonly
-              style="position:absolute; left:180px; top:544px; width:30px; height:18px;">
-
-        <input class="readcode-host" data-readcodes="RAFPUH11 — Hr1\u000ARAFPUH21 — Hr2\u000ARAFPUH31 — Hr3\u000ARAFPUHR1 — Hr4\u000ARAFPUHR2 — Hr8"
-              name="{{ c.name }}_r_hgrade"   type="text" readonly
-              style="position:absolute; left:250px; top:544px; width:30px; height:18px;">
-
-        <div style="position:absolute; left:60px; top:576px;">Left</div>
-
-        <input class="readcode-host" data-readcodes="CABESSU4 — Sum low frequency left ear"
-              name="{{ c.name }}_l_sum_low"  type="text" readonly
-              style="position:absolute; left:113px; top:570px; width:30px; height:18px;">
-
-        <input class="readcode-host" data-readcodes="CABESSU3 — Sum high frequency left ear"
-              name="{{ c.name }}_l_sum_high" type="text" readonly
-              style="position:absolute; left:180px; top:570px; width:30px; height:18px;">
-
-        <input class="readcode-host" data-readcodes="RAFPUHL1 — Hl1\u000ARAFPUHL2 — Hl2\u000ARAFPUHL3 — Hl3\u000ARAFPUHL4 — Hl4\u000ARAFPUHL5 — Hl8"
-              name="{{ c.name }}_l_hgrade"   type="text" readonly
-              style="position:absolute; left:250px; top:570px; width:30px; height:18px;">
-
-
-          {# --- Right/Left/Points/Lines/Print block (452,543)-(676,607) ----------- #}
-          <fieldset style="position:absolute; left:452px; top:523px; width:224px; height:60px; padding:4px 5px;">
-            <div style="display:grid; grid-template-columns:auto auto min-content; grid-template-rows:auto auto; column-gap:12px; row-gap:3px; align-items:center; height:100%;">
-              <label><input type="checkbox" name="{{ c.name }}_show_right" checked> Right</label>
-              <label><input type="checkbox" name="{{ c.name }}_show_points"> Points</label>
-
-              {# Print button to the right, centered between rows #}
-              <button type="button" style="grid-column:3; grid-row:1 / span 2; align-self:center; justify-self:center;">Print</button>
-
-              <label><input type="checkbox" name="{{ c.name }}_show_left" checked> Left</label>
-              <label><input type="checkbox" name="{{ c.name }}_show_lines"> Lines</label>
-            </div>
-          </fieldset>
-
+          {% endif %}
         </div>
-
-        
-        {# Hyperlink #}
-        {% elif 'HyperLink' in c.type %}
-        <a href="{{ c.props.strURL|default:'#' }}" target="_blank" rel="noopener"
-          style="display:inline-block; text-decoration:underline; cursor:pointer;">
-          {{ c.props.strHyperLink|default:c.props.strNormal|default:c.name }}
-        </a>
-
-        {% else %}
-        <div style="border:1px solid #000;">{{ c.type }}: {{ c.name }}</div>
-
         {% endif %}
+        {% endfor %}
       </div>
-      {% endif %}
-      {% endfor %}
+
+      {# Sidebar (right) #}
+      <aside id="readcodes-sidebar"
+            style="width:320px; border:1px solid #ddd; padding:8px; background:#fafafa;
+                    font-size:12px; position:relative; overflow:auto;">
+
+        <div style="max-height:{{ canvas.height }}px; overflow:auto; padding-right:4px;">
+          <h3 style="margin:0 0 8px;">Data Entry Read codes in form</h3>
+
+          {% if all_read_codes %}
+            <ul id="readcode-list" style="margin:0 0 12px; padding-left:18px;">
+              {% for rc in all_read_codes %}
+                <li class="rc-row" data-read-code="{{ rc.code }}">
+                  <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
+                  <span class="rc-decision badge badge--pending" title="Decision">checking…</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p style="margin:0 0 12px; color:#666;">None detected.</p>
+          {% endif %}
+
+          <h4 style="margin:0 0 8px;">Diary entry codes</h4>
+          {% if diary_read_codes %}
+            <ul id="diarycode-list" style="margin:0; padding-left:18px;">
+              {% for rc in diary_read_codes %}
+                <li class="rc-row" data-read-code="{{ rc.code }}">
+                  <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
+                  <span class="rc-decision badge badge--pending" title="Decision">checking…</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p style="margin:0; color:#666;">None detected.</p>
+          {% endif %}
+        </div>
+      </aside>
     </div>
-
-    {# Sidebar (right) #}
-    <aside id="readcodes-sidebar"
-          style="width:320px; border:1px solid #ddd; padding:8px; background:#fafafa;
-                  font-size:12px; position:relative; overflow:auto;">
-
-      <div style="max-height:{{ canvas.height }}px; overflow:auto; padding-right:4px;">
-        <h3 style="margin:0 0 8px;">Data Entry Read codes in form</h3>
-
-        {% if all_read_codes %}
-          <ul id="readcode-list" style="margin:0 0 12px; padding-left:18px;">
-            {% for rc in all_read_codes %}
-              <li class="rc-row" data-read-code="{{ rc.code }}">
-                <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
-                <span class="rc-decision badge badge--pending" title="Decision">checking…</span>
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p style="margin:0 0 12px; color:#666;">None detected.</p>
-        {% endif %}
-
-        <h4 style="margin:0 0 8px;">Diary entry codes</h4>
-        {% if diary_read_codes %}
-          <ul id="diarycode-list" style="margin:0; padding-left:18px;">
-            {% for rc in diary_read_codes %}
-              <li class="rc-row" data-read-code="{{ rc.code }}">
-                <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
-                <span class="rc-decision badge badge--pending" title="Decision">checking…</span>
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p style="margin:0; color:#666;">None detected.</p>
-        {% endif %}
-      </div>
-    </aside>
+    </form>
   </div>
-  </form>
+  </div>
+</div>
 
-<style>
+  <style>
+      .tex-wrapper {
+        display: flex;
+        justify-content: center;   /* horizontally centre */
+        width: 100%;
+    }
+
       .badge{ margin-left:8px; padding:1px 6px; border-radius:4px; font-size:11px; border:1px solid transparent; }
       .badge--pending{ background:#eee; color:#666; }
       .badge--create{ background:#c9fcd6; border-color:#91d5ff; color:#055118; }
@@ -1207,9 +1218,9 @@
         transition: background-color .15s ease, box-shadow .15s ease, outline-color .15s ease;
       }
       .lib-selected { background:#e6f7ff; outline:1px solid #91d5ff; }
-    </style>
+  </style>
 
-    <style>
+  <style>
       #rc-tooltip{
         position:fixed;
         z-index:99999;
@@ -3728,6 +3739,4 @@ function mapReadCode(ctrl){
 
 
 {% endif %}
-
-</div>
 {% endblock %}
