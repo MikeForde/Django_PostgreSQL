@@ -16,7 +16,7 @@
   <style>
     :root{
       --page-w:1686px; /* from <W> */
-      --page-h:840px;  /* from <H> */
+      --page-h:720px;  /* from <H> */
       --font-family: Arial, sans-serif; /* from <FONTNAME_F> */
       --default-fs:9px; /* from <FSIZE_F> */
     }
@@ -48,7 +48,6 @@
   </style>
 </head>
 <body>
-  <h3>Work In Progress</h3>
   <div id="page" class="page" role="document" aria-label="Army Grading and Limitations">
   </div>
   <script type="application/json" id="eform-data">
@@ -69,8 +68,9 @@
     {"ID":"OPT2106", "CID":"Label10", "CTYPE":8, "PARENT":"PG23271", "TEXT":"P8", "X":49, "Y":246, "FSIZE":9.0, "BCOL":-16192, "H":20, "W":51, "TAB":11, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2107", "CID":"Label11", "CTYPE":8, "PARENT":"PG23271", "TEXT":"P7 MLD T", "X":44, "Y":269, "FSIZE":9.0, "BCOL":-2894893, "H":20, "W":62, "TAB":12, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2108", "CID":"Label12", "CTYPE":8, "PARENT":"PG23271", "TEXT":"P7 MLD P", "X":44, "Y":292, "FSIZE":9.0, "BCOL":-2894893, "H":20, "W":62, "TAB":13, "DISPLAY":true, "STYLE":"eformLabel"},
-    {"ID":"OPT2109", "CID":"Label13", "CTYPE":8, "PARENT":"PG23271", "TEXT":"To", "X":106, "Y":36, "FSIZE":8.25, "BCOL":-657956, "H":23, "W":37, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2109", "CID":"Label13", "CTYPE":8, "PARENT":"PG23271", "TEXT":"To", "X":104, "Y":36, "FSIZE":8.25, "BCOL":-657956, "H":23, "W":37, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2110", "CID":"Label14", "CTYPE":8, "PARENT":"PG23271", "TEXT":"E2", "X":145, "Y":37, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":74, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
+    {"ID":"OPT2111", "CID":"Label13", "CTYPE":8, "PARENT":"PG23271", "TEXT":"From", "X":12, "Y":36, "FSIZE":8.25, "BCOL":-657956, "H":23, "W":37, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2112", "CID":"Label15", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Limited", "X":225, "Y":37, "FSIZE":8.25, "BCOL":-64, "H":23, "W":84, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2114", "CID":"Label16", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Severe", "X":315, "Y":36, "FSIZE":8.25, "BCOL":-8000, "H":23, "W":84, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2116", "CID":"btnReset", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Reset to Original Values", "X":10, "Y":11, "FSIZE":9.0, "BCOL":-32640, "H":23, "W":167, "TAB":0, "DISPLAY":true, "STYLE":"eformButton"},
@@ -124,7 +124,6 @@
     {"ID":"OPT2164", "CID":"btnRisk7", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Primary Care - Low", "X":841, "Y":58, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":149, "TAB":70, "DISPLAY":true, "STYLE":"eformButton"},
     {"ID":"OPT2165", "CID":"btnRisk6", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Emergency Evac - Low", "X":841, "Y":29, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":149, "TAB":69, "DISPLAY":true, "STYLE":"eformButton"},
     {"ID":"OPT2166", "CID":"btnRisk5", "CTYPE":1, "PARENT":"PG23271", "TEXT":"2nd Care - Low", "X":841, "Y":0, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":149, "TAB":68, "DISPLAY":true, "STYLE":"eformButton"},
-    {"ID":"OPT2167", "CID":"ControlAction1", "CTYPE":27, "PARENT":"PG23271", "X":0, "Y":0, "FSIZE":8.25, "BCOL":-1, "H":0, "W":0, "TAB":1, "VISIBLE":"false</VISIBLE>"},
     {"ID":"OPT2168", "CID":"txtLimOps", "CTYPE":15, "PARENT":"PG23271", "X":605, "Y":127, "FSIZE":9.0, "BCOL":-1, "H":21, "W":334, "TAB":72, "DISPLAY":true, "STYLE":"eformTextBox", "ZINDEX":null, "HELPTEXT":"Some text</HELPTEXT>"},
     {"ID":"OPT2169", "CID":"Label38", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Ops", "X":562, "Y":125, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":37, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
     {"ID":"OPT2170", "CID":"Label39", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Weight", "X":542, "Y":153, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":57, "TAB":0, "DISPLAY":true, "STYLE":"eformLabel"},
@@ -327,14 +326,10 @@
     {"ID":"OPT2374", "CID":"btnSevereOpt11", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Roaccutane", "X":315, "Y":293, "FSIZE":9.0, "BCOL":-657956, "H":23, "W":84, "TAB":24, "DISPLAY":true, "STYLE":"eformButton"},
     {"ID":"OPT2376", "CID":"btnLimPHC3", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Requires ongoing PHC", "X":660, "Y":456, "FSIZE":8.25, "BCOL":-2039584, "H":23, "W":279, "TAB":114, "DISPLAY":true, "STYLE":"eformButton"},
     {"ID":"OPT2377", "CID":"btnLimPHC1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"Fine", "X":605, "Y":455, "FSIZE":8.25, "BCOL":-4128832, "H":23, "W":49, "TAB":113, "DISPLAY":true, "STYLE":"eformButton"},
-    {"ID":"OPT2717", "CID":"Button1", "CTYPE":1, "PARENT":"PG23271", "TEXT":"btnTest", "X":720, "Y":729, "FSIZE":9.0, "BCOL":-1, "H":23, "W":75, "TAB":2, "VISIBLE":"false</VISIBLE>", "STYLE":"eformButton"},
-    {"ID":"OPT2718", "CID":"chkTest", "CTYPE":3, "PARENT":"PG23271", "TEXT":"CheckBox1", "X":720, "Y":767, "FSIZE":9.0, "BCOL":-1, "H":24, "W":104, "TAB":4, "VISIBLE":"false</VISIBLE>", "STYLE":"eformCheckBox"},
-    {"ID":"OPT2719", "CID":"Label1", "CTYPE":8, "PARENT":"chasmPatientBanner", "TEXT":"[Patient Banner]", "X":3, "Y":14, "FSIZE":9.0, "BCOL":-1, "H":25, "W":741, "TAB":0, "DISPLAY":true, "VISIBLE":"false</VISIBLE>", "STYLE":"eformLabel"},
-    {"ID":"OPT2720", "CID":"lblForButton", "CTYPE":8, "PARENT":"PG23271", "TEXT":"Button Label", "X":603, "Y":729, "FSIZE":9.0, "BCOL":-1, "H":23, "W":100, "TAB":1, "VISIBLE":"false</VISIBLE>", "STYLE":"eformLabel"},
-    {"ID":"6743", "CID":"lblForChkB", "CTYPE":8, "PARENT":"PG23271", "TEXT":"CheckBox Label", "X":603, "Y":767, "FSIZE":9.0, "BCOL":-1, "H":23, "W":100, "TAB":3, "VISIBLE":"false</VISIBLE>", "STYLE":"eformLabel"}
+    {"ID":"OPT2719", "CID":"Label1", "CTYPE":8, "PARENT":"chasmPatientBanner", "TEXT":"[Patient Banner]", "X":3, "Y":14, "FSIZE":9.0, "BCOL":-1, "H":25, "W":741, "TAB":0, "DISPLAY":true, "VISIBLE":"false</VISIBLE>", "STYLE":"eformLabel"}
   ],
   "tpcp": [
-    {"ID":"OPT2095", "ITEMS":"1,2,3,4,5,6,7,8,9,10,11", "DEFAULT":"1"},
+    {"ID":"OPT2095", "ITEMS":"-,-,-,-,-,-,-,-,-,-,-", "DEFAULT":"1", "ALIGN":"Center"},
     {"ID":"OPT2098", "ALIGN":"MiddleCenter"},
     {"ID":"OPT2099", "ALIGN":"MiddleCenter"},
     {"ID":"OPT2101", "ALIGN":"MiddleCenter"},
@@ -352,13 +347,13 @@
     {"ID":"OPT2116", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
     {"ID":"OPT2117", "DIRECTION":"Horizontal"},
     {"ID":"OPT2118", "ALIGN":"MiddleLeft"},
-    {"ID":"OPT2119", "ITEMS":"2,3,4,7,8,0", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"2"},
+    {"ID":"OPT2119", "ITEMS":"2,3,4,7,8,0", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"1"},
     {"ID":"OPT2120", "ALIGN":"MiddleCenter"},
     {"ID":"OPT2143", "ALIGN":"MiddleLeft"},
     {"ID":"OPT2144", "ALIGN":"MiddleLeft"},
-    {"ID":"OPT2145", "ITEMS":"Annual,FWAB(T),FWAB(P),FMB,MOD(A)"},
+    {"ID":"OPT2145", "ITEMS":"Annual,FWAB(T),FWAB(P),FMB,MOD(A)", "ALIGN":"Center"},
     {"ID":"OPT2146", "ALIGN":"MiddleLeft"},
-    {"ID":"OPT2147", "ITEMS":"Date            P  U  L  H  H  E  E  M  S  MES                 T/P   MDS,26/02/22     2   2  2   1   1  1   1  2   2  A4 L1 M4 E1    Perm  Full,26/09/21     3   2  3   1   1  1   1  2   2  A4 L3 M4 E3    Temp Liml"},
+    {"ID":"OPT2147", "ITEMS":"Date            P  U  L  H  H  E  E  M  S  MES                 T/P   MDS,26/02/22     2   2  2   1   1  1   1  2   2  A4 L1 M4 E1    Perm  Full,26/09/21     3   2  3   1   1  1   1  2   2  A4 L3 M4 E3    Temp Liml", "ALIGN":"Left"},
     {"ID":"OPT2148", "ALIGN":"MiddleLeft"},
     {"ID":"OPT2150", "ALIGN":"MiddleLeft"},
     {"ID":"OPT2151", "ALIGN":"MiddleLeft"},
@@ -477,7 +472,7 @@
     {"ID":"OPT2320", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
     {"ID":"OPT2321", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
     {"ID":"OPT2322", "ALIGN":"MiddleRight"},
-    {"ID":"OPT2097", "ITEMS":"1,2,3,4,5,6,7,8,9,10,11", "FUNCTIONORDER":"RunJavascript</FUNCTIONORDER>", "RUNJAVASCRIPT":"LBToGradeFunc()</RUNJAVASCRIPT>"},
+    {"ID":"OPT2097", "ITEMS":"-,-,-,-,-,-,-,-,-,-,-", "FUNCTIONORDER":"RunJavascript</FUNCTIONORDER>", "RUNJAVASCRIPT":"LBToGradeFunc()</RUNJAVASCRIPT>", "ALIGN":"Center"},
     {"ID":"OPT2323", "MAX":"50", "TEXTMODE":"MultiLine", "ALIGN":"Left", "TOOLBARMODE":"Default"},
     {"ID":"OPT2324", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
     {"ID":"OPT2325", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
@@ -582,17 +577,17 @@
     {"ID":"OPT2373", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
     {"ID":"OPT2374", "MAX":"50", "BTYPE":"General", "ALIGN":"MiddleCenter"},
     {"ID":"OPT2121", "ALIGN":"MiddleCenter"},
-    {"ID":"OPT2122", "ITEMS":"2,3,7,8,0", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"2"},
+    {"ID":"OPT2122", "ITEMS":"2,3,7,8,0", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"1"},
     {"ID":"OPT2123", "ALIGN":"MiddleCenter"},
-    {"ID":"OPT2124", "ITEMS":"2,3,7,8,0", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"2"},
+    {"ID":"OPT2124", "ITEMS":"2,3,7,8,0", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"1"},
     {"ID":"OPT2125", "ALIGN":"MiddleCenter"},
     {"ID":"OPT2126", "ALIGN":"MiddleLeft"},
     {"ID":"OPT2127", "ALIGN":"MiddleLeft"},
     {"ID":"OPT2128", "ALIGN":"MiddleCenter"},
     {"ID":"OPT2129", "ALIGN":"MiddleCenter"},
-    {"ID":"OPT2130", "ITEMS":"2,3,7,8", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"2"},
+    {"ID":"OPT2130", "ITEMS":"2,3,7,8", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"1"},
     {"ID":"OPT2131", "ALIGN":"MiddleCenter"},
-    {"ID":"OPT2132", "ITEMS":"2,3,7,8,0", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"2"},
+    {"ID":"OPT2132", "ITEMS":"2,3,7,8,0", "BLANK":"Not Include", "SELECT":"Display", "DEFAULT":"1"},
     {"ID":"OPT2133", "ALIGN":"MiddleLeft"},
     {"ID":"OPT2134", "ALIGN":"MiddleLeft"},
     {"ID":"OPT2135", "ALIGN":"MiddleCenter"},
@@ -819,16 +814,68 @@
         parentNode.appendChild(common);
         break;
 }
-      case 10: { // ListBox (multi)
-        const sel = document.createElement('select');
-        sel.className = 'listbox';
-        sel.dataset.id = ctrl.CID; 
-        sel.multiple = true;
-        sel.size = Math.max(2, Math.floor((ctrl.H||60)/16));
-        sel.style.width='100%'; sel.style.height='100%';
-        // NEW: populate from tpcp
-        fillOptionsFromProps(sel, propMap.get(ctrl.ID));
-        common.appendChild(sel);
+      case 10: { // ListBox (custom list-group with <a> items)
+        // outer wrapper <div class="abs"> is already positioned/sized via `common`
+        const box = document.createElement('div');
+        box.className = 'list-group eformListBox';
+        box.setAttribute('data-id', ctrl.CID || ctrl.ID);
+        if (ctrl.TAB != null) box.tabIndex = Number(ctrl.TAB) || 0;
+
+        // fill available space
+        box.style.width = '100%';
+        box.style.height = '100%';
+        box.style.overflowY = 'auto';
+        box.style.backgroundColor = 'rgba(245,245,220,1)'; // match original beige
+
+        // ITEMS & DEFAULT from tpcp
+        const props   = propMap.get(ctrl.ID) || {};
+        const items   = (String(props.ITEMS || '').split(',').map(s => s.trim()).filter(Boolean));
+        const defStr  = props.DEFAULT != null ? String(props.DEFAULT).trim() : '';
+        const defIdx1 = Number(defStr); // allow 1-based index defaults like "1"
+        const align   = (props.ALIGN || '').toLowerCase();
+
+        items.forEach((label, i) => {
+            const a = document.createElement('a');
+            a.className = 'list-group-item list-group-item-action';
+            a.textContent = label;
+            a.href = '#';
+            a.style.padding = '4.9px 15px';
+            a.style.backgroundColor = 'rgba(245,245,220,1)';
+            a.style.display = 'block';
+            a.style.width = '100%';
+            a.style.boxSizing = 'border-box';
+            a.style.textDecoration = 'none';
+            a.style.color = 'inherit';
+            a.style.textAlign = align;
+            a.style.cursor = 'pointer';
+            a.style.lineHeight = '1.85';
+            // optional: tighter padding for a 33px-wide list
+            a.style.padding = '4px 6px';
+
+            // default: by exact label match, or 1-based index number
+            if (label === defStr || (!Number.isNaN(defIdx1) && defIdx1 === i + 1)) {
+            a.classList.add('active');
+            }
+
+            // make it behave like single-select
+            a.addEventListener('click', (e) => {
+            e.preventDefault();
+            // remove .active from siblings
+            Array.from(box.querySelectorAll('a.list-group-item')).forEach(el => {
+                el.classList.remove('active');
+                el.style.backgroundColor = 'rgba(245,245,220,1)';
+            });
+            a.classList.add('active');
+            a.style.backgroundColor = 'rgba(224,224,224,1)'; // highlight
+            // bubble up so your existing `LBFromGrade.click(...)` / `LBToGrade.click(...)` handlers fire
+            const clickEv = new Event('click', { bubbles: true });
+            box.dispatchEvent(clickEv);
+            });
+
+            box.appendChild(a);
+        });
+
+        common.appendChild(box);
         parentNode.appendChild(common);
         break;
         }
@@ -926,24 +973,77 @@
 
   // Grab a <select> inside a control wrapper, or the wrapper if it's already a <select>
 function selectEl(id) {
-  return document.querySelector(`[data-id='${id}'] select`) ||
-         document.querySelector(`[data-id='${id}']`);
+  return document.querySelector(`[data-id='${id}']`);
 }
 // Get 1-based numeric choice from a <select>
-function getSelectNumber(sel) {
-  // prefer numeric value if provided, else use selectedIndex+1
-  const v = sel && sel.value != null ? Number(sel.value) : NaN;
-  if (!Number.isNaN(v)) return v;
-  return (sel && sel.selectedIndex >= 0) ? sel.selectedIndex + 1 : 0;
-}
-// Set selection by 0-based index on a <select> (with bounds check)
-function setSelectIndex(sel, idx) {
-  if (!sel) return;
-  const n = Math.max(0, Math.min(idx, sel.options.length - 1));
-  sel.selectedIndex = n;
-  sel.dispatchEvent(new Event('change'));
+function getSelectNumber(el) {
+  if (!el) return 0;
+
+  if (el.tagName === 'SELECT') {
+    const v = el.value != null && el.value !== '' ? Number(el.value) : NaN;
+    if (!Number.isNaN(v)) return v;
+    return (el.selectedIndex >= 0) ? el.selectedIndex + 1 : 0;
+  }
+
+  // list-group
+  const items = el.querySelectorAll('a.list-group-item');
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].classList.contains('active')) return i + 1;
+  }
+  return 0;
 }
 
+// Set selection by 0-based index on a <select> (with bounds check)
+function setSelectIndex(el, idx) {
+  if (!el) return;
+
+  if (el.tagName === 'SELECT') {
+    const n = Math.max(0, Math.min(idx, el.options.length - 1));
+    el.selectedIndex = n;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    return;
+  }
+
+  // list-group
+  const items = el.querySelectorAll('a.list-group-item');
+  const n = Math.max(0, Math.min(idx, items.length - 1));
+  items.forEach((a, i) => {
+    // ensure vertical full-width rows even without Bootstrap CSS
+    a.style.display = 'block';
+    a.style.width = '100%';
+    a.style.boxSizing = 'border-box';
+    a.style.textDecoration = 'none';
+    a.style.color = 'inherit';
+    a.style.textAlign = 'center';
+    a.style.cursor = 'pointer';
+    a.style.padding = '4px 6px';
+
+    a.classList.toggle('active', i === n);
+    a.style.backgroundColor = (i === n) ? 'rgb(224,224,224)' : 'rgb(245,245,220)';
+  });
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function wireListGroup(el) {
+  if (!el || el.tagName === 'SELECT') return;
+  el.addEventListener('click', function (e) {
+    const a = e.target.closest('a.list-group-item');
+    if (!a || !el.contains(a)) return;
+
+    // clear all, set the clicked one active
+    const items = Array.from(el.querySelectorAll('a.list-group-item'));
+    items.forEach(node => {
+      node.classList.remove('active');
+      node.style.backgroundColor = 'rgb(245,245,220)';
+    });
+    a.classList.add('active');
+    a.style.backgroundColor = 'rgb(224,224,224)';
+
+    // emit change so existing handlers keep working
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    e.preventDefault();
+  });
+}
 
   function agcCode (ds, pt) {
     // const eform = $(".eformsPage");
@@ -1016,6 +1116,9 @@ function setSelectIndex(sel, idx) {
     const LBBoard = selectEl('LBBoard');
     var iLBToGrade, iLBFromGrade
     var iLBBoard = 1;
+    wireListGroup(LBFromGrade);
+    wireListGroup(LBToGrade);
+    wireListGroup(LBBoard);
     
 
     // PULHHEEMS - dropdowns easier to work with as vanilla JS objects rather than JQuery
@@ -1091,7 +1194,6 @@ function setSelectIndex(sel, idx) {
     txtLims.forEach((txtLim) => {
         txtLim.dataset.toggle = "tooltip"
         txtLim.style.padding = "0rem"
-        console.log('txtLim', txtLim)
         txtLim.addEventListener('focusin', function (e) {
             console.log('focusin')
             txtLim.style.height = "63px"
@@ -1101,6 +1203,14 @@ function setSelectIndex(sel, idx) {
             txtLim.setAttribute("title", txtLim.textContent || '')
         });
     });
+
+    const btnReset = document.querySelector("[data-id='btnReset']");
+    if (btnReset) {
+    btnReset.addEventListener('click', function (e) {
+        e.preventDefault();
+        subResetAll();
+    });
+    }
 
     // Demo stubs for now
     function subBtnE2(e) {
@@ -1978,6 +2088,46 @@ function setSelectIndex(sel, idx) {
         arrCommentsSevereRoaccutane = ["", "", "", "", "", "", "", "", "", "", "will require access to issue sunglasses in bright light conditions", "", "Unable to work on safety critical tasks in reduced or bright light conditions. Unfit night ranges", "", "Not deployable during the course of treatment.  Will need to attend regular medical appointments. Likely to be upgraded to the previous grade once treatment completed.", "Avoid prolonged exposure to sunlight and ensure the individual wears sun cream if exposure cannot be prevented.", "", ""]
 
         arrSGSevereComments = [arrCommentsSevereLower2, arrCommentsSevereUpper2, arrCommentsSevereBack2, arrCommentsSevereHearing2, arrCommentsSevereSGrade2, arrCommentsSevereMedical2, arrCommentsSevereHeat2, arrCommentsSevereCold2, arrCommentsSeverePreg, arrCommentsSevereChampix, arrCommentsSevereRoaccutane]
+    }
+
+    function subResetAll() {
+        console.log("Resetting form...");
+
+        // Reset dropdowns and list-groups
+        document.querySelectorAll("select, .list-group.eformListBox").forEach(el => {
+            if (el.tagName === 'SELECT') {
+            el.selectedIndex = 0;
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            } else {
+            // list-group
+            const items = el.querySelectorAll('a.list-group-item');
+            items.forEach((a, i) => {
+                a.classList.toggle('active', i === -1);
+                a.style.backgroundColor = i === -1 ? 'rgb(224,224,224)' : 'rgb(245,245,220)';
+            });
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+
+        // Reset internal arrays (so evaluation logic doesn't hold stale data)
+        arrE2OptSelected.fill(false);
+        arrLimOptSelected.fill(false);
+        arrSevOptSelected.fill(false);
+        arrayLims.fill(9);
+        arrayComments.fill("");
+
+        subResetClinTypes();
+        iLBToGrade = 1;
+        subSetULSM();
+        CBJMESA.options[3].selected = true
+        CBJMESL.options[0].selected = true
+        CBJMESM.options[3].selected = true
+        CBJMESE.options[0].selected = true
+
+        TBPermTemp2.textContent = 'N/A';
+        TBMDS.textContent = 'Full';
+
+        console.log("Reset complete.");
     }
 
     window.LBToGradeFunc = function (e) {
