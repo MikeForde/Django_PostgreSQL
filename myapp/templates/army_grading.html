@@ -45,11 +45,39 @@
     .panel-inner{position:relative; width:100%; height:100%}
     /* Safety: buttons with very small heights still clickable */
     .btn:where([data-h]){min-height:20px}
+
+    html, body { height: 100%; overflow: hidden; }
+    #page-outer {
+        display:flex;              /* center when smaller than viewport */
+        justify-content:center;
+        align-items:flex-start;
+        width:100vw;
+        height:100vh;
+        overflow:auto;             /* scrollbars when needed */
+        padding:8px;                 /* small breathing room */
+    }
+
+    #page-spacer{
+        position:relative;
+        width: var(--scaled-w, 0px);
+        height: var(--scaled-h, 0px);
+    }
+
+    /* the canvas */
+    #page{
+        position:absolute;
+        top:0; left:0;
+        transform-origin: top left;
+    }
   </style>
 </head>
 <body>
+<div id="page-outer">
+    <div id="page-spacer">
   <div id="page" class="page" role="document" aria-label="Army Grading and Limitations">
   </div>
+  </div>
+</div>
   <script type="application/json" id="eform-data">
 {
   "meta": {"FONTNAME_F": "Arial", "FSIZE_F": 9.0, "PAGEW": 100, "PAGEH": 23},
@@ -2162,6 +2190,82 @@ function wireListGroup(el) {
 
 
 </script>
+
+<!-- keep your HTML/CSS as-is -->
+
+<script>
+// ---- constants (declare ONCE) ----
+    const MIN_SCALE = 0.75;
+    const MAX_SCALE = 1.5;
+    const VIEWPORT_PADDING = 16; // avoid touching edges / account for small chrome
+
+    // Measure the absolute-positioned canvas by scanning direct children.
+    // Falls back to CSS --page-w/--page-h if children aren't there yet.
+    function measureAbsCanvas(el){
+    let maxR = 0, maxB = 0;
+    el.querySelectorAll(':scope > .abs').forEach(n => {
+        const left = parseFloat(n.style.left)  || n.offsetLeft || 0;
+        const top  = parseFloat(n.style.top)   || n.offsetTop  || 0;
+        const w    = n.offsetWidth  || parseFloat(n.style.width)  || 0;
+        const h    = n.offsetHeight || parseFloat(n.style.height) || 0;
+        maxR = Math.max(maxR, left + w);
+        maxB = Math.max(maxB, top  + h);
+    });
+
+    // fallback to CSS vars if we measured nothing yet
+    if (maxR === 0 || maxB === 0) {
+        const cs = getComputedStyle(el);
+        const natW = parseFloat(cs.getPropertyValue('--page-w')) || el.offsetWidth  || 1;
+        const natH = parseFloat(cs.getPropertyValue('--page-h')) || el.offsetHeight || 1;
+        return { w: Math.ceil(natW), h: Math.ceil(natH) };
+    }
+    return { w: Math.ceil(maxR), h: Math.ceil(maxB) };
+    }
+
+    function fitPage() {
+        const outer  = document.getElementById('page-outer');
+        const spacer = document.getElementById('page-spacer');
+        const page   = document.getElementById('page');
+        if (!outer || !spacer || !page) return;
+
+        const { w: natW, h: natH } = measureAbsCanvas(page);
+
+        const availW = Math.max(1, outer.clientWidth  - VIEWPORT_PADDING);
+        const availH = Math.max(1, outer.clientHeight - VIEWPORT_PADDING);
+
+        const rawScale = Math.min(availW / natW, availH / natH);
+        const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, rawScale || 1));
+
+        page.style.transform = `scale(${scale * 0.96})`;
+
+        // size the spacer so scrollbars (when needed) expose the full right/bottom
+        const scaledW = Math.ceil(natW * scale);
+        const scaledH = Math.ceil(natH * scale);
+        spacer.style.width  = scaledW + 'px';
+        spacer.style.height = scaledH + 'px';
+
+        // also expose values to CSS if you like
+        outer.style.setProperty('--scaled-w', scaledW + 'px');
+        outer.style.setProperty('--scaled-h', scaledH + 'px');
+    }
+
+    // Run once on load (after CSS is applied)
+    window.addEventListener('load', () => {
+    requestAnimationFrame(fitPage);
+    });
+
+    // Keep it responsive (debounced)
+    let _fitTimer;
+    window.addEventListener('resize', () => {
+    clearTimeout(_fitTimer);
+    _fitTimer = setTimeout(fitPage, 100);
+    });
+
+    // IMPORTANT: also call fitPage() right after your bootstrap/render code finishes,
+    // e.g. at the end of your existing bootstrap() that appends all .abs controls:
+    // bootstrap(); fitPage();
+</script>
+
 
 </body>
 </html>
