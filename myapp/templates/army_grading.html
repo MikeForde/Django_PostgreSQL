@@ -814,6 +814,7 @@
         btn.dataset.h = ctrl.H || '';
         // NEW: expose the same data-id on the clickable element
         btn.dataset.id = ctrl.CID;
+        btn.style.backgroundColor = ctrl.BCOL != null && ctrl.BCOL !== -1 ? intToColor(ctrl.BCOL) : '';
         common.appendChild(btn);
         parentNode.appendChild(common);
         break;
@@ -1148,7 +1149,7 @@ function wireListGroup(el) {
     // Date Variables
     const currentDate = new Date()
     var reviewDate = new Date()
-    console.log(fnGetUKDateAsString(currentDate))
+    //console.log(fnGetUKDateAsString(currentDate))
 
     // Boolean switches to control access to the limitation group shortcuts
     var bolE2Enabled = false
@@ -1564,10 +1565,10 @@ function wireListGroup(el) {
 
         var aButtonCodes = sButtonCodes.split(";")
         var aBtnLen = aButtonCodes.length
-        console.log(sCtrl + ", " + aButtonCodes + ", " + aBtnLen)
+        //console.log(sCtrl + ", " + aButtonCodes + ", " + aBtnLen)
         for (var i = 0; i < aBtnLen; i++) {
             if (aButtonCodes[i] == arrayLims[iLim]) {
-                console.log("Clicking " + "[data-id='btnLim" + sCtrl + (i + 1) + "']")
+                //console.log("Clicking " + "[data-id='btnLim" + sCtrl + (i + 1) + "']")
                 var btnLim = document.querySelector("[data-id='btnLim" + sCtrl + (i + 1) + "']")
                 btnLim.dispatchEvent(new Event("click"))
             }
@@ -1804,7 +1805,7 @@ function wireListGroup(el) {
         }
 
         reviewDate = addMonths(currentDate, iMonths)
-        console.log("Review Date: " + reviewDate)
+        //console.log("Review Date: " + reviewDate)
         dtReview.value = toDateInputValue(reviewDate)
         dtReview.dispatchEvent(new Event("keyup"))
         dtReview.dispatchEvent(new Event("change"))
@@ -1971,13 +1972,13 @@ function wireListGroup(el) {
 
     function fnWarnings() {
         var sWarning = "";
-        console.log("In fnwarnings, iLBFromGrade = " + iLBFromGrade);
-        console.log("In fnwarnings, iLBToGrade = " + iLBToGrade);
+        //console.log("In fnwarnings, iLBFromGrade = " + iLBFromGrade);
+        //console.log("In fnwarnings, iLBToGrade = " + iLBToGrade);
 
         if (iLBFromGrade == 1 & + iLBToGrade == 1) {
             sWarning = sWarning + "Was MFD E1 and making MFD E1, are you sure you need a board? "
         } else {
-            console.log("In fnwarnings, iLBBoard = " + iLBBoard);
+            //console.log("In fnwarnings, iLBBoard = " + iLBBoard);
             switch (iLBBoard) {
                 case 1: // Annual
                     if (iLBFromGrade != iLBToGrade) { sWarning = sWarning + "Changing grade - Annual Review? " }
@@ -2200,6 +2201,9 @@ function wireListGroup(el) {
         arrayComments.fill("");
 
         subResetClinTypes();
+        bolE2Enabled = false
+        bolLimitedEnabled = false
+        bolSevereEnabled = false
         iLBToGrade = 1;
         subSetULSM();
         CBJMESA.options[3].selected = true
