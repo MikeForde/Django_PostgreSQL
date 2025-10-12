@@ -33,4 +33,5 @@ urlpatterns = [
     path('audiogram/analysis/', views.audiogram_analysis, name='audiogram_analysis'),
     path("audio/", views.audio_poc, name="audio_poc"),
     path("army/grading/", views.army_grading, name="army_grading"),
+    path("naval/grading/", views.naval_grading, name="naval_grading"),
 ]
