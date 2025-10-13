@@ -1,11 +1,17 @@
 /* ===== Shell / Grid ===== */
-.page { max-width: 1280px; margin: 12px auto; padding: 0 10px; font: 13px/1.25 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:#222; }
+.page {
+  max-width: 1280px;
+  margin: 12px auto;
+  padding: 0 10px;
+  font: 13px/1.25 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:#222;
+}
 .layout {
   display: grid;
   grid-template-columns: minmax(0,1fr) 360px;  /* left grows, right fixed */
   gap: 12px;
 }
-.left-col { min-width: 0; }  /* allows charts to shrink nicely */
+.left-col { min-width: 0; }   /* allows charts to shrink nicely */
 .right-col { min-width: 0; }
 
 /* ===== Controls (compact bar) ===== */
@@ -36,70 +42,116 @@
 }
 .controls--compact .btns button:hover { background:#eef2f7; }
 
-/* ===== Inputs (horizontal columns; small) ===== */
-/* Compact two-block inputs with horizontal rows */
+/* ===== Inputs (two panels; each panel becomes a container) ===== */
 .inputs--rows {
   margin-top: 8px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(320px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
-
 .inputs-col {
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   background: #fff;
   padding: 8px;
+  min-width: 0;           /* let the card shrink in the grid */
+  overflow: hidden;       /* prevent visual spill while squeezing */
+  /* 👇 Enable container queries so children can scale with this card */
+  container-type: inline-size;
+  container-name: inputs;
 }
-
 .inputs-col h3 {
   margin: 0 0 6px 0;
   font-size: 13px;
   font-weight: 600;
 }
 
-/* header row: (blank label col) + 7 frequency labels */
+/* Header row + IO rows: label + 7 frequency cells (fluid, container-relative) */
 .freq-header,
 .io-row {
   display: grid;
-  grid-template-columns: 56px repeat(7, 48px); /* label + seven tiny boxes */
+  grid-template-columns:
+    56px                           /* "Right/Left" label */
+    repeat(7, minmax(2.2ch, 1fr)); /* 7 cells that can shrink to ~2–3 digits */
   gap: 6px;
   align-items: center;
   margin-bottom: 6px;
+  min-width: 0;                    /* allow the row to actually shrink */
 }
-
 .freq-header span {
   font-size: 11px;
   color: #555;
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
 .ear-label {
   font-size: 12px;
   color: #374151;
   text-align: right;
   padding-right: 4px;
+  white-space: nowrap;
 }
 
-/* tiny inputs for 2–3 digits */
+/* Inputs: fully fluid; sized by their grid cell; fonts/spacing kept tiny */
 .io-row input {
   width: 100%;
-  padding: 2px 4px;
-  font-size: 12px;
+  max-width: 100%;
+  min-width: 0;              /* override intrinsic min-content */
+  box-sizing: border-box;
+  padding: 2px 3px;
+  font-size: 11px;
+  line-height: 1.2;
   text-align: center;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  height: 26px;
-  box-sizing: border-box;
 }
 
-/* Responsive: stack the two blocks if very narrow */
-@media (max-width: 820px) {
-  .inputs--rows {
-    grid-template-columns: 1fr;
+/* ----- Container queries: scale inputs & tracks with the panel width ----- */
+
+/* When an inputs-col is <= 560px wide, tighten a bit */
+@container inputs (max-width: 560px) {
+  .freq-header,
+  .io-row {
+    grid-template-columns:
+      50px
+      repeat(7, minmax(2.1ch, 1fr));
+    gap: 5px;
   }
+  .freq-header span { font-size: 10.75px; }
+  .io-row input { font-size: 10.75px; padding: 2px 2px; }
 }
 
+/* At <= 500px, tighten more */
+@container inputs (max-width: 500px) {
+  .freq-header,
+  .io-row {
+    grid-template-columns:
+      46px
+      repeat(7, minmax(2ch, 1fr));
+    gap: 4px;
+  }
+  .freq-header span { font-size: 10.5px; }
+  .io-row input { font-size: 10.5px; padding: 1.5px 2px; }
+}
+
+/* At <= 460px, aggressive squeeze to keep boxes contained */
+@container inputs (max-width: 460px) {
+  .freq-header,
+  .io-row {
+    grid-template-columns:
+      42px
+      repeat(7, minmax(1.9ch, 1fr));
+    gap: 3px;
+  }
+  .freq-header span { font-size: 10px; }
+  .io-row input { font-size: 10px; padding: 1px 2px; }
+}
+
+/* Responsive: stack the two input panels when very narrow (unchanged) */
+@media (max-width: 820px) {
+  .inputs--rows { grid-template-columns: 1fr; }
+}
 
 /* ===== Charts (2×2; smaller) ===== */
 .charts-grid {
@@ -109,8 +161,11 @@
   gap: 10px;
 }
 .charts-grid canvas {
-  width: 100%; height: auto; /* respects intrinsic 480x320 ratio */
-  border: 1px solid #e5e7eb; border-radius: 10px; background: #fff;
+  width: 100%;
+  height: auto; /* respects intrinsic 480x320 ratio */
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
   box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
