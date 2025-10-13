@@ -99,6 +99,12 @@
         pointer-events: none; /* don’t steal hover */
         display: none;
     }
+    .btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
   </style>
 </head>
 <body>
@@ -886,16 +892,32 @@
       case 1: { // Button
         const btn = document.createElement('div');
         btn.className = 'btn';
-        btn.textContent = ctrl.TEXT || 'Button';
-        btn.setAttribute('role','button');
+        btn.setAttribute('role', 'button');
         btn.dataset.h = ctrl.H || '';
-        // NEW: expose the same data-id on the clickable element
         btn.dataset.id = ctrl.CID;
         btn.style.backgroundColor = ctrl.BCOL != null && ctrl.BCOL !== -1 ? intToColor(ctrl.BCOL) : '';
+
+        // --- main label ---
+        const mainLabel = document.createElement('div');
+        mainLabel.textContent = ctrl.TEXT || 'Button';
+        btn.appendChild(mainLabel);
+
+        // --- secondary smaller label for TBN buttons ---
+        if (ctrl.CID && /^TBN\d+$/i.test(ctrl.CID)) {
+            const num = ctrl.CID.replace(/^TBN/i, '');
+            const sub = document.createElement('div');
+            sub.textContent = num;
+            sub.style.fontSize = '0.8em';
+            sub.style.opacity = '0.8';
+            sub.style.marginTop = '2px';
+            sub.style.lineHeight = '1';
+            btn.appendChild(sub);
+        }
+
         common.appendChild(btn);
         parentNode.appendChild(common);
         break;
-      }
+        }
       case 3: { // Checkbox
         const wrap = document.createElement('div');
         wrap.className = 'checkbox';
