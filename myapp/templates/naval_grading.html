@@ -83,6 +83,22 @@
         text-rendering: optimizeLegibility;
         margin-left: -30px;
     }
+
+    .tooltip-pop{
+        position: fixed;
+        z-index: 999999;
+        max-width: 360px;
+        padding: 6px 8px;
+        border: 1px solid rgba(0,0,0,.25);
+        background: #111;
+        color: #fff;
+        border-radius: 4px;
+        font-size: 12px;
+        line-height: 1.35;
+        box-shadow: 0 6px 18px rgba(0,0,0,.2);
+        pointer-events: none; /* don’t steal hover */
+        display: none;
+    }
   </style>
 </head>
 <body>
@@ -1347,13 +1363,22 @@ function wireListGroup(el) {
     });
 
     // Set tooltips
-    for (let index = 0; index < arrTooltips.length; index++) {
+    {% comment %} for (let index = 0; index < arrTooltips.length; index++) {
         const element = arrTooltips[index];
         var sTBNNum = element.substring(0, 4)
         //console.log("element = " + element + ", sTBNNum = " + sTBNNum)
         const btnTBN = document.querySelector("[data-id='TBN" + sTBNNum + "']");
         btnTBN.dataset.toggle = "tooltip"
         btnTBN.setAttribute("title", element)
+    } {% endcomment %}
+    for (let i = 0; i < arrTooltips.length; i++) {
+        const text1 = arrTooltips[i];
+        const code  = text1.substring(0, 4);
+        const btnTBN = document.querySelector(`[data-id='TBN${code}']`);
+        if (!btnTBN) continue;
+
+        btnTBN.dataset.tooltipHtml = `${text1}`; // HTML allowed
+        btnTBN.removeAttribute('title');         // prevent native tooltip
     }
     // Demo previous values
     function subDemo() {
@@ -2384,6 +2409,63 @@ function wireListGroup(el) {
     clearTimeout(_fitTimer);
     _fitTimer = setTimeout(fitPage, 100);
     });
+
+    (function setupHtmlTooltips(){
+        let tip, follow = false;
+
+        function ensureTip(){
+            if (tip) return tip;
+            tip = document.createElement('div');
+            tip.className = 'tooltip-pop';
+            document.body.appendChild(tip);
+            return tip;
+        }
+
+        function showTipFor(el){
+            const html = el.dataset.tooltipHtml;
+            if (!html) return;
+            ensureTip();
+            tip.innerHTML = html;
+            tip.style.display = 'block';
+            // initial position near element
+            const r = el.getBoundingClientRect();
+            positionTip(r.right + 8, r.top);
+            follow = true;
+        }
+
+        function hideTip(){
+            if (tip) tip.style.display = 'none';
+            follow = false;
+        }
+
+        function positionTip(x, y){
+            if (!tip) return;
+            const pad = 8;
+            const vw = window.innerWidth, vh = window.innerHeight;
+            tip.style.left = Math.min(x, vw - tip.offsetWidth - pad) + 'px';
+            tip.style.top  = Math.min(y, vh - tip.offsetHeight - pad) + 'px';
+        }
+
+        // Delegate mouse/focus events for any element with data-tooltip-html
+        document.addEventListener('mouseover', e => {
+            const t = e.target.closest('[data-tooltip-html]');
+            if (t) showTipFor(t);
+        });
+        document.addEventListener('mouseout', e => {
+            const t = e.target.closest('[data-tooltip-html]');
+            if (t) hideTip();
+        });
+        document.addEventListener('mousemove', e => {
+            if (follow && tip && tip.style.display === 'block') {
+            positionTip(e.clientX + 12, e.clientY + 12);
+            }
+        });
+        document.addEventListener('focusin', e => {
+            const t = e.target.closest('[data-tooltip-html]');
+            if (t) showTipFor(t);
+        });
+        document.addEventListener('focusout', e => hideTip());
+    })();
 
     // IMPORTANT: also call fitPage() right after your bootstrap/render code finishes,
     // e.g. at the end of your existing bootstrap() that appends all .abs controls:

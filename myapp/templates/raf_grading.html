@@ -83,6 +83,23 @@
         text-rendering: optimizeLegibility;
         margin-left: -30px;
     }
+
+    .tooltip-pop{
+        position: fixed;
+        z-index: 999999;
+        max-width: 360px;
+        padding: 6px 8px;
+        border: 1px solid rgba(0,0,0,.25);
+        background: #111;
+        color: #fff;
+        border-radius: 4px;
+        font-size: 12px;
+        line-height: 1.35;
+        box-shadow: 0 6px 18px rgba(0,0,0,.2);
+        pointer-events: none; /* don’t steal hover */
+        display: none;
+    }
+
   </style>
 </head>
 <body>
@@ -1176,23 +1193,13 @@ function wireListGroup(el) {
     // const eform = $(".eformsPage");
     // const eformId = eform.attr("id");
 
-    // CSS
-    const stylesheet = document.styleSheets[0];
-    let elementRules
-
-    for (let i = 0; i < stylesheet.cssRules.length; i++){
-        if (stylesheet.cssRules[i].selectorText == ".list-group-item.active") {
-            elementRules = stylesheet.cssRules[i]
-            console.log("css property found")
-            elementRules.style.setProperty('border-color', '#ffffff', 'important')
-            elementRules.style.setProperty('background-color', '#0d6efd', 'important')
-        }
-    }
-
-    
+    // Grades
+    const arrGrades = ["Dummy", "MFD", "MFD E2", "MLD TEMP", "MLD PERM", "MND TEMP", "MND PERM", "Preg E6", "P0", "P8", "P7 MLD TEMP", "P7 MND TEMP"]
 
     // Colours
-    // const sIntermediateSelected = "rgb(220, 220, 220)"
+    const sSelected = "rgb(224, 224, 224)"
+    const sClear = "rgb(176, 196, 222)"
+    // const sIntermediateSelected = "rgb(220, 220, 220)"F
     // const sIntermediateClear = "rgb(240, 240, 240)"
     const sRedSevere = "rgb(255, 224, 192)"
     const sYellowLimited = "rgb(255, 255, 192)"
@@ -1228,8 +1235,10 @@ function wireListGroup(el) {
     // var arrSGLimitedComments
     // var arrSGSevereComments
     var arrTooltips
+    var arrLimsPol
     var iTooltip
     subInitTooltips()
+    subInitLimsPol()
 
     var arrE2OptSelected = new Array(2)
     arrE2OptSelected.fill(false)
@@ -1284,6 +1293,7 @@ function wireListGroup(el) {
     wireListGroup(LBToGrade);
     wireListGroup(LBBoard);
 
+
     // PULHHEEMS - dropdowns easier to work with as vanilla JS objects rather than JQuery
     const CBPulP = document.querySelector("[data-id='CBPulP']");
     const CBPulU = document.querySelector("[data-id='CBPulU']");
@@ -1300,13 +1310,13 @@ function wireListGroup(el) {
     const chkTogApply = document.querySelector("[data-id='chkTogApply']");
     const chkMFDRemoveMan = document.querySelector("[data-id='chkMFDRemoveMan']");
     const chkMFDRescindPrev = document.querySelector("[data-id='chkMFDRescindPrev']");
-    const chkM5 = document.querySelector("[data-id='chkM5']");
+    const chkAir = document.querySelector("[data-id='chkAir']");
     const btnDemo = document.querySelector("[data-id='btnDemo']");
 
     chkTogApply.addEventListener('click', function (e) {
         subApplyScheme()
     });
-    chkM5.addEventListener('click', function (e) {
+    chkAir.addEventListener('click', function (e) {
         subALME()
     });
     btnDemo.addEventListener('click', function (e) {
@@ -1348,13 +1358,15 @@ function wireListGroup(el) {
     });
 
     // Set tooltips
-    for (let index = 0; index < arrTooltips.length; index++) {
-        const element = arrTooltips[index];
-        var sTBNNum = element.substring(0, 4)
-        //console.log("element = " + element + ", sTBNNum = " + sTBNNum)
-        const btnTBN = document.querySelector("[data-id='TBN" + sTBNNum + "']");
-        btnTBN.dataset.toggle = "tooltip"
-        btnTBN.setAttribute("title", element)
+    for (let i = 0; i < arrTooltips.length; i++) {
+        const text1 = arrTooltips[i];
+        const text2 = arrLimsPol[i];
+        const code  = text1.substring(0, 4);
+        const btnTBN = document.querySelector(`[data-id='TBN${code}']`);
+        if (!btnTBN) continue;
+
+        btnTBN.dataset.tooltipHtml = `${text1}<br><br>${text2}`; // HTML allowed
+        btnTBN.removeAttribute('title');                         // prevent native tooltip
     }
     // Demo previous values
     function subDemo() {
@@ -1490,13 +1502,7 @@ function wireListGroup(el) {
         // var iLenLimName = sLimName.length
         // var sLimNum = sLimName.substring(iLenLimName - 2)
         return +sLimName
-    } 
-
-    {% comment %} function fnTBNNum(ctl) {
-        const id = ctl.getAttribute('data-id') || '';
-        const m = id.match(/^TBN(\d+)/);
-        return m ? +m[1] : 0;
-    } {% endcomment %}
+    }
 
     function subEvalULS() {
         // arrLimOptSelected(0 -7)
@@ -1582,7 +1588,6 @@ function wireListGroup(el) {
     function subSetintLBs(bolSkipBoard = false) {
         iLBFromGrade = getSelectNumber(LBFromGrade);
         iLBToGrade   = getSelectNumber(LBToGrade);
-
         if (!bolSkipBoard) {
             iLBBoard = getSelectNumber(LBBoard);
         }
@@ -1590,12 +1595,14 @@ function wireListGroup(el) {
 
     // LBFromGrade - Just for demo - in final version the From Grade will be calculated from previous data and not be changeable
     LBFromGrade.addEventListener('change', () => {
+        // Item selected
         subSetintLBs(true);
         subBoardTypeEstimate();
         subwarnings();
     });
 
     LBToGrade.addEventListener('change', () => {
+        // Item selected
         subSetintLBs(true);
         subBoardTypeEstimate();
         subwarnings();
@@ -1738,8 +1745,7 @@ function wireListGroup(el) {
         }
 
         reviewDate = addMonths(currentDate, iMonths)
-        //console.log("Review Date: " + reviewDate)
-        dtReview.value = toDateInputValue(reviewDate)
+        dtReview.value = fnGetUKDateAsString(reviewDate)
         dtReview.dispatchEvent(new Event("keyup"))
         dtReview.dispatchEvent(new Event("change"))
 
@@ -1834,33 +1840,49 @@ function wireListGroup(el) {
 
         switch (iLBToGrade) {
             case 1: // MFD
-                aJMES = [4, 1, 1, 1]
+                if (chkAir.checked == true) {
+                    aJMES = [1, 1, 1, 1]
+                } else {
+                    aJMES = [4, 1, 1, 1]
+                }
                 break;
             case 2: // MFD E2
-                aJMES = [4, 1, 1, 2]
+                if (chkAir.checked == true) {
+                    aJMES = [1, 1, 1, 2]
+                } else {
+                    aJMES = [4, 1, 1, 2]
+                }
                 break;
             case 3: // P3 MLD
             case 4:
-                aJMES = [4, 3, 2, 3]
+                if (chkAir.checked == true) {
+                    aJMES = [2, 3, 2, 3]
+                } else {
+                    aJMES = [4, 3, 2, 3]
+                }
                 break;
             case 5: // P7 MND
             case 6:
-                if (chkM5.checked == true) {
-                    aJMES = [4, 5, 5, 4]
+                if (chkAir.checked == true) {
+                    aJMES = [3, 5, 3, 4]
                 } else {
                     aJMES = [4, 5, 3, 4]
                 }
                 break;
             case 7: // MND Preg
-                aJMES = [4, 5, 5, 6]
+                aJMES = [4, 5, 4, 6]
                 break;
             case 8: // P0/P8
             case 9:
-                aJMES = [4, 6, 6, 5]
+                aJMES = [6, 6, 6, 5]
                 break;
             case 10: // P7 MLD (ROHT)
             case 11:
-                aJMES = [4, 4, 3, 4]
+                if (chkAir.checked == true) {
+                    aJMES = [3, 4, 4, 4]
+                } else {
+                    aJMES = [4, 4, 4, 4]
+                }
                 break;
         }
 
@@ -1891,26 +1913,28 @@ function wireListGroup(el) {
                 sAdvice = sAdvice + "All temporary MedLims should be rescinded."
                 break;
             case 2:
-                sAdvice = sAdvice + "Permanent E2 marker may be awarded in primary care."
+                sAdvice = sAdvice + "Aircrew given E2 or L2 marker 1st time need approval from RAF MB Henlow. No referral to RAF MC required."
                 break;
             case 3:
             case 5:
-                sAdvice = sAdvice + "Max DG if GDMO/non-RN GP is 2 months. Ref to ROHC at 6 months. Ref to NSMBOS at 12 month point."
+                sAdvice = sAdvice + "Temp DG max 18 months in 6m periods. 24 months by exception from RAF MC. FMed 23 needed unless MSK/12m post-partum - e-ref Read code 8H7c - RAF ROHT Med Casework"
                 break;
             case 4:
             case 6:
-                sAdvice = sAdvice + "Permanent grades are awarded by NSMBOS but may be reviewed in PHC (annual review of permanent downgrade). Primary care doctors may revert from a TEMP DG back to the SP's previous PERM DG."
+                sAdvice = sAdvice + "Formal Boards at RAF Medical Boards, Henlow (PJMES, permanent downgrade). When referring need FMed 23 - use current JMES not that anticipated."
                 break;
             case 7:
+                sAdvice = sAdvice + "Fmed23 not required."
+                break;
             case 8:
-                sAdvice = sAdvice + "Include a reminder to the Divisional Officer to do an initial Individual Recovery Programme."
+                sAdvice = sAdvice + "Authority from ROMD for P0, then forwarded for approval to RAF MC. Med annex with HARDFACTS headings needed."
                 break;
             case 9:
-                sAdvice = sAdvice + "At NSMBOS only."
+                sAdvice = sAdvice + "At Formal Medical Boards only."
                 break;
             case 10:
             case 11:
-                sAdvice = sAdvice + "Naval Occ Med use only."
+                sAdvice = sAdvice + "RAF Occ Med use only."
         }
 
         return sAdvice
@@ -1926,57 +1950,26 @@ function wireListGroup(el) {
         } else {
             //console.log("In fnwarnings, iLBBoard = " + iLBBoard);
             switch (iLBBoard) {
-                case 1: // Occ Med Exams
-                    sWarning = sWarning + "Ensure another board type isn't more appropriate. "
-                    break;
-                case 2: // E2 Marker
-                    if (iLBToGrade != 2) { sWarning = sWarning + "You should be setting the MDS to MFD E2 if using this board type. " }
-                    break;
-                case 3: // RN and RM Temp DG
-                    if (iLBFromGrade == 4 || iLBFromGrade == 6) { sWarning = sWarning + "Currently PERM, why are you using RN and RM Temp DG? " }
-                    if (iLBToGrade == 4 || iLBToGrade == 6) { sWarning = sWarning + "Why are you using RN and RM Temp DG to make PERM? " }
-                    break;
-                case 4: // Annual Review
-                    if (iLBFromGrade != iLBToGrade) { sWarning = sWarning + "Changing grade - Annual Review? " }
-                    if (iLBFromGrade == 1) { sWarning = sWarning + "If was MFD E1 then why Annual Review? " }
-                    if (iLBFromGrade == 3 || iLBFromGrade == 5) { sWarning = sWarning + "If was TEMP why Annual Review? " }
-                    if (iLBFromGrade == 7) { sWarning = sWarning + "If was Pregnant then why Annual Review? " }
-                    if (iLBToGrade == 1) { sWarning = sWarning + "If Annual Review why upgrading to MFD? " }
-                    if (iLBToGrade == 3 || iLBToGrade == 5) { sWarning = sWarning + "If Annual Review why making TEMP? " }
-                    if (iLBToGrade == 7) { sWarning = sWarning + "If Annual Review why using Pregnancy grade? " }
-                    if ((iLBFromGrade == 4 && iLBToGrade == 6) || (iLBFromGrade == 6 && iLBToGrade == 4)) { sWarning = sWarning + "Annual Review for PERM grade change? " }
-                    if (iLBFromGrade == 8 || iLBFromGrade == 9 || iLBToGrade == 8 || iLBToGrade == 9) { sWarning = sWarning + "Annual Review for P0/P8? " }
-                    break;
-                case 5:
-                case 6: // RN ROHC/RN NSMBOS
-                    if (iLBBoard == 5) { sWarning = sWarning + "Only to be used by RN ROHC. " }
-                    if (iLBBoard == 6) { sWarning = sWarning + "Only to be used by RN NSMBOS. " }
-                    if (iLBFromGrade == 1) {
-                        if (iLBToGrade == 3 || iLBToGrade == 5) { sWarning = sWarning + "Currently MFD and making TEMP, why are you using Perm DG? " }
-                        if (iLBToGrade == 4 || iLBToGrade == 6) { sWarning = sWarning + "Permissible but note currently MFD E1 and making PERM? " }
-                        if (iLBToGrade == 7) { sWarning = sWarning + "Don't normally need Perm DG to downgrade if pregnant. " }
+                case 1: // Informal MB
+                    if (iLBFromGrade != iLBToGrade) {
+                        if (iLBFromGrade == 4 || iLBFromGrade == 6) { sWarning = sWarning + "Currently PERM, but you are using Informal MB to change. " }
+                        if (iLBToGrade == 4 || iLBToGrade == 6) { sWarning = sWarning + "You using Informal MB to make PERM. " }
                     }
-                    if (iLBFromGrade == 2) {
-                        if (iLBToGrade == 3 || iLBToGrade == 5) { sWarning = sWarning + "Currently MFD E2 and making TEMP, why are you using Perm DG? " }
-                        if (iLBToGrade == 4 || iLBToGrade == 6) { sWarning = sWarning + "Permissible with Perm DG but note currently MFD E2 and making PERM? " }
-                        if (iLBToGrade == 7) { sWarning = sWarning + "Don't normally need Perm DG to downgrade if pregnant. " }
+                    break;
+                case 2: // Informal MB - Ineffective
+                    if (iLBToGrade != 8 && iLBToGrade != 9) { sWarning = sWarning + "Usually use Informal MB - Ineffective to make P0/P8. " }
+                    break;
+                case 3: // Formal MB
+                    if (iLBFromGrade == 1 || iLBFromGrade == 2) {
+                        if (iLBToGrade == 3 || iLBToGrade == 5) { sWarning = sWarning + "Currently MFD E1/E2 and making TEMP, but you are using Formal MB. " }
+                        if (iLBToGrade == 4 || iLBToGrade == 6) { sWarning = sWarning + "Permissible with Formal MB but note currently MFD E1/E2 and making PERM. " }
+                        if (iLBToGrade == 7) { sWarning = sWarning + "Don't normally need Formal MB to downgrade from MFD E1/E2 if pregnant. " }
+                    } else if (iLBFromGrade == 3 || iLBFromGrade == 5) {
+                        if (iLBToGrade == 1 || iLBToGrade == 2 || iLBToGrade == 3 || iLBToGrade == 5) { sWarning = sWarning + "You are using Formal MB to change " + arrGrades[iLBFromGrade] + " grade To " + arrGrades[iLBToGrade] + " grade. " }
                     }
-                    if (iLBFromGrade == 3) {
-                        if (iLBToGrade == 1) { sWarning = sWarning + "Why are you using Perm DG to change MLD TEMP To MFD? " }
-                        if (iLBToGrade == 2) { sWarning = sWarning + "Why are you using Perm DG to change MLD TEMP To MFD E2? " }
-                        if (iLBToGrade == 3) { sWarning = sWarning + "Why are you using Perm DG to change MLD TEMP To MLD TEMP? " }
-                        if (iLBToGrade == 5) { sWarning = sWarning + "Why are you using Perm DG to change MLD TEMP To MND TEMP? " }
-                    }
-                    if (iLBFromGrade == 5) {
-                        if (iLBToGrade == 1) { sWarning = sWarning + "Why are you using Perm DG to change MND TEMP To MFD? " }
-                        if (iLBToGrade == 2) { sWarning = sWarning + "Why are you using Perm DG to change MND TEMP To MFD E2? " }
-                        if (iLBToGrade == 3) { sWarning = sWarning + "Why are you using Perm DG to change MND TEMP To MLD TEMP? " }
-                        if (iLBToGrade == 5) { sWarning = sWarning + "Why are you using Perm DG to change MND TEMP To MND TEMP? " }
-                    }
-
-                    if (iLBFromGrade == 4 && iLBToGrade == 4) { sWarning = sWarning + "No change in PERM grade, why not using Annual Review? " }
-                    if (iLBFromGrade == 6 && iLBToGrade == 6) { sWarning = sWarning + "No change in PERM grade, why not using Annual Review? " }
-                    if ((iLBFromGrade == 7 && iLBToGrade == 1) || (iLBFromGrade == 7 && iLBToGrade == 2)) { sWarning = sWarning + "Unless reason don't normally need Perm DG to upgrade after pregnancy? " }
+                    break;
+                case 4: // Formal MB - E2/L2
+                    if (iLBToGrade != 2) { sWarning = sWarning + "Formal MB - E2/L2 is usually to make MFD E2. " }
                     break;
             }
         }
@@ -1985,27 +1978,59 @@ function wireListGroup(el) {
     }
 
     function subBoardTypeEstimate() {
-    // compute a 0-based index you want selected in LBBoard
-    // (below mirrors your existing cases; adjust numbers to your board ordering)
+    // Choose a 0-based index in LBBoard, then apply via helper (works for select or list-group)
     let idx = 0;
+
     switch (iLBToGrade) {
-        case 1: idx = 2; break;
-        case 2: idx = 1; break;
-        case 3: case 5: case 7: case 8: case 9: case 10: idx = 2; break;
-        case 4:
-        idx = (iLBFromGrade === 4) ? 3 : 4;
+        case 1:
+        idx = 0;
         break;
-        case 6:
-        idx = (iLBFromGrade === 6) ? 3 : 4;
+        case 2:
+        idx = 3;
         break;
-        case 11:
-        idx = (iLBFromGrade === 11) ? 3 : 4;
+        case 3:
+        case 5:
+        switch (iLBFromGrade) {
+            case 4:
+            case 6:
+            case 8:
+            case 9:
+            case 11:
+            // Formal MB as was PERM or P0/P8
+            idx = 2;
+            break;
+            default:
+            idx = 0;
+        }
+        break;
+        case 4: // MLD PERM
+        idx = (iLBFromGrade === 4) ? 0 : 2;
+        break;
+        case 6: // MND PERM
+        idx = (iLBFromGrade === 6) ? 0 : 2;
+        break;
+        case 7: // Preg E6
+        idx = (iLBFromGrade === 4 || iLBFromGrade === 6) ? 2 : 0;
+        break;
+        case 8: // P0 Informal - Non-effective
+        idx = 1;
+        break;
+        case 9: // P8 - Formal MB Only
+        idx = 2;
+        break;
+        case 10: // P7 MLD TEMP
+        idx = (iLBFromGrade === 10) ? 0 : 2;
+        break;
+        case 11: // P7 MND PERM
+        idx = (iLBFromGrade === 11) ? 0 : 2;
         break;
         default:
         idx = 0;
     }
+
         setSelectIndex(LBBoard, idx);
     }
+
 
 
     function singleActive(ctlKids, iSel) {
@@ -2261,6 +2286,183 @@ function wireListGroup(el) {
         ]
     }
 
+    function subInitLimsPol() {
+        arrLimsPol = [
+            "Allows fine tuning of the JMES in rare cases where no other MedLim is appropriate for  a general service condition.  If it is a specific trade limitation code 1208 (legacy 224) should be used.  Note as with all limitations, the justification behind the award should be explained in the narrative text.",
+            "Applications include IDDM and psychiatric conditions (see 1600 comment).",
+            "May be required for personnel for whom night work is an integral part of their primary duties where night working may exacerbate a pre-existing condition or interfere with a medication regime.",
+            "May be required for personnel for whom lone working is an integral part of their primary duties and their medical condition may lead to sudden incapacitation necessitating immediate medical attention.",
+            "Applies unless appropriate safety features, determined by local risk assessment, such as appropriate safety railing, toe-boards, staging and personal suspensory harnesses in operation.  The 'place' is a height - i.e. dependent on where the individual is working, not their own height .  As a guide, a height where an individual's feet are 2m off the ground without safety features as above would be regarded as working at height.",
+            "May be required for personnel for whom work on gantries is an integral part of their primary duties where their medical condition may lead to sudden incapacitation or significant sensory impairment with an unacceptable increase risk of injury.",
+            "Rarely used by the RAF.",
+            "Applies to those who may have restricted mobility problems or who have a risk of sudden incapacitation and therefore may become trapped.  Examples include integral fuel tanks in aircraft. Specific knowledge of trade tasks required.  Guidance available in AP1269A Lft 3-04 Annex K.  Some confined spaces require use of Respiratory Protective Equipment which also needs to be considered .",
+            "Applied where individual's cognitive skills may be affected in safety critical tasks and any situation where the individual is a lone worker.  This should not be applied where  performance is of concern for non-medical reasons.  Appropriate line management risk assessment is important.",
+            "Allows fine tuning of trade specific limitations.  Requires specific knowledge of occupation and what is a required duty of the branch or trade.",
+            "This limitation would rarely be used in addition to sedentary duties unless the specific environment of an office is required to prevent a specific hazard and whose functional ability is compatible with all aspects of office work.",
+            "To be used by unit MOs in phased return to work programmes.",
+            "Required for healthcare workers where continuing to perform EPPs would place patients at unacceptable risk. Consideration should be given to the medical confidentiality of the service person when applying this code, and specific consent is required before it is awarded. Clarification from ROMD should normally be sought prior to its use.",
+            "Not to be used routinely for RAF personnel.  May be used after specific advice from ROMD, M(MC) or RAFMB.",
+            "Not to be used routinely for RAF personnel.  May be used after specific advice from ROMD, M(MC) or RAFMB.",
+            "Not to be used if other MedLims restricting function are required",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "May be required for personnel for whom undertaking safety critical work is an integral part of their primary duties and where their ability to undertake this is compromised by their medical condition.  Usually this is due to the reduced concentration or risk of distraction/ sudden incapacitation.",
+            "Application of this limitation relates to DVLA Group 1 licence driving only.  Further guidance is available from DVLA 'At a Glance' document and also from their website. For LGV/PCV/Lift trucks driving see  limitation 1403.",
+            "Application of this limitation is restricted to non- professional drivers who may be required to carry passengers in service MT during their duties, but have a medical condition which would preclude them holding a DVLA Group 2 licence.  It is equivalent to taxi driving.",
+            "Mirrors DVLA approach.  All personnel must be fit to hold a LGV/PCV licence in accordance with current DVLA regulations.  Refer to DVLA 'At a Glance' booklet. Guidance for Lift-trucks is at AP1269A Lft 3-04 Annex L, Appendix 2.",
+            "May be useful for personnel for whom their medical condition may lead to a loss of control of the machine thereby jeopardising their safety and that of other workers.",
+            "Includes machinery such as lathes and drills unless totally enclosed may still have accessible moving parts.  Also consider awarding  limitations 1203, 1206, 1207.",
+            "Should be used for personnel whose colour perception is safety or mission critical and essential to the performance of their primary duties.",
+            "See AP1269A Lft 3-04 Annex M",
+            "May be useful for personnel whose condition prevents their safe working in a kitchen environment.",
+            "To assist in control of certain conditions such as diabetes mellitus (IDDM) where hypoglycaemic agents employed. Not normally required for other diabetics nor IDDM on modern basal bolus regimen.",
+            "To be used when the individual has consented to the use of the limitation which indicates to the Executive their underlying condition.  Consideration should be given to the medical confidentiality of the service person when applying this code.",
+            "For food allergy or intolerance.  In the case of Coeliac disease to be used when the individual has not consented to the use of the limitation 1601 which indicates to the executive their underlying condition.",
+            "For pilots with an increased risk of sudden or subtle incapacitation.  Not compatible with single seat roles or QFI roles with aircrew not able to safely assume control of the aircraft.",
+            "Equivalent to 2000 for non pilots where the role is flight safety or mission critical",
+            "Self-explanatory",
+            "Relates to aircrew able to perform limited specified flying roles only.  Also used to specify the nature of the role supplementary aircrew are undertaking eg air steward and aeromedical evacuation personnel",
+            "Includes aspects such as altitude and G restrictions",
+            "Only to be awarded by the RAFMB or RSDOM.",
+            "Rarely used for RAF personnel.",
+            "Self-explanatory",
+            "Usually accompanied by MedLim 2002.",
+            "Conditions where risk of sudden or rapid onset incapacity. Inappropriate behaviour or diminished responsibility. Awarded to ATC and FC Branches/trades.",
+            "Conditions where there is a risk of incapacity of slow onset and sufficient warning to transfer control safely. May not be appropriate for those at risk of subtle incapacity with no insight (i.e.  hypoglycaemia without awareness); fit to work under supervision only (1207) may be more appropriate in this case.",
+            "Aircrew with reduced hearing but who have adequate function to perform safely in the air.",
+            "Applies to those who wear CFS or CL routinely.",
+            "Applies to those who wear CFS or contact lenses for near vision or for night myopia, and do not routinely require visual correction for daytime flying.",
+            "Self-explanatory.",
+            "To be used as directed by RAFMB/ RAF CAM.",
+            "To be used as directed by RAFMB/ RAF CAM.",
+            "To be used as directed by RAFMB/ RAF CAM.",
+            "To be used as directed by RAFMB/ RAF CAM.",
+            "This limitation is rarely  to  be used for RAF personnel, and only after advice from ROMD or M(MC), or by RAFMB.",
+            "As for 3000.",
+            "As for 3000.",
+            "Recognises that the condition is largely stable and predictable and risk of associated problems are related low.  This is usually used for patients who are E5 because they have a specialist follow-up more frequently than every 6-months, and allows for time-limited deployability.",
+            "Not to be used routinely for RAF personnel.  May be used after specific advice from ROMD, M(MC) or RAFMB.",
+            "Not to be used routinely for RAF personnel.  May be used after specific advice from ROMD, M(MC) or RAFMB.",
+            "Not to be used routinely for RAF personnel.  May be used after specific advice from ROMD, M(MC) or RAFMB.",
+            "Not to be used routinely for RAF personnel.  May be used after specific advice from ROMD, M(MC) or RAFMB.",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Only to be awarded to RAF personnel by RAFMB or on specific direction from M(MC)",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Only to be awarded to RAF personnel by RAFMB or on specific direction from M(MC)",
+            "Only to be awarded to RAF personnel by RAFMB or on specific direction from M(MC)",
+            "Only to be awarded to RAF personnel by RAFMB or on specific direction from M(MC)",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Only to be used in conjunction with the specific criteria  as per AP1269A Lft 2-03 Annex D.",
+            "Used in cases such as post splenectomy patients, those unable to use antimalarials and Yellow fever (egg allergy).",
+            "See definition of base areas in AP1269A Lft 1-02 para 6. Often an issue for detachments.  Personnel are only to serve in areas where there is a suitable Service or civilian medical care with an appropriate range of relevant (to the individualÇƒÙs condition) specialties within easy access under normal peacetime conditions.",
+            "Not for use with RAF personnel",
+            "Rarely awarded by  the RAF.  Typically used for conditions such as Photosensitivity or Porphyria.  Advice should be sought from the ROMD.",
+            "Will usually follow specialist advice.",
+            "Will usually follow specialist advice.  Consider adding limitation 5104 in NFCI.",
+            "Will usually follow specialist advice.",
+            "Any ophthalmic condition where there is sensitivity to ordinary levels of light.  Will usually follow specialist advice.",
+            "Not for use with RAF personnel",
+            "As climates may vary in a particular theatre of operation this will be interpreted by M(MC) taking account of MedInt.",
+            "Where a specific agent or group of agents causing an occupational dermatitis has been identified.  See AP1269A Lft 3-04 Annex R  for more information.Will usually follow ROMD and/or specialist advice.",
+            "Will usually follow ROMD and/or specialist advice.",
+            "Will usually follow ROMD and/or specialist advice.",
+            "To be used when the individual's ability to perform their safety critical duties is dependent on support with specific equipment (eg CPAP machines).",
+            "To be used when the individual's ability to perform their primary duties is dependent on support with specific equipment which is appropriately powered (eg CPAP machines).",
+            "As per JSP 950 Lft 6-7-5 Annex N.",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "To be used mainly in conditions with a significant respiratory and/or cardiac component.  A fuller description might be 'fit for strenuous physical exercise within the individual's capacity'.  This should not be routinely used in orthopaedic conditions such as knee pain where whilst the individual cannot run, they may exercise maximally in other ways.  For MSK conditions, code 8101 is more usually appropriate/ When applied to Regt use 1208 limitation (legacy 224).",
+            "This limitation would rarely be used in place of fit sedentary duties; if MOs are considering its use clarification should normally be sought from ROMD.",
+            "Applied where it is necessary for the individual to minimise locomotor activities.  Limitation should be awarded mindful of the beneficial qualities of light exercise in some conditions.  This is a most significant limitation, as in occupational terms it is frequently the step immediately prior to making an individual non-effective.  It subsumes other limitations related to locomotion which do not need to be separately stated.",
+            "Long periods generally taken to mean >30 min continuous or >4 hr/day.  Applied to those in a job there the individual is predominantly sitting.  Be aware that this may also apply to driving; MT drivers would be code 1208 (legacy 224).",
+            "Long periods is generally taken to mean >30 min continuous or >4 hr/day.",
+            "Applies to trades and branches where a significant proportion of time is spent working on knees. Typically this will include all the aircraft engineering groups.  Should not be applied where infrequent or transient requirement for kneeling is present eg during CCS training.  Use of kneeling aids should be considered, particularly in anterior knee pain.",
+            "Will include ceremonial and parade duty. Used mainly for lower limb injuries/stress fractures.",
+            "Not for use with RAF personnel",
+            "Rarely awarded as it is a task-based as opposed to functional or employment  limitation.",
+            "Rarely awarded as it is a task-based as opposed to functional or employment limitation; however, it may be appropriate in the case of aerial erectors or in a ship- borne environment.",
+            "May apply to any trade.  Limits determined by individual's capability and line management (as advised by SMO with additional input from ROMD as required).",
+            "Should be applied predominantly to those where heavy lifting is a significant part of duties.  Requires careful occupational assessment.  Consider also the requirement to lift baggage when travelling to operations.  Heavy lifting guidelines are as per HSE manual handling advice",
+            "This should be used instead of unfit heavy lifting when personnel are unfit or unsafe to move over distance with a load as part of their primary duties.",
+            "The use of this limitation will be dictated by medical risk assessment and will usually follow specialist advice.",
+            "Not for use with RAF personnel, as is covered by legislative requirements",
+            "Not for use with RAF personnel, as is covered by legislative requirements",
+            "Whilst it is recognised that where reasonably practicable, no Service person should be exposed to excessive noise, there are a small group of people who are particularly sensitive to noise.  It is for this group of individuals for who the normally acceptable noise levels are deemed too high and therefore this limitation is awarded.  Normally the level used is the Lower Exposure Action Value of 80dB(A) 8 hr time weighted average (see control of Noise at Work Regulations 2005).",
+            "Rarely awarded.  Typically used for conditions making the wearing of headsets inappropriate such as painful scars or trigeminal neuralgia.",
+            "Used where significant unilateral hearing loss precludes single auditory input into the affected ear.",
+            "Used where there is a requirement over and above standard PPE",
+            "Used for those who are unable to take any part of the RAFFT.  This MedLim will rarely be used in isolation.",
+            "Used for those who are unable to undertake the MSFT, but are fit the RWT or any subsequently introduced aerobic assessment.  This MedLim will rarely be used in isolation.",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Used for those who are unable to undertake the RWT or any subsequently introduced alternative aerobic assessment for the RAFFT.  This MedLim will rarely be used in isolation.",
+            "Used for those who are unable to undertake press-ups as part of the RAFFT.  This MedLim will rarely be used in isolation.",
+            "Not required for RAF personnel",
+            "Used for those who are unable to undertake sit-ups as part of the RAFFT.  This MedLim will rarely be used in isolation.",
+            "Rarely used as Unfit impact activity (8101) is normally more appropriate and also precludes running.",
+            "To be used to protect the service person from any activity where both feet are off the ground at some point during the cycle of movement, including running, jumping onto the ground etc.  Commonly used where limitations are required to protect lower limbs or lower back.",
+            "Useful for RAF personnel on Joint or Army units with compulsory PT.",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not required for RAF personnel, as this is a function of good management",
+            "Used where an individual's capacity and limitations are expected to alter over time, to permit a flexible progressive rehabilitation.  Rarely used with Permanent downgrading.",
+            "Not for use with RAF personnel",
+            "Normally used with those who are E-5 where there is benefit to the individual in travelling abroad.",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Self-explanatory",
+            "Self-explanatory",
+            "Self-explanatory",
+            "Unable to bear arms whether through psychiatric or physical reasons.  Individuals are still fit to undertake weapons handling without live ammunition.",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Not for use with RAF personnel",
+            "Will range from passes & permits to gate duty. Note: Rarely awarded as it is a task-based as opposed to functional limitation (tasks change, function is more enduring and reviewed regularly) i.e.  personnel with physical limitations could still undertake a watch-keeper role",
+            "Rarely required for RAF personnel - 6006 usually more appropriate and precludes ceremonial duties",
+            "Self-explanatory",
+            "Should be rarely awarded; before awarding this limitation, the MO should be familiar with the available alternative footwear.",
+            "Not commonly awarded.  Examples of use include for butyl rubber allergies, moderate to severe airways disease, sycosis barbae.  Applies to personnel of all trades (including aircrew when on the ground).",
+            "Self-explanatory",
+            "Self-explanatory",
+            "Not for use in RAF personnel; this is a Geographical posting hence Limitation 5000 should be used.",
+            "Self-explanatory",
+        ]
+
+    }
+
     function subResetAll() {
         console.log("Resetting form...");
 
@@ -2287,7 +2489,11 @@ function wireListGroup(el) {
         iLBToGrade = 1;
         subSetULSM();
         CBPulP.options[0].selected = true
-        CBJMESA.options[3].selected = true
+        if(chkAir.checked) {
+            CBJMESA.options[0].selected = true
+        } else {
+            CBJMESA.options[3].selected = true
+        }
         CBJMESL.options[0].selected = true
         CBJMESM.options[0].selected = true
         CBJMESE.options[0].selected = true
@@ -2389,6 +2595,64 @@ function wireListGroup(el) {
     // IMPORTANT: also call fitPage() right after your bootstrap/render code finishes,
     // e.g. at the end of your existing bootstrap() that appends all .abs controls:
     // bootstrap(); fitPage();
+
+    (function setupHtmlTooltips(){
+        let tip, follow = false;
+
+        function ensureTip(){
+            if (tip) return tip;
+            tip = document.createElement('div');
+            tip.className = 'tooltip-pop';
+            document.body.appendChild(tip);
+            return tip;
+        }
+
+        function showTipFor(el){
+            const html = el.dataset.tooltipHtml;
+            if (!html) return;
+            ensureTip();
+            tip.innerHTML = html;
+            tip.style.display = 'block';
+            // initial position near element
+            const r = el.getBoundingClientRect();
+            positionTip(r.right + 8, r.top);
+            follow = true;
+        }
+
+        function hideTip(){
+            if (tip) tip.style.display = 'none';
+            follow = false;
+        }
+
+        function positionTip(x, y){
+            if (!tip) return;
+            const pad = 8;
+            const vw = window.innerWidth, vh = window.innerHeight;
+            tip.style.left = Math.min(x, vw - tip.offsetWidth - pad) + 'px';
+            tip.style.top  = Math.min(y, vh - tip.offsetHeight - pad) + 'px';
+        }
+
+        // Delegate mouse/focus events for any element with data-tooltip-html
+        document.addEventListener('mouseover', e => {
+            const t = e.target.closest('[data-tooltip-html]');
+            if (t) showTipFor(t);
+        });
+        document.addEventListener('mouseout', e => {
+            const t = e.target.closest('[data-tooltip-html]');
+            if (t) hideTip();
+        });
+        document.addEventListener('mousemove', e => {
+            if (follow && tip && tip.style.display === 'block') {
+            positionTip(e.clientX + 12, e.clientY + 12);
+            }
+        });
+        document.addEventListener('focusin', e => {
+            const t = e.target.closest('[data-tooltip-html]');
+            if (t) showTipFor(t);
+        });
+        document.addEventListener('focusout', e => hideTip());
+    })();
+
 </script>
 
 
