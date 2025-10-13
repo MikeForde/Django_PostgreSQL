@@ -1745,7 +1745,7 @@ function wireListGroup(el) {
         }
 
         reviewDate = addMonths(currentDate, iMonths)
-        dtReview.value = fnGetUKDateAsString(reviewDate)
+        dtReview.value = toDateInputValue(reviewDate)
         dtReview.dispatchEvent(new Event("keyup"))
         dtReview.dispatchEvent(new Event("change"))
 
