@@ -1,3 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}RAF AGC POC | TT-Mick-P{% endblock %}
+
+{% block content %}
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>RAF Grading and Limitations</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    :root{
+      --page-w:1686px; /* from <W> */
+      --page-h:720px;  /* from <H> */
+      --font-family: Arial, sans-serif; /* from <FONTNAME_F> */
+      --default-fs:9px; /* from <FSIZE_F> */
+    }
+    body{margin:0;background:#f2f2f2;font-family:var(--font-family)}
+    .page{
+      position:relative;
+      width:var(--page-w);
+      height:var(--page-h);
+      margin:16px auto;
+      box-shadow:0 8px 24px rgba(0,0,0,.15);
+      background:rgba(176, 196, 222,1);
+      overflow:hidden;
+    }
+    .abs{position:absolute; box-sizing:border-box;}
+    .panel { overflow: visible; }
+    .panel-inner { overflow: visible; }
+
+    /* a helper to raise the focused control wrapper */
+    .abs.elevate { z-index: 10000; }
+
+    /* optional: small visual cue while editing */
+    .abs.elevate .textbox,
+    .abs.elevate .textarea {
+        box-shadow: 0 4px 14px rgba(0,0,0,.25);
+    }
+    .label{display:flex; align-items:center; justify-content:flex-start; padding:2px 6px; white-space:pre-wrap}
+    .center{justify-content:center; text-align:center}
+    .right{justify-content:flex-end; text-align:right}
+    .btn{border:1px solid #333; border-radius:4px; padding:0 8px; height:100%; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none}
+    .textbox{border:1px solid #666; border-radius:4px; padding:2px 6px; height:100%; display:flex; align-items:center; background:#fff}
+    .textarea{border:1px solid #666; border-radius:4px; padding:6px; background:#fff; overflow:auto}
+    .checkbox{display:flex; align-items:center; gap:6px}
+    .select, .listbox{border:1px solid #666; border-radius:4px; background:#fff; height:100%; padding:2px 10px; display:flex; align-items:center}
+    .panel{border:1px solid #999; border-radius:6px; overflow:hidden}
+    .hidden{display:none !important}
+    /* Allow child absolute items inside panels to be relative to panel */
+    .panel-inner{position:relative; width:100%; height:100%}
+    /* Safety: buttons with very small heights still clickable */
+    .btn:where([data-h]){min-height:20px}
+
+    html, body { height: 100%; overflow: hidden; }
+    #page-outer {
+        display:flex;              /* center when smaller than viewport */
+        justify-content:center;
+        align-items:flex-start;
+        width:100vw;
+        height:100vh;
+        overflow:auto;             /* scrollbars when needed */
+        padding:8px;                 /* small breathing room */
+    }
+
+    #page-spacer{
+        position:relative;
+        width: var(--scaled-w, 0px);
+        height: var(--scaled-h, 0px);
+    }
+
+    /* the canvas */
+    #page{
+        position:absolute;
+        top:0; left:0;
+        transform-origin: top left;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        margin-left: -30px;
+    }
+  </style>
+</head>
+<body>
+<div id="page-outer">
+    <div id="page-spacer">
+  <div id="page" class="page" role="document" aria-label="RAF Grading and Limitations">
+  </div>
+  </div>
+</div>
+  <script type="application/json" id="eform-data">
 {
   "meta": {"FONTNAME_F": "Arial", "FSIZE_F": 9.0, "PAGEW": 600, "PAGEH": 600},
   "tpccp": [
@@ -29,30 +124,30 @@
     {"ID":"OPT3976", "CID":"Label15", "CTYPE":8, "PARENT":"PG23283", "TEXT":"Limited", "X":225, "Y":37, "FSIZE":8.25, "BCOL":-64, "H":23, "W":84, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT3977", "CID":"Label16", "CTYPE":8, "PARENT":"PG23283", "TEXT":"Severe", "X":315, "Y":36, "FSIZE":8.25, "BCOL":-8000, "H":23, "W":84, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT3978", "CID":"btnReset", "CTYPE":1, "PARENT":"PG23283", "TEXT":"Reset to Original Values", "X":10, "Y":11, "FSIZE":9.0, "BCOL":-32640, "H":23, "W":167, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformButton", "ZINDEX":0},
-    {"ID":"OPT3979", "CID":"CBPulP", "CTYPE":4, "PARENT":"PG23283", "X":437, "Y":38, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":25, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
+    {"ID":"OPT3979", "CID":"CBPulP", "CTYPE":4, "PARENT":"PG23283", "X":437, "Y":38, "FSIZE":9.0, "BCOL":-1, "H":23, "W":38, "TAB":25, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
     {"ID":"OPT3980", "CID":"Label18", "CTYPE":8, "PARENT":"PG23283", "TEXT":"P", "X":407, "Y":37, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT3981", "CID":"Label19", "CTYPE":8, "PARENT":"PG23283", "TEXT":"U", "X":407, "Y":66, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
-    {"ID":"OPT3982", "CID":"CBPulU", "CTYPE":4, "PARENT":"PG23283", "X":437, "Y":67, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":26, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
+    {"ID":"OPT3982", "CID":"CBPulU", "CTYPE":4, "PARENT":"PG23283", "X":437, "Y":67, "FSIZE":9.0, "BCOL":-1, "H":23, "W":38, "TAB":26, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
     {"ID":"OPT3983", "CID":"Label20", "CTYPE":8, "PARENT":"PG23283", "TEXT":"L", "X":407, "Y":95, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
-    {"ID":"OPT3984", "CID":"CBPulL", "CTYPE":4, "PARENT":"PG23283", "X":437, "Y":96, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":27, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
+    {"ID":"OPT3984", "CID":"CBPulL", "CTYPE":4, "PARENT":"PG23283", "X":437, "Y":96, "FSIZE":9.0, "BCOL":-1, "H":23, "W":38, "TAB":27, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
     {"ID":"OPT3985", "CID":"Label21", "CTYPE":8, "PARENT":"PG23283", "TEXT":"H", "X":407, "Y":122, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT3986", "CID":"TBPulH2", "CTYPE":8, "PARENT":"PG23283", "TEXT":"R1 L1", "X":437, "Y":122, "FSIZE":9.0, "BCOL":-657931, "H":23, "W":43, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT3987", "CID":"TBPulE2", "CTYPE":8, "PARENT":"PG23283", "TEXT":"R1/ L1/", "X":437, "Y":145, "FSIZE":9.0, "BCOL":-657931, "H":23, "W":52, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT3988", "CID":"Label24", "CTYPE":8, "PARENT":"PG23283", "TEXT":"E", "X":407, "Y":145, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT3989", "CID":"Label25", "CTYPE":8, "PARENT":"PG23283", "TEXT":"M", "X":407, "Y":170, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
-    {"ID":"OPT3990", "CID":"CBPulM", "CTYPE":4, "PARENT":"PG23283", "X":437, "Y":171, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":28, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
+    {"ID":"OPT3990", "CID":"CBPulM", "CTYPE":4, "PARENT":"PG23283", "X":437, "Y":171, "FSIZE":9.0, "BCOL":-1, "H":23, "W":38, "TAB":28, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
     {"ID":"OPT3991", "CID":"Label26", "CTYPE":8, "PARENT":"PG23283", "TEXT":"S", "X":407, "Y":199, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
-    {"ID":"OPT3992", "CID":"CBPulS", "CTYPE":4, "PARENT":"PG23283", "X":437, "Y":200, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":29, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
+    {"ID":"OPT3992", "CID":"CBPulS", "CTYPE":4, "PARENT":"PG23283", "X":437, "Y":200, "FSIZE":9.0, "BCOL":-1, "H":23, "W":38, "TAB":29, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
     {"ID":"OPT3993", "CID":"TBMDS", "CTYPE":8, "PARENT":"PG23283", "TEXT":"Full", "X":450, "Y":231, "FSIZE":9.0, "BCOL":-657931, "H":23, "W":67, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT3994", "CID":"TBPermTemp2", "CTYPE":8, "PARENT":"PG23283", "TEXT":"N/A", "X":450, "Y":255, "FSIZE":9.0, "BCOL":-657931, "H":23, "W":52, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT3995", "CID":"Label27", "CTYPE":8, "PARENT":"PG23283", "TEXT":"A", "X":406, "Y":284, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":41, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
-    {"ID":"OPT3996", "CID":"CBJMESA", "CTYPE":4, "PARENT":"PG23283", "X":406, "Y":310, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":41, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
+    {"ID":"OPT3996", "CID":"CBJMESA", "CTYPE":4, "PARENT":"PG23283", "X":406, "Y":310, "FSIZE":9.0, "BCOL":-1, "H":23, "W":38, "TAB":41, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
     {"ID":"OPT3997", "CID":"Label28", "CTYPE":8, "PARENT":"PG23283", "TEXT":"L", "X":440, "Y":284, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
-    {"ID":"OPT3998", "CID":"CBJMESL", "CTYPE":4, "PARENT":"PG23283", "X":440, "Y":310, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":42, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
+    {"ID":"OPT3998", "CID":"CBJMESL", "CTYPE":4, "PARENT":"PG23283", "X":440, "Y":310, "FSIZE":9.0, "BCOL":-1, "H":23, "W":38, "TAB":42, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
     {"ID":"OPT3999", "CID":"Label29", "CTYPE":8, "PARENT":"PG23283", "TEXT":"M", "X":474, "Y":284, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
-    {"ID":"OPT4000", "CID":"CBJMESM", "CTYPE":4, "PARENT":"PG23283", "X":474, "Y":310, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":43, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
+    {"ID":"OPT4000", "CID":"CBJMESM", "CTYPE":4, "PARENT":"PG23283", "X":474, "Y":310, "FSIZE":9.0, "BCOL":-1, "H":23, "W":38, "TAB":43, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
     {"ID":"OPT4001", "CID":"Label30", "CTYPE":8, "PARENT":"PG23283", "TEXT":"E", "X":508, "Y":284, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":24, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
-    {"ID":"OPT4002", "CID":"CBJMESE", "CTYPE":4, "PARENT":"PG23283", "X":508, "Y":310, "FSIZE":9.0, "BCOL":-1, "H":23, "W":28, "TAB":44, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
+    {"ID":"OPT4002", "CID":"CBJMESE", "CTYPE":4, "PARENT":"PG23283", "X":508, "Y":310, "FSIZE":9.0, "BCOL":-1, "H":23, "W":38, "TAB":44, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformDropDownList", "ZINDEX":0},
     {"ID":"OPT4003", "CID":"Label31", "CTYPE":8, "PARENT":"PG23283", "TEXT":"MDS", "X":407, "Y":231, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":37, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT4004", "CID":"Label32", "CTYPE":8, "PARENT":"PG23283", "TEXT":"T/P", "X":407, "Y":254, "FSIZE":9.0, "BCOL":-2039584, "H":23, "W":37, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT4005", "CID":"LBBoard", "CTYPE":10, "PARENT":"PG23283", "X":10, "Y":344, "FSIZE":9.0, "BCOL":-5192482, "H":124, "W":209, "TAB":3, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformListBox", "ZINDEX":0},
@@ -60,7 +155,7 @@
     {"ID":"OPT4007", "CID":"LBPrevPULs", "CTYPE":10, "PARENT":"PG23283", "X":39, "Y":552, "FSIZE":9.0, "BCOL":-5192482, "H":139, "W":495, "TAB":0, "DISPLAY":true, "READONLY":true, "VISIBLE":true, "STYLE":"eformListBox", "ZINDEX":0},
     {"ID":"OPT4008", "CID":"Label34", "CTYPE":8, "PARENT":"PG23283", "TEXT":"Previous PULHHEEMS", "X":39, "Y":529, "FSIZE":9.0, "BCOL":-5192482, "H":23, "W":179, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT4009", "CID":"TBGuidance", "CTYPE":15, "PARENT":"PG23283", "X":302, "Y":368, "FSIZE":9.0, "BCOL":-1, "H":100, "W":234, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformTextBox", "ZINDEX":1},
-    {"ID":"OPT4010", "CID":"TBWarnings", "CTYPE":15, "PARENT":"PG23283", "X":300, "Y":474, "FSIZE":9.0, "BCOL":-1, "H":71, "W":234, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformTextBox", "ZINDEX":0},
+    {"ID":"OPT4010", "CID":"TBWarnings", "CTYPE":15, "PARENT":"PG23283", "X":302, "Y":474, "FSIZE":9.0, "BCOL":-1, "H":71, "W":234, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformTextBox", "ZINDEX":0},
     {"ID":"OPT4011", "CID":"dtReview", "CTYPE":2, "PARENT":"PG23283", "X":349, "Y":339, "FSIZE":9.0, "BCOL":-1, "H":23, "W":187, "TAB":45, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformCalendar", "ZINDEX":0},
     {"ID":"OPT4012", "CID":"Label76", "CTYPE":8, "PARENT":"PG23283", "TEXT":"Review", "X":290, "Y":339, "FSIZE":9.0, "BCOL":-5192482, "H":23, "W":53, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT4013", "CID":"btnE2Opt01", "CTYPE":1, "PARENT":"PG23283", "TEXT":"Shaving", "X":145, "Y":63, "FSIZE":9.0, "BCOL":-5192482, "H":23, "W":74, "TAB":4, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformButton", "ZINDEX":0},
@@ -294,7 +389,7 @@
     {"ID":"OPT4241", "CID":"Label68", "CTYPE":8, "PARENT":"Panel8", "TEXT":"Guard/Ceremonial", "X":482, "Y":8, "FSIZE":8.25, "BCOL":-6943, "H":23, "W":98, "TAB":84, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT4242", "CID":"Label69", "CTYPE":8, "PARENT":"Panel8", "TEXT":"CBRN", "X":289, "Y":37, "FSIZE":8.25, "BCOL":-6943, "H":23, "W":52, "TAB":85, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
     {"ID":"OPT4243", "CID":"chasmLabel", "CTYPE":8, "PARENT":"chasmPatientBanner", "TEXT":"[Patient Banner]", "X":3, "Y":25, "FSIZE":9.0, "BCOL":-1, "H":25, "W":741, "TAB":0, "DISPLAY":true, "READONLY":false, "VISIBLE":false, "STYLE":"eformLabel", "ZINDEX":0},
-    {"ID":"OPT4244", "CID":"btnDemo", "CTYPE":1, "PARENT":"PG23283", "TEXT":"Demo Previous Values", "X":39, "Y":709, "FSIZE":9.0, "BCOL":-5192482, "H":23, "W":213, "TAB":55, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformButton", "ZINDEX":0},
+    {"ID":"OPT4244", "CID":"btnDemo", "CTYPE":1, "PARENT":"PG23283", "TEXT":"Demo Previous Values", "X":39, "Y":690, "FSIZE":9.0, "BCOL":-5192482, "H":23, "W":213, "TAB":55, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformButton", "ZINDEX":0},
     {"ID":"OPT4245", "CID":"lblTogApply", "CTYPE":8, "PARENT":"PG23283", "TEXT":"Show Applied Lims in single colour", "X":1443, "Y":12, "FSIZE":9.0, "BCOL":-5192482, "H":23, "W":219, "TAB":57, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":1},
     {"ID":"OPT4246", "CID":"chkTogApply", "CTYPE":3, "PARENT":"PG23283", "TEXT":"CheckBox1", "X":1423, "Y":12, "FSIZE":9.0, "BCOL":-5192482, "H":24, "W":25, "TAB":58, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformCheckBox", "ZINDEX":0},
     {"ID":"OPT4247", "CID":"chkMFDRemoveMan", "CTYPE":3, "PARENT":"PG23283", "TEXT":"CheckBox1", "X":552, "Y":11, "FSIZE":9.0, "BCOL":-5192482, "H":24, "W":25, "TAB":59, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformCheckBox", "ZINDEX":0},
@@ -303,7 +398,7 @@
     {"ID":"OPT4250", "CID":"chkMFDRescindPrev", "CTYPE":3, "PARENT":"PG23283", "TEXT":"CheckBox1", "X":873, "Y":13, "FSIZE":9.0, "BCOL":-5192482, "H":24, "W":25, "TAB":61, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformCheckBox", "ZINDEX":0},
     {"ID":"OPT4251", "CID":"chkBolSet", "CTYPE":3, "PARENT":"PG23283", "TEXT":"CheckBox1", "X":192, "Y":10, "FSIZE":9.0, "BCOL":-5192482, "H":24, "W":26, "TAB":63, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformCheckBox", "ZINDEX":0},
     {"ID":"OPT4252", "CID":"lblAllowRescind", "CTYPE":8, "PARENT":"PG23283", "TEXT":"Allow Shortcuts to Unset Rescinds", "X":209, "Y":9, "FSIZE":9.0, "BCOL":-5192482, "H":23, "W":235, "TAB":64, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":0},
-    {"ID":"OPT4253", "CID":"lblAir", "CTYPE":8, "PARENT":"PG23283", "TEXT":"Aircrew?", "X":163, "Y":158, "FSIZE":9.0, "BCOL":-5192482, "H":27, "W":56, "TAB":66, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":1},
+    {"ID":"OPT4253", "CID":"lblAir", "CTYPE":8, "PARENT":"PG23283", "TEXT":"Aircrew?", "X":166, "Y":158, "FSIZE":9.0, "BCOL":-5192482, "H":27, "W":56, "TAB":66, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformLabel", "ZINDEX":1},
     {"ID":"OPT4254", "CID":"chkAir", "CTYPE":3, "PARENT":"PG23283", "TEXT":"CheckBox1", "X":146, "Y":159, "FSIZE":9.0, "BCOL":-5192482, "H":24, "W":26, "TAB":65, "DISPLAY":true, "READONLY":false, "VISIBLE":true, "STYLE":"eformCheckBox", "ZINDEX":0}
   ],
   "tpcp": [
@@ -371,8 +466,8 @@
     {"ID":"OPT3958", "PROPID":"CTRLPR3958"},
     {"ID":"OPT3959", "PROPID":"CTRLPR3959"},
     {"ID":"OPT3960", "PROPID":"CTRLPR3960"},
-    {"ID":"OPT3961", "PROPID":"CTRLPR3961", "ITEMS":"1,2,3,4,5,6,7,8,9,10,11", "DEFAULT":"1"},
-    {"ID":"OPT3962", "PROPID":"CTRLPR3962", "ITEMS":"1,2,3,4,5,6,7,8,9,10,11", "FUNCTIONORDER":"RunJavascript", "RUNJAVASCRIPT":"LBToGradeFunc()"},
+    {"ID":"OPT3961", "PROPID":"CTRLPR3961", "ITEMS":"-,-,-,-,-,-,-,-,-,-,-", "DEFAULT":"1", "ALIGN":"Center"},
+    {"ID":"OPT3962", "PROPID":"CTRLPR3962", "ITEMS":"-,-,-,-,-,-,-,-,-,-,-", "FUNCTIONORDER":"RunJavascript", "RUNJAVASCRIPT":"LBToGradeFunc()", "ALIGN":"Center"},
     {"ID":"OPT3963", "PROPID":"CTRLPR3963"},
     {"ID":"OPT3964", "PROPID":"CTRLPR3964"},
     {"ID":"OPT3965", "PROPID":"CTRLPR3965"},
@@ -394,7 +489,7 @@
     {"ID":"OPT4002", "PROPID":"CTRLPR4002", "ITEMS":"1,2,3,4,5,6", "DEFAULT":"1"},
     {"ID":"OPT4003", "PROPID":"CTRLPR4003"},
     {"ID":"OPT4004", "PROPID":"CTRLPR4004"},
-    {"ID":"OPT4005", "PROPID":"CTRLPR4005", "ITEMS":"Informal MB,Informal MB - Non-effective,Formal MB,Formal MB - E2/L2"},
+    {"ID":"OPT4005", "PROPID":"CTRLPR4005", "ITEMS":"Informal MB,Informal MB - Non-effective,Formal MB,Formal MB - E2/L2", "ALIGN": "Center"},
     {"ID":"OPT4006", "PROPID":"CTRLPR4006"},
     {"ID":"OPT4007", "PROPID":"CTRLPR4007", "ITEMS":"Date            P  U  L  H  H  E  E  M  S  MES                 T/P   MDS,26/02/22     2   2  2   1   1  1   1  2   2  A4 L1 M4 E1    Perm  Full,26/09/21     3   2  3   1   1  1   1  2   2  A4 L3 M4 E3    Temp Liml"},
     {"ID":"OPT4008", "PROPID":"CTRLPR4008"},
@@ -613,3 +708,1691 @@
     {"ID":"OPT4254", "PROPID":"CTRLPR4254", "DIRECTION":"Horizontal"}
   ]
 }
+
+
+  </script>
+
+  <script>
+    const sSelected = "rgb(116, 169, 195)"
+    const sClear = "rgb(176, 196, 222)"
+  // Convert signed 32-bit int to CSS #RRGGBB
+  function intToColor(n){
+    if (n === undefined || n === null) return null;
+    const v = (n >>> 0) & 0xFFFFFF;
+    const b = v & 0xFF, g = (v >> 8) & 0xFF, r = (v >> 16) & 0xFF;
+    const rgb = (r<<16) | (g<<8) | b;
+    return '#' + rgb.toString(16).padStart(6,'0');
+  }
+
+  // Map ALIGN tokens to CSS classes
+  function alignClass(a){
+    if(!a) return '';
+    const t = String(a).toLowerCase();
+    if (t.includes('center')) return 'center';
+    if (t.includes('right')) return 'right';
+    return '';
+  }
+
+  // Parse ITEMS: supports comma/pipe/newline splits and value:label pairs
+  function parseItems(itemsRaw){
+    if (!itemsRaw && itemsRaw !== 0) return [];
+    const s = String(itemsRaw).trim();
+    const parts = s.split(/[\n,\|]+/).map(x => x.trim()).filter(Boolean);
+    return parts.map(p => {
+      const i = p.indexOf(':');
+      if (i > -1) {
+        const value = p.slice(0, i).trim();
+        const label = p.slice(i+1).trim();
+        return { value, label };
+      }
+      return { value: p, label: p };
+    });
+  }
+
+  // Parse DEFAULT for selects/listboxes — allow multiple
+  function parseDefaults(defRaw){
+    if (defRaw === undefined || defRaw === null) return [];
+    if (typeof defRaw === 'boolean') return defRaw ? ['true'] : ['false'];
+    const s = String(defRaw).trim();
+    if (!s) return [];
+    return s.split(/[\n,\|]+/).map(x => x.trim()).filter(Boolean);
+  }
+
+  // Build a map: ID -> complete tpcp prop object (so we can use ALIGN, ITEMS, DEFAULT, etc.)
+  function buildPropMap(tpcp){
+    const m = new Map();
+    (tpcp||[]).forEach(p=>{
+      if (p && p.ID){
+        // if multiple entries for same ID, merge shallowly
+        const prev = m.get(p.ID) || {};
+        m.set(p.ID, Object.assign(prev, p));
+      }
+    });
+    return m;
+  }
+
+  function fillOptionsFromProps(selectEl, props){
+    if (!selectEl || !props || !props.ITEMS) return;
+
+    // ITEMS supports: "A,B,C" or "1|One,2|Two"
+    const items = String(props.ITEMS).split(',').map(s => s.trim()).filter(Boolean);
+    items.forEach((raw, idx) => {
+      let value = raw, label = raw;
+      const pipe = raw.indexOf('|');
+      if (pipe !== -1){ value = raw.slice(0, pipe); label = raw.slice(pipe+1); }
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = label;
+      selectEl.appendChild(opt);
+    });
+
+    // DEFAULT can be: value text, 1-based index, or label
+    if (props.DEFAULT != null){
+      const def = String(props.DEFAULT).trim();
+      // Try index (1-based)
+      const asNum = Number(def);
+      if (!Number.isNaN(asNum) && asNum > 0 && asNum <= selectEl.options.length){
+        selectEl.selectedIndex = asNum - 1;
+        return;
+      }
+      // Try value or label match
+      for (let i=0; i<selectEl.options.length; i++){
+        const o = selectEl.options[i];
+        if (o.value === def || o.text === def){ selectEl.selectedIndex = i; break; }
+      }
+    }
+  }
+
+  // Add <option> children to a <select>
+  function populateSelect(sel, items, defaults, isMulti){
+    const defaultSet = new Set(defaults.map(String));
+    items.forEach(({value, label})=>{
+      const opt = document.createElement('option');
+      opt.value = String(value);
+      opt.textContent = label;
+      if (defaultSet.has(String(value))) opt.selected = true;
+      sel.appendChild(opt);
+    });
+
+    // If nothing selected and a single default string equals the display label, try match by label
+    if (!isMulti && sel.selectedIndex === -1 && defaults.length === 1){
+      const want = defaults[0];
+      for (let i=0;i<sel.options.length;i++){
+        if (sel.options[i].text === want){ sel.options[i].selected = true; break; }
+      }
+    }
+
+    // Fallback: select first item for single selects if no default matched
+    if (!isMulti && sel.selectedIndex === -1 && sel.options.length){
+      sel.options[0].selected = true;
+    }
+  }
+
+  // Create a DOM element for a control
+  function renderControl(ctrl, propMap, parentNode){
+    const props = propMap.get(ctrl.ID) || {};
+    const common = document.createElement('div');
+    common.className = 'abs';
+    common.dataset.id = ctrl.ID;
+    common.style.left   = (ctrl.X||0) + 'px';
+    common.style.top    = (ctrl.Y||0) + 'px';
+    if (ctrl.W != null) common.style.width  = ctrl.W + 'px';
+    if (ctrl.H != null) common.style.height = ctrl.H + 'px';
+    const fs = (ctrl.FSIZE != null ? ctrl.FSIZE : 9) || 9;
+    common.style.fontSize = fs + 'px';
+
+    const bcol = intToColor(ctrl.BCOL);
+    if (bcol && ctrl.BCOL !== -1) common.style.backgroundColor = bcol;
+
+    if (ctrl.VISIBLE === false) common.classList.add('hidden');
+
+    const aClass = alignClass(props.ALIGN);
+
+    switch (Number(ctrl.CTYPE)) {
+      case 12: { // Panel
+        common.classList.add('panel');
+        const inner = document.createElement('div');
+        inner.className = 'panel-inner';
+        inner.style.width = '100%';
+        inner.style.height = '100%';
+        common.appendChild(inner);
+        parentNode.appendChild(common);
+        return {container: inner, wrapper: common};
+      }
+      case 8: { // Label
+        common.classList.add('label');
+        common.dataset.id = ctrl.CID;
+        if (aClass) common.classList.add(aClass);
+        common.innerHTML = (ctrl.TEXT || '').replaceAll('&lt;br&gt;','<br>');
+        parentNode.appendChild(common);
+        break;
+      }
+      case 1: { // Button
+        const btn = document.createElement('div');
+        btn.className = 'btn';
+        btn.textContent = ctrl.TEXT || 'Button';
+        btn.setAttribute('role','button');
+        btn.dataset.h = ctrl.H || '';
+        // NEW: expose the same data-id on the clickable element
+        btn.dataset.id = ctrl.CID;
+        btn.style.backgroundColor = ctrl.BCOL != null && ctrl.BCOL !== -1 ? intToColor(ctrl.BCOL) : '';
+        common.appendChild(btn);
+        parentNode.appendChild(common);
+        break;
+      }
+      case 3: { // Checkbox
+        const wrap = document.createElement('div');
+        wrap.className = 'checkbox';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.id = ctrl.CID;
+        cb.dataset.id = ctrl.CID;
+
+        // DEFAULT could be "true"/"false" or 1/0 or "1"/"0"
+        const d = props.DEFAULT;
+        if (typeof d === 'boolean') cb.checked = d;
+        else if (d !== undefined && d !== null) {
+          const ds = String(d).toLowerCase();
+          cb.checked = (ds === 'true' || ds === '1' || ds === 'yes');
+        }
+
+        // label text (if you want the caption visible)
+        // const lab = document.createElement('label');
+        // lab.htmlFor = cb.id;
+        // lab.textContent = ctrl.TEXT || '';
+
+        wrap.appendChild(cb);
+        // wrap.appendChild(lab);
+        common.appendChild(wrap);
+        parentNode.appendChild(common);
+        break;
+      }
+      case 4: { // DropDown
+        const sel = document.createElement('select');
+        sel.className = 'select';
+        sel.dataset.id = ctrl.CID; 
+        sel.style.width = '100%';
+        sel.style.height = '100%';
+        sel.style.fontSize = fs + 'px';
+        sel.style.paddingRight = '1.2em';         // <-- add some space for the arrow
+        sel.style.boxSizing = 'border-box';       // ensure it stays same overall width
+        sel.style.appearance = 'none';            // optional: hide native arrow (Chrome/Edge)
+        sel.style.webkitAppearance = 'none';      // Safari/Chrome
+        sel.style.mozAppearance = 'none';         // Firefox
+        sel.style.backgroundImage = 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'6\'><path fill=\'black\' d=\'M0,0 L10,0 L5,6 Z\'/></svg>")';
+        sel.style.backgroundRepeat = 'no-repeat';
+        sel.style.backgroundPosition = 'right 4px center';
+        sel.style.backgroundSize = '10px 6px';
+
+        fillOptionsFromProps(sel, propMap.get(ctrl.ID));
+
+        common.appendChild(sel);
+        parentNode.appendChild(common);
+        break;
+        }
+      case 10: { // ListBox (custom list-group with <a> items)
+        // outer wrapper <div class="abs"> is already positioned/sized via `common`
+        const box = document.createElement('div');
+        box.className = 'list-group eformListBox';
+        box.setAttribute('data-id', ctrl.CID || ctrl.ID);
+        if (ctrl.TAB != null) box.tabIndex = Number(ctrl.TAB) || 0;
+
+        // fill available space
+        box.style.width = '100%';
+        box.style.height = '100%';
+        box.style.overflowY = 'auto';
+        box.style.backgroundColor = ctrl.BCOL // match original beige
+
+        // ITEMS & DEFAULT from tpcp
+        const props   = propMap.get(ctrl.ID) || {};
+        const items   = (String(props.ITEMS || '').split(',').map(s => s.trim()).filter(Boolean));
+        const defStr  = props.DEFAULT != null ? String(props.DEFAULT).trim() : '';
+        const defIdx1 = Number(defStr); // allow 1-based index defaults like "1"
+        const align   = (props.ALIGN || '').toLowerCase();
+
+        items.forEach((label, i) => {
+            const a = document.createElement('a');
+            a.className = 'list-group-item list-group-item-action';
+            a.textContent = label;
+            a.href = '#';
+            a.style.padding = '4.9px 15px';
+            a.style.display = 'block';
+            a.style.width = '100%';
+            a.style.boxSizing = 'border-box';
+            a.style.textDecoration = 'none';
+            a.style.color = 'inherit';
+            a.style.textAlign = align;
+            a.style.cursor = 'pointer';
+            a.style.lineHeight = '1.85';
+            // optional: tighter padding for a 33px-wide list
+            a.style.padding = '4px 6px';
+
+            // default: by exact label match, or 1-based index number
+            if (label === defStr || (!Number.isNaN(defIdx1) && defIdx1 === i + 1)) {
+            a.classList.add('active');
+            }
+
+            // make it behave like single-select
+            a.addEventListener('click', (e) => {
+            e.preventDefault();
+            // remove .active from siblings
+            Array.from(box.querySelectorAll('a.list-group-item')).forEach(el => {
+                el.classList.remove('active');
+                el.style.backgroundColor = sClear;
+            });
+            a.classList.add('active');
+            a.style.backgroundColor = sSelected; // highlight
+            // bubble up so your existing `LBFromGrade.click(...)` / `LBToGrade.click(...)` handlers fire
+            const clickEv = new Event('click', { bubbles: true });
+            box.dispatchEvent(clickEv);
+            });
+
+            box.appendChild(a);
+        });
+
+        common.appendChild(box);
+        parentNode.appendChild(common);
+        break;
+        }
+      case 15: { // TextBox
+        const ta = document.createElement('textarea');
+        ta.className = 'eformTextBox';
+        ta.setAttribute('data-id', ctrl.CID || ctrl.ID);   // use CID as your scripts expect
+        ta.tabIndex = 0;
+
+        // initial value (use DEFAULT if present)
+        ta.value = props.DEFAULT != null ? String(props.DEFAULT) : '';
+
+        // fill the absolute wrapper
+        ta.style.width = '100%';
+        ta.style.height = '100%';
+        ta.style.resize = 'none';
+        ta.style.borderStyle = 'solid';
+        ta.style.textAlign = 'left';
+        ta.style.backgroundColor = '#ffffff';
+        ta.style.fontSize = (ctrl.FSIZE != null ? ctrl.FSIZE : 9) + 'px';
+
+        // single-line vs multi-line height is already handled by the wrapper (H)
+        // so we always use a <textarea> here
+
+        common.appendChild(ta);
+        parentNode.appendChild(common);
+        break;
+        }
+      case 2: { // Calendar
+        const inp = document.createElement('input');
+        inp.type = 'date';
+        inp.className = 'eformCalendar eformTextBox';
+        inp.setAttribute('data-id', ctrl.CID || ctrl.ID);
+        inp.style.width = '100%';
+        inp.style.height = '100%';
+        // optional: seed from DEFAULT if present and parsable
+        if (props.DEFAULT) {
+            const d = new Date(props.DEFAULT);
+            if (!Number.isNaN(d.getTime())) inp.value = toDateInputValue(d);
+        }
+        common.appendChild(inp);
+        parentNode.appendChild(common);
+        break;
+        }
+      default: {
+        // Fallback box
+        common.classList.add('label');
+        if (aClass) common.classList.add(aClass);
+        common.textContent = ctrl.TEXT || ctrl.CID || ctrl.ID;
+        parentNode.appendChild(common);
+      }
+    }
+  }
+
+  (function bootstrap(){
+    const root = document.getElementById('page');
+    const payload = JSON.parse(document.getElementById('eform-data').textContent);
+
+    const propMap = buildPropMap(payload.tpcp);
+    const alignMap = new Map();
+    (payload.tpcp||[]).forEach(p=>{ if (p && p.ID && p.ALIGN) alignMap.set(p.ID, p.ALIGN); });
+
+    // Registry to allow parenting by CID/ID
+    const containers = new Map();
+    containers.set('PG23283', root); // page root id from your data
+
+    // Pass 1: panels
+    payload.tpccp.filter(c => Number(c.CTYPE) === 12).forEach(p=>{
+      const parent = containers.get(p.PARENT) || root;
+      const out = renderControl(p, propMap, parent);
+      containers.set(p.ID, out.container);
+      if (p.CID) containers.set(p.CID, out.container);
+    });
+
+    // Pass 2: everything else
+    payload.tpccp.filter(c => Number(c.CTYPE) !== 12).forEach(c=>{
+      const parent = containers.get(c.PARENT) || containers.get(c.CID) || root;
+      renderControl(c, propMap, parent);
+    });
+
+    // Optional: page-level color could be applied here if desired
+    // root.style.backgroundColor = intToColor(-657956);
+    if (typeof agcCode === 'function'){
+    console.log('Running agcCode Naval');
+        agcCode(null, null)
+    }   
+    
+  })();
+
+  // Helpers your script expects but weren’t in the snippet
+  function addMonths(d, months){
+    const dt = new Date(d.getTime());
+    dt.setMonth(dt.getMonth() + months);
+    return dt;
+  }
+  function fnGetUKDateAsString(d){
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  function toDateInputValue(d) {
+        const pad = n => String(n).padStart(2,'0');
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; // yyyy-mm-dd
+    }
+
+  // Grab a <select> inside a control wrapper, or the wrapper if it's already a <select>
+function selectEl(id) {
+  return document.querySelector(`[data-id='${id}']`);
+}
+// Get 1-based numeric choice from a <select>
+function getSelectNumber(el) {
+  if (!el) return 0;
+
+  if (el.tagName === 'SELECT') {
+    const v = el.value != null && el.value !== '' ? Number(el.value) : NaN;
+    if (!Number.isNaN(v)) return v;
+    return (el.selectedIndex >= 0) ? el.selectedIndex + 1 : 0;
+  }
+
+  // list-group
+  const items = el.querySelectorAll('a.list-group-item');
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].classList.contains('active')) return i + 1;
+  }
+  return 0;
+}
+
+// Set selection by 0-based index on a <select> (with bounds check)
+function setSelectIndex(el, idx) {
+  if (!el) return;
+
+  if (el.tagName === 'SELECT') {
+    const n = Math.max(0, Math.min(idx, el.options.length - 1));
+    el.selectedIndex = n;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    return;
+  }
+
+  // list-group
+  const items = el.querySelectorAll('a.list-group-item');
+  const n = Math.max(0, Math.min(idx, items.length - 1));
+  items.forEach((a, i) => {
+    // ensure vertical full-width rows even without Bootstrap CSS
+    a.style.display = 'block';
+    a.style.width = '100%';
+    a.style.boxSizing = 'border-box';
+    a.style.textDecoration = 'none';
+    a.style.color = 'inherit';
+    a.style.textAlign = 'center';
+    a.style.cursor = 'pointer';
+    a.style.padding = '4px 6px';
+
+    a.classList.toggle('active', i === n);
+    a.style.backgroundColor = (i === n) ? sSelected : sClear;
+  });
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function wireListGroup(el) {
+  if (!el || el.tagName === 'SELECT') return;
+  el.addEventListener('click', function (e) {
+    const a = e.target.closest('a.list-group-item');
+    if (!a || !el.contains(a)) return;
+
+    // clear all, set the clicked one active
+    const items = Array.from(el.querySelectorAll('a.list-group-item'));
+    items.forEach(node => {
+      node.classList.remove('active');
+      node.style.backgroundColor = sClear;
+    });
+    a.classList.add('active');
+    a.style.backgroundColor = sSelected;
+
+    // emit change so existing handlers keep working
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    e.preventDefault();
+  });
+}
+
+  function agcCode (ds, pt) {
+    // const eform = $(".eformsPage");
+    // const eformId = eform.attr("id");
+
+    // CSS
+    const stylesheet = document.styleSheets[0];
+    let elementRules
+
+    for (let i = 0; i < stylesheet.cssRules.length; i++){
+        if (stylesheet.cssRules[i].selectorText == ".list-group-item.active") {
+            elementRules = stylesheet.cssRules[i]
+            console.log("css property found")
+            elementRules.style.setProperty('border-color', '#ffffff', 'important')
+            elementRules.style.setProperty('background-color', '#0d6efd', 'important')
+        }
+    }
+
+    
+
+    // Colours
+    // const sIntermediateSelected = "rgb(220, 220, 220)"
+    // const sIntermediateClear = "rgb(240, 240, 240)"
+    const sRedSevere = "rgb(255, 224, 192)"
+    const sYellowLimited = "rgb(255, 255, 192)"
+    const sGreenOK = "rgb(192, 255, 192)"
+    const sGrey = "rgb(224, 224, 224)"
+    const sWhite = "rgb(255, 255, 255)"
+    const sDisabled = "rgb(192, 192, 192)"
+
+    // Limitation sections
+    const sGeneral = "rgb(224, 224, 224)"
+    const sAviation = "rgb(196, 216, 242)"
+    const sDeployment = "rgb(232, 255, 232)"
+    const sMaritime = "rgb(120, 179, 255)"
+    const sEnviron = "rgb(255, 250, 225)"
+    const sLocomotion = "rgb(245, 245, 245)"
+    const sSenses = "rgb(240, 255, 255)"
+    const sFitness = "rgb(212, 212, 255)"
+    const sWeapons = "rgb(255, 228, 225)"
+
+    const sLimRescind = "rgb(100, 255, 100)"
+    const sLimApplyRef = "rgb(204, 80, 233)"
+    var sLimApply = sLimApplyRef
+    const sLimManApplyRef = "rgb(254, 152, 32)"
+    var sLimManApply = sLimManApplyRef
+    const sLimPrevApply = "rgb(253, 100, 100)"
+
+    // **** INITIALISATION OF LIMS****
+    // Reference Lims arrays - these will be arrays of arrays - built in subInitLims
+    var arrSGE2Lims
+    var arrSGLimitedLims
+    var arrSGSevereLims
+    // var arrSGE2Comments
+    // var arrSGLimitedComments
+    // var arrSGSevereComments
+    var arrTooltips
+    var iTooltip
+    subInitTooltips()
+
+    var arrE2OptSelected = new Array(2)
+    arrE2OptSelected.fill(false)
+    var arrLimOptSelected = new Array(8)
+    arrLimOptSelected.fill(false)
+    var arrSevOptSelected = new Array(11)
+    arrSevOptSelected.fill(false)
+
+    subInitLims()
+
+    // Actual active lims and comments 
+    var arrayLims
+    //arrayComments = new Array(18)
+    // arrayLims.fill(9)
+    // arrayComments.fill("")
+    // subSetInitial() // These will be eventually initialised against previous values
+
+    // Date Variables
+    const currentDate = new Date()
+    var reviewDate = new Date()
+    //console.log(fnGetUKDateAsString(currentDate))
+
+    // Boolean switches to control access to the limitation group shortcuts
+    var bolE2Enabled = false
+    var bolLimitedEnabled = false
+    var bolSevereEnabled = false
+
+    // Limitation shortcuts now buttons rather than listbox (as later doesn't work well)
+    // E2 buttons are called btnE2Opt0x
+    // Limited buttons are called btnGrpLimOpt0x (to avoid conflict with the actual lims buttons called btnLim...)
+    // Severe buttons are called btnSevereOpt0x
+
+
+    // User feedback/guidance
+    const TBWarnings = $("[data-id='TBWarnings']")
+    const TBGuidance = $("[data-id='TBGuidance']")
+
+    // JMES - dropdowns easier to work with as vanilla JS objects rather than JQuery
+    const CBJMESA = document.querySelector("[data-id='CBJMESA']");
+    const CBJMESL = document.querySelector("[data-id='CBJMESL']");
+    const CBJMESM = document.querySelector("[data-id='CBJMESM']");
+    const CBJMESE = document.querySelector("[data-id='CBJMESE']");
+
+    // From and To Grade + Boarding Type
+    const LBFromGrade = document.querySelector("[data-id='LBFromGrade']");
+    const LBToGrade   = document.querySelector("[data-id='LBToGrade']");
+    const LBBoard     = document.querySelector("[data-id='LBBoard']");
+    var iLBToGrade, iLBFromGrade
+    var iLBBoard = 1;
+
+    wireListGroup(LBFromGrade);
+    wireListGroup(LBToGrade);
+    wireListGroup(LBBoard);
+
+    // PULHHEEMS - dropdowns easier to work with as vanilla JS objects rather than JQuery
+    const CBPulP = document.querySelector("[data-id='CBPulP']");
+    const CBPulU = document.querySelector("[data-id='CBPulU']");
+    const CBPulL = document.querySelector("[data-id='CBPulL']");
+    const CBPulM = document.querySelector("[data-id='CBPulM']");
+    const CBPulS = document.querySelector("[data-id='CBPulS']");
+    //const CBPulP = $("[data-id='CBPulP']");
+    const TBPermTemp2 = document.querySelector("[data-id='TBPermTemp2']"); // actually a label
+    const TBMDS = document.querySelector("[data-id='TBMDS']"); // actually a label
+    const dtReview = document.querySelector("[data-id='dtReview']");
+
+    // Set event handlers for groups of controls - similar in VBA to assigning them all to a class event.
+    const chkBolSet = document.querySelector("[data-id='chkBolSet']");
+    const chkTogApply = document.querySelector("[data-id='chkTogApply']");
+    const chkMFDRemoveMan = document.querySelector("[data-id='chkMFDRemoveMan']");
+    const chkMFDRescindPrev = document.querySelector("[data-id='chkMFDRescindPrev']");
+    const chkM5 = document.querySelector("[data-id='chkM5']");
+    const btnDemo = document.querySelector("[data-id='btnDemo']");
+
+    chkTogApply.addEventListener('click', function (e) {
+        subApplyScheme()
+    });
+    chkM5.addEventListener('click', function (e) {
+        subALME()
+    });
+    btnDemo.addEventListener('click', function (e) {
+        subDemo()
+    });
+
+    const btnsE2 = document.querySelectorAll("[data-id*='btnE2Opt']");
+    btnsE2.forEach((btnE2) => {
+        btnE2.addEventListener('click', function (e) {
+            if (bolE2Enabled) { subBtnE2(e) }
+        });
+    });
+
+    const btnsGpLim = document.querySelectorAll("[data-id*='btnGpLimOpt']");
+    btnsGpLim.forEach((btnGpLim) => {
+        btnGpLim.addEventListener('click', function (e) {
+            if (bolLimitedEnabled) { subBtnGpLim(e) }
+        });
+    });
+
+    const btnsSevere = document.querySelectorAll("[data-id*='btnSevereOpt']");
+    btnsSevere.forEach((btnSevere) => {
+        btnSevere.addEventListener('click', function (e) {
+            if (bolSevereEnabled) { subBtnSevere(e) }
+        });
+    });
+
+    const arrBGColors = [sGeneral, sAviation, sDeployment, sMaritime, sEnviron, sLocomotion, sSenses, sFitness, sWeapons]
+
+    const btnsTBN = document.querySelectorAll("[data-id*='TBN']");
+    btnsTBN.forEach((btnTBN) => {
+        // Following should be possible via CHASM config - remove once working
+        btnTBN.dataset.toggle = "tooltip"
+        btnTBN.addEventListener('click', function (e) {
+            var iNum = fnTBNNum(e.target)
+            var sDefBGColor = arrBGColors[iNum - 1]
+            subLimBtn(e, sDefBGColor)
+        });
+    });
+
+    // Set tooltips
+    for (let index = 0; index < arrTooltips.length; index++) {
+        const element = arrTooltips[index];
+        var sTBNNum = element.substring(0, 4)
+        //console.log("element = " + element + ", sTBNNum = " + sTBNNum)
+        const btnTBN = document.querySelector("[data-id='TBN" + sTBNNum + "']");
+        btnTBN.dataset.toggle = "tooltip"
+        btnTBN.setAttribute("title", element)
+    }
+    // Demo previous values
+    function subDemo() {
+        const demoLims = [4400, 4402, 5501, 6004, 8000, 9200, 9201]
+        subSetApply(demoLims, sLimPrevApply)
+    }
+
+    function subApplyScheme() {
+        var sNewLimApply, sNewLimManApply
+
+        if (chkTogApply.checked == false) {
+            sNewLimApply = sLimApplyRef
+            sNewLimManApply = sLimManApplyRef
+        } else {
+            sNewLimApply = "rgb(255, 100, 100)"
+            sNewLimManApply = "rgb(254, 100, 100)"
+        }
+        console.log("New temp manual rgb = " + sNewLimManApply)
+        btnsTBN.forEach((btnTBN) => {
+            if (btnTBN.style.backgroundColor == sLimApply) {
+                btnTBN.style.backgroundColor = sNewLimApply
+            }
+            if (btnTBN.style.backgroundColor == sLimManApply) {
+                btnTBN.style.backgroundColor = sNewLimManApply
+            }
+        });
+        sLimApply = sNewLimApply
+        sLimManApply = sNewLimManApply
+        console.log("New manual rgb = " + sLimManApply)
+    }
+
+    const btnReset = document.querySelector("[data-id='btnReset']");
+        if (btnReset) {
+            btnReset.addEventListener('click', function (e) {
+                e.preventDefault();
+                subResetAll();
+        });
+    }
+
+    // Demo stubs for now
+    function subBtnE2(e) {
+        // Change button background
+        var bolRun = fnSelectOption(e)
+        if (bolRun) {
+            subWhichOptions()
+            //subEvalULS() //- probably no point as nothing can change
+            subEvalLims()
+        }
+    }
+
+    function subBtnGpLim(e) {
+        var bolRun = fnSelectOption(e)
+        if (bolRun) {
+            switchSevereToLimited(e.target)
+            subWhichOptions()
+            subEvalULS()
+            subEvalLims()
+        }
+    }
+
+    function switchSevereToLimited(ctl) {
+        var ctlNum = fnCtlNumber(ctl)
+        var ctlSevere = document.querySelector("[data-id='btnSevereOpt0" + ctlNum + "']")
+        ctlSevere.style.backgroundColor = sClear
+    }
+
+    function subBtnSevere(e) {
+        var bolRun = fnSelectOption(e)
+        if (bolRun) {
+            switchLimitedToSevere(e.target)
+            subWhichOptions()
+            subEvalULS()
+            subEvalLims()
+        }
+    }
+
+    function switchLimitedToSevere(ctl) {
+        var ctlNum = fnCtlNumber(ctl)
+        if (ctlNum < 9) {
+            var ctlGpLim = document.querySelector("[data-id='btnGpLimOpt0" + ctlNum + "']")
+            ctlGpLim.style.backgroundColor = sClear
+        }
+
+    }
+
+    function fnSelectOption(e) {
+        // Due to double event we use an intermediate selected and clear colour and only allow running the rest of the code once
+        // If the double event is fixed then this code will need to be simplified
+        var ctl = e.target
+        console.log("Actual= " + ctl.style.backgroundColor + ", Reference = " + sClear)
+        var bolRun
+        ctl.style.backgroundColor == sClear ? ctl.style.backgroundColor = sSelected : ctl.style.backgroundColor = sClear
+        bolRun = true
+        return bolRun
+    }
+
+    function subWhichOptions() {
+        // Instead of the VBA version - which can use Listboxes - here, as we are using buttons, we will build an array of selected buttons
+        // Determined by their background colour - we can then use the array in subEvalULS and subEvalLims
+        // Both those functions need to calculate the totality of the all the option shortcuts selected
+        btnsE2.forEach((btnE2) => {
+            arrE2OptSelected[fnCtlNumber(btnE2) - 1] = fnSelected(btnE2)
+        });
+
+        btnsGpLim.forEach((btnGpLim) => {
+            arrLimOptSelected[fnCtlNumber(btnGpLim) - 1] = fnSelected(btnGpLim)
+        });
+
+        btnsSevere.forEach((btnSevere) => {
+            arrSevOptSelected[fnCtlNumber(btnSevere) - 1] = fnSelected(btnSevere)
+        });
+    }
+
+    function fnSelected(ctl) {
+        if (ctl.style.backgroundColor == sSelected) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    function fnCtlNumber(ctl) {
+        var ctlDataId = ctl.getAttribute('data-id')
+        var sLimName = ctlDataId.substring(6)
+        var iLenLimName = sLimName.length
+        var sLimNum = sLimName.substring(iLenLimName - 2)
+        return +sLimNum
+    }
+
+    function fnTBNNum(ctl) {
+        var ctlDataId = ctl.getAttribute('data-id')
+        var sLimName = ctlDataId.substring(3, 4)
+        // var iLenLimName = sLimName.length
+        // var sLimNum = sLimName.substring(iLenLimName - 2)
+        return +sLimName
+    } 
+
+    {% comment %} function fnTBNNum(ctl) {
+        const id = ctl.getAttribute('data-id') || '';
+        const m = id.match(/^TBN(\d+)/);
+        return m ? +m[1] : 0;
+    } {% endcomment %}
+
+    function subEvalULS() {
+        // arrLimOptSelected(0 -7)
+        // arrSevOptSelected(0-10)
+        CBPulU.options[1].selected = true
+        CBPulL.options[1].selected = true
+        CBPulS.options[1].selected = true
+
+        if (arrLimOptSelected[0] || arrLimOptSelected[2]) { CBPulL.options[2].selected = true }
+        if (arrLimOptSelected[1]) { CBPulU.options[2].selected = true }
+        if (arrLimOptSelected[4]) { CBPulS.options[2].selected = true }
+
+        if (arrSevOptSelected[0] || arrSevOptSelected[2]) { CBPulL.options[3].selected = true }
+        if (arrSevOptSelected[1]) {
+            CBPulU.options[3].selected = true // 7
+        } else if (arrSevOptSelected[2]) {
+            CBPulU.options[2].selected = true // 3
+        }
+        if (arrSevOptSelected[4]) { CBPulS.options[3].selected = true } // 7
+    }
+
+    function subEvalLims() {
+        // This can far simpler than Army version
+        // Prev lims will be left alone but there will be rescind options.
+
+
+        btnsTBN.forEach((btnTBN) => {
+            var iNum = fnTBNNum(btnTBN)
+            var sDefBGColor = arrBGColors[iNum - 1]
+            if (btnTBN.style.backgroundColor == sLimApply) {
+                btnTBN.style.backgroundColor = sDefBGColor
+            }
+        });
+
+
+        // Use any selected E2 buttons
+        for (var i = 0; i < 2; i++) {
+            if (arrE2OptSelected[i]) {
+                subSetApply(arrSGE2Lims[i])
+            }
+        }
+
+        // Use any selected Limited buttons
+        for (var i = 0; i < 8; i++) {
+            if (arrLimOptSelected[i]) {
+                subSetApply(arrSGLimitedLims[i])
+            }
+        }
+
+        // Use any selected Severe buttons
+        for (var i = 0; i < 11; i++) {
+            if (arrSevOptSelected[i]) {
+                subSetApply(arrSGSevereLims[i])
+            }
+        }
+
+    }
+
+    function subSetApply(arrLims, sApplyCol = sLimApply, bolOverride = false) {
+        var sLimId
+        var btnApplyBTN
+        var btnCurBGColor
+
+        for (let i = 0; i < arrLims.length; i++) {
+            sLimId = "TBN" + arrLims[i];
+            console.log(sLimId)
+            btnApplyBTN = document.querySelector("[data-id='" + sLimId + "']");
+            btnCurBGColor = btnApplyBTN.style.backgroundColor
+            if (btnCurBGColor != sLimManApply && btnCurBGColor != sLimPrevApply && btnCurBGColor != sLimRescind && btnCurBGColor != sDisabled) {
+                btnApplyBTN.style.backgroundColor = sApplyCol
+            }
+            if (bolOverride) {
+                btnApplyBTN.style.backgroundColor = sApplyCol
+            }
+
+            if (btnCurBGColor == sLimRescind && chkBolSet.checked == true) {
+                btnApplyBTN.style.backgroundColor = sLimPrevApply
+            }
+        }
+    }
+
+    // Set current values 
+    function subSetintLBs(bolSkipBoard = false) {
+        iLBFromGrade = getSelectNumber(LBFromGrade);
+        iLBToGrade   = getSelectNumber(LBToGrade);
+
+        if (!bolSkipBoard) {
+            iLBBoard = getSelectNumber(LBBoard);
+        }
+    }
+
+    // LBFromGrade - Just for demo - in final version the From Grade will be calculated from previous data and not be changeable
+    LBFromGrade.addEventListener('change', () => {
+        subSetintLBs(true);
+        subBoardTypeEstimate();
+        subwarnings();
+    });
+
+    LBToGrade.addEventListener('change', () => {
+        subSetintLBs(true);
+        subBoardTypeEstimate();
+        subwarnings();
+        subALME();
+        subClinTypes();
+        subSetPGradeTempMDSAndReview();
+        subSetULSM();
+    });
+
+    LBBoard.addEventListener('change', () => {
+        subwarnings();
+    });
+
+    function subLimBtn(e, sDefBGColor) {
+        // Enables a triple-state: Applied - Rescind - Nothing
+        var ctl = e.target
+        var sCurBGColor = ctl.style.backgroundColor
+
+
+        if (sCurBGColor == sDefBGColor) {
+            ctl.style.backgroundColor = sLimManApply
+        } else if (sCurBGColor == sLimManApply || sCurBGColor == sLimApply) {
+            ctl.style.backgroundColor = sDefBGColor
+        }
+
+        if (sCurBGColor == sLimPrevApply) {
+            ctl.style.backgroundColor = sLimRescind
+        } else if (sCurBGColor == sLimRescind) {
+            ctl.style.backgroundColor = sLimPrevApply
+        }
+
+    }
+
+    // function subChkFC(e) {
+    //     var ctl = e.target
+    //     var ctlName = ctl.name
+    //     var ctlNameLen = ctlName.length;
+    //     var ctlNameEnd = ctlName.substring(ctlNameLen - 3)
+    //     var lblCtl = $("[data-id='lbl" + ctlNameEnd + "']")
+    //     if (ctl.checked) {
+    //         lblCtl.css('background', sGreenOK)
+    //     } else {
+    //         lblCtl.css('background', sRedSevere)
+    //     }
+    // }
+
+    function subSetULSM() {
+        switch (iLBToGrade) {
+            case 1: // MFD
+            case 2: // MFD E2
+                CBPulU.options[0].selected = true
+                CBPulL.options[0].selected = true
+                CBPulM.options[0].selected = true
+                CBPulS.options[0].selected = true
+                break;
+            case 3:
+            case 4: // If changing to MLD and any of the ULMS values were not 2 then change to 3
+                if (CBPulU.options[0].selected == false) { CBPulU.options[1].selected = true }
+                if (CBPulL.options[0].selected == false) { CBPulL.options[1].selected = true }
+                if (CBPulM.options[0].selected == false) { CBPulM.options[1].selected = true }
+                if (CBPulS.options[0].selected == false) { CBPulS.options[1].selected = true }
+            default: // Leave if set
+        }
+    }
+
+    function subSetPGradeTempMDSAndReview() {
+        var bolReview1Y = false
+        var iMonths = 0
+
+        switch (iLBToGrade) {
+            case 1: // MFD
+                CBPulP.options[0].selected = true
+                TBPermTemp2.innerHTML = "N/A"
+                TBMDS.innerHTML = "Full"
+                iMonths = 1200
+                break;
+            case 2: // MFD E2
+                CBPulP.options[0].selected = true
+                TBPermTemp2.innerHTML = "PERM"
+                TBMDS.innerHTML = "Full"
+                bolReview1Y = true
+                break;
+            case 3: // P3 MLD Temp
+                CBPulP.options[1].selected = true
+                TBPermTemp2.innerHTML = "TEMP"
+                TBMDS.innerHTML = "Limited"
+                break;
+            case 4:
+                CBPulP.options[1].selected = true
+                TBPermTemp2.innerHTML = "PERM"
+                TBMDS.innerHTML = "Limited"
+                bolReview1Y = true
+                break;
+            case 5: // MND Temp 
+                CBPulP.options[3].selected = true
+                TBPermTemp2.innerHTML = "TEMP"
+                TBMDS.innerHTML = "None"
+                break;
+            case 6: // MND Perm 
+                CBPulP.options[3].selected = true
+                TBPermTemp2.innerHTML = "PERM"
+                TBMDS.innerHTML = "None"
+                bolReview1Y = true
+                break;
+            case 7: // MND Preg
+                CBPulP.options[2].selected = true
+                TBPermTemp2.innerHTML = "TEMP"
+                TBMDS.innerHTML = "None"
+                break;
+            case 8: // P0
+                CBPulP.options[5].selected = true
+                TBPermTemp2.innerHTML = "TEMP"
+                TBMDS.innerHTML = "None"
+                break;
+            case 9: // P8
+                CBPulP.options[4].selected = true
+                TBPermTemp2.innerHTML = "TEMP"
+                TBMDS.innerHTML = "None"
+                break;
+            case 10: // P7 MLD Temp 
+                CBPulP.options[3].selected = true
+                TBPermTemp2.innerHTML = "TEMP"
+                TBMDS.innerHTML = "Limited"
+                break;
+            case 11: // P7 MND Perm 
+                CBPulP.options[3].selected = true
+                TBPermTemp2.innerHTML = "PERM"
+                TBMDS.innerHTML = "Limited"
+                bolReview1Y = true
+                break;
+        }
+
+        // adjust review date - usually 6 months or 12 months
+        if (iMonths == 0) {
+            if (bolReview1Y) {
+                iMonths = 12
+            } else {
+                iMonths = 6
+            }
+        }
+
+        reviewDate = addMonths(currentDate, iMonths)
+        //console.log("Review Date: " + reviewDate)
+        dtReview.value = toDateInputValue(reviewDate)
+        dtReview.dispatchEvent(new Event("keyup"))
+        dtReview.dispatchEvent(new Event("change"))
+
+    }
+
+    function subClinTypes() {
+        switch (iLBToGrade) {
+            case 1: // MFD
+                subResetClinTypes()
+                bolE2Enabled = false
+                bolLimitedEnabled = false
+                bolSevereEnabled = false
+                break;
+            case 2: // MFD E2
+                subResetClinTypes(true)
+                bolE2Enabled = true
+                bolLimitedEnabled = false
+                bolSevereEnabled = false
+                break;
+            case 3: // P3 MLD
+            case 4:
+                subTransferSeveretoLimited()
+                bolE2Enabled = true
+                bolLimitedEnabled = true
+                bolSevereEnabled = false
+                break;
+            default: // P7 MND
+                bolE2Enabled = true
+                bolLimitedEnabled = true
+                bolSevereEnabled = true
+        }
+    }
+
+    function subTransferSeveretoLimited() {
+        btnsSevere.forEach((btnSevere) => {
+            var ctlNum = fnCtlNumber(btnSevere)
+            var sBGColor = btnSevere.style.backgroundColor
+            btnSevere.style.backgroundColor = sClear
+            if (ctlNum < 9 && sBGColor == sSelected) {
+                var ctlGpLim = document.querySelector("[data-id='btnGpLimOpt0" + ctlNum + "']")
+                ctlGpLim.style.backgroundColor = sSelected
+            }
+
+        });
+
+        subWhichOptions()
+        subEvalULS()
+        subEvalLims()
+    }
+
+    function subResetClinTypes(bolNotE2) {
+
+        // Unset E2 options unless MFD E2
+        if (!bolNotE2) {
+            btnsE2.forEach((btnE2) => {
+                btnE2.style.backgroundColor = sClear
+            });
+        }
+
+        // Unset Limited
+        btnsGpLim.forEach((btnGpLim) => {
+            btnGpLim.style.backgroundColor = sClear
+        });
+
+        //Unset Severe
+        btnsSevere.forEach((btnSevere) => {
+            btnSevere.style.backgroundColor = sClear
+        });
+
+        subWhichOptions()
+        subEvalULS()
+        subEvalLims()
+
+        if (!bolNotE2) {
+            btnsTBN.forEach((btnTBN) => {
+                if (btnTBN.style.backgroundColor == sLimManApply && chkMFDRemoveMan.checked == true) {
+                    var iNum = fnTBNNum(btnTBN)
+                    var sDefBGColor = arrBGColors[iNum - 1]
+                    btnTBN.style.backgroundColor = sDefBGColor
+                }
+                if (btnTBN.style.backgroundColor == sLimPrevApply && chkMFDRescindPrev.checked == true) {
+                    btnTBN.style.backgroundColor = sLimRescind
+                }
+            });
+        }
+    }
+
+    function subALME() {
+        subSetintLBs()
+
+        var aJMES;
+
+        switch (iLBToGrade) {
+            case 1: // MFD
+                aJMES = [4, 1, 1, 1]
+                break;
+            case 2: // MFD E2
+                aJMES = [4, 1, 1, 2]
+                break;
+            case 3: // P3 MLD
+            case 4:
+                aJMES = [4, 3, 2, 3]
+                break;
+            case 5: // P7 MND
+            case 6:
+                if (chkM5.checked == true) {
+                    aJMES = [4, 5, 5, 4]
+                } else {
+                    aJMES = [4, 5, 3, 4]
+                }
+                break;
+            case 7: // MND Preg
+                aJMES = [4, 5, 5, 6]
+                break;
+            case 8: // P0/P8
+            case 9:
+                aJMES = [4, 6, 6, 5]
+                break;
+            case 10: // P7 MLD (ROHT)
+            case 11:
+                aJMES = [4, 4, 3, 4]
+                break;
+        }
+
+        CBJMESA.options[aJMES[0]-1].selected = true
+        CBJMESL.options[aJMES[1]-1].selected = true
+        CBJMESM.options[aJMES[2]-1].selected = true
+        CBJMESE.options[aJMES[3]-1].selected = true
+    }
+
+    function subwarnings() {
+        subSetintLBs()
+        var sWarning = fnWarnings()
+        TBWarnings.val(sWarning)
+        if (sWarning == "") {
+            TBWarnings.css("background-color", sWhite);
+        } else {
+            TBWarnings.css("background-color", "#ffdddd")
+        }
+        var sAdvice = fnAdvice()
+        TBGuidance.val(sAdvice)
+    }
+
+    function fnAdvice() {
+        var sAdvice = ""
+
+        switch (iLBToGrade) {
+            case 1:
+                sAdvice = sAdvice + "All temporary MedLims should be rescinded."
+                break;
+            case 2:
+                sAdvice = sAdvice + "Permanent E2 marker may be awarded in primary care."
+                break;
+            case 3:
+            case 5:
+                sAdvice = sAdvice + "Max DG if GDMO/non-RN GP is 2 months. Ref to ROHC at 6 months. Ref to NSMBOS at 12 month point."
+                break;
+            case 4:
+            case 6:
+                sAdvice = sAdvice + "Permanent grades are awarded by NSMBOS but may be reviewed in PHC (annual review of permanent downgrade). Primary care doctors may revert from a TEMP DG back to the SP's previous PERM DG."
+                break;
+            case 7:
+            case 8:
+                sAdvice = sAdvice + "Include a reminder to the Divisional Officer to do an initial Individual Recovery Programme."
+                break;
+            case 9:
+                sAdvice = sAdvice + "At NSMBOS only."
+                break;
+            case 10:
+            case 11:
+                sAdvice = sAdvice + "Naval Occ Med use only."
+        }
+
+        return sAdvice
+    }
+
+    function fnWarnings() {
+        var sWarning = "";
+        //console.log("In fnwarnings, iLBFromGrade = " + iLBFromGrade);
+        //console.log("In fnwarnings, iLBToGrade = " + iLBToGrade);
+
+        if (iLBFromGrade == 1 & + iLBToGrade == 1) {
+            sWarning = sWarning + "Was MFD E1 and making MFD E1, are you sure you need a board? "
+        } else {
+            //console.log("In fnwarnings, iLBBoard = " + iLBBoard);
+            switch (iLBBoard) {
+                case 1: // Occ Med Exams
+                    sWarning = sWarning + "Ensure another board type isn't more appropriate. "
+                    break;
+                case 2: // E2 Marker
+                    if (iLBToGrade != 2) { sWarning = sWarning + "You should be setting the MDS to MFD E2 if using this board type. " }
+                    break;
+                case 3: // RN and RM Temp DG
+                    if (iLBFromGrade == 4 || iLBFromGrade == 6) { sWarning = sWarning + "Currently PERM, why are you using RN and RM Temp DG? " }
+                    if (iLBToGrade == 4 || iLBToGrade == 6) { sWarning = sWarning + "Why are you using RN and RM Temp DG to make PERM? " }
+                    break;
+                case 4: // Annual Review
+                    if (iLBFromGrade != iLBToGrade) { sWarning = sWarning + "Changing grade - Annual Review? " }
+                    if (iLBFromGrade == 1) { sWarning = sWarning + "If was MFD E1 then why Annual Review? " }
+                    if (iLBFromGrade == 3 || iLBFromGrade == 5) { sWarning = sWarning + "If was TEMP why Annual Review? " }
+                    if (iLBFromGrade == 7) { sWarning = sWarning + "If was Pregnant then why Annual Review? " }
+                    if (iLBToGrade == 1) { sWarning = sWarning + "If Annual Review why upgrading to MFD? " }
+                    if (iLBToGrade == 3 || iLBToGrade == 5) { sWarning = sWarning + "If Annual Review why making TEMP? " }
+                    if (iLBToGrade == 7) { sWarning = sWarning + "If Annual Review why using Pregnancy grade? " }
+                    if ((iLBFromGrade == 4 && iLBToGrade == 6) || (iLBFromGrade == 6 && iLBToGrade == 4)) { sWarning = sWarning + "Annual Review for PERM grade change? " }
+                    if (iLBFromGrade == 8 || iLBFromGrade == 9 || iLBToGrade == 8 || iLBToGrade == 9) { sWarning = sWarning + "Annual Review for P0/P8? " }
+                    break;
+                case 5:
+                case 6: // RN ROHC/RN NSMBOS
+                    if (iLBBoard == 5) { sWarning = sWarning + "Only to be used by RN ROHC. " }
+                    if (iLBBoard == 6) { sWarning = sWarning + "Only to be used by RN NSMBOS. " }
+                    if (iLBFromGrade == 1) {
+                        if (iLBToGrade == 3 || iLBToGrade == 5) { sWarning = sWarning + "Currently MFD and making TEMP, why are you using Perm DG? " }
+                        if (iLBToGrade == 4 || iLBToGrade == 6) { sWarning = sWarning + "Permissible but note currently MFD E1 and making PERM? " }
+                        if (iLBToGrade == 7) { sWarning = sWarning + "Don't normally need Perm DG to downgrade if pregnant. " }
+                    }
+                    if (iLBFromGrade == 2) {
+                        if (iLBToGrade == 3 || iLBToGrade == 5) { sWarning = sWarning + "Currently MFD E2 and making TEMP, why are you using Perm DG? " }
+                        if (iLBToGrade == 4 || iLBToGrade == 6) { sWarning = sWarning + "Permissible with Perm DG but note currently MFD E2 and making PERM? " }
+                        if (iLBToGrade == 7) { sWarning = sWarning + "Don't normally need Perm DG to downgrade if pregnant. " }
+                    }
+                    if (iLBFromGrade == 3) {
+                        if (iLBToGrade == 1) { sWarning = sWarning + "Why are you using Perm DG to change MLD TEMP To MFD? " }
+                        if (iLBToGrade == 2) { sWarning = sWarning + "Why are you using Perm DG to change MLD TEMP To MFD E2? " }
+                        if (iLBToGrade == 3) { sWarning = sWarning + "Why are you using Perm DG to change MLD TEMP To MLD TEMP? " }
+                        if (iLBToGrade == 5) { sWarning = sWarning + "Why are you using Perm DG to change MLD TEMP To MND TEMP? " }
+                    }
+                    if (iLBFromGrade == 5) {
+                        if (iLBToGrade == 1) { sWarning = sWarning + "Why are you using Perm DG to change MND TEMP To MFD? " }
+                        if (iLBToGrade == 2) { sWarning = sWarning + "Why are you using Perm DG to change MND TEMP To MFD E2? " }
+                        if (iLBToGrade == 3) { sWarning = sWarning + "Why are you using Perm DG to change MND TEMP To MLD TEMP? " }
+                        if (iLBToGrade == 5) { sWarning = sWarning + "Why are you using Perm DG to change MND TEMP To MND TEMP? " }
+                    }
+
+                    if (iLBFromGrade == 4 && iLBToGrade == 4) { sWarning = sWarning + "No change in PERM grade, why not using Annual Review? " }
+                    if (iLBFromGrade == 6 && iLBToGrade == 6) { sWarning = sWarning + "No change in PERM grade, why not using Annual Review? " }
+                    if ((iLBFromGrade == 7 && iLBToGrade == 1) || (iLBFromGrade == 7 && iLBToGrade == 2)) { sWarning = sWarning + "Unless reason don't normally need Perm DG to upgrade after pregnancy? " }
+                    break;
+            }
+        }
+
+        return sWarning
+    }
+
+    function subBoardTypeEstimate() {
+    // compute a 0-based index you want selected in LBBoard
+    // (below mirrors your existing cases; adjust numbers to your board ordering)
+    let idx = 0;
+    switch (iLBToGrade) {
+        case 1: idx = 2; break;
+        case 2: idx = 1; break;
+        case 3: case 5: case 7: case 8: case 9: case 10: idx = 2; break;
+        case 4:
+        idx = (iLBFromGrade === 4) ? 3 : 4;
+        break;
+        case 6:
+        idx = (iLBFromGrade === 6) ? 3 : 4;
+        break;
+        case 11:
+        idx = (iLBFromGrade === 11) ? 3 : 4;
+        break;
+        default:
+        idx = 0;
+    }
+        setSelectIndex(LBBoard, idx);
+    }
+
+
+    function singleActive(ctlKids, iSel) {
+        ctlKids.each(function () {
+            if ($(this).index() == iSel) {
+                if ($(this).hasClass("active") == false) {
+                    $(this).addClass("active");
+                }
+            } else {
+                if ($(this).hasClass("active")) {
+                    $(this).removeClass("active");
+                }
+            }
+
+        });
+    }
+
+    function fnGetUKDateAsString(date) {
+        var result = date.toLocaleDateString("en-GB", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        })
+
+        return result
+    }
+
+    // From - https://stackoverflow.com/questions/2706125/javascript-function-to-add-x-months-to-a-date
+    function addMonths(date, months) {
+        reviewDate = new Date(date)
+        var d = reviewDate.getDate();
+        reviewDate.setMonth(reviewDate.getMonth() + +months);
+        if (reviewDate.getDate() != d) {
+            reviewDate.setDate(0);
+        }
+        return reviewDate;
+    }
+
+    function subInitLims() {
+        var arrLimsE2Shaving, arrLimsE2SCT
+        var arrLimsLimitedLower, arrLimsLimitedUpper, arrLimsLimitedBack, arrLimsLimitedHearing, arrLimsLimitedSGrade, arrLimsLimitedMedical, arrLimsLimitedHeat, arrLimsLimitedCold
+        var arrLimsSevereLower2, arrLimsSevereUpper2, arrLimsSevereBack2, arrLimsSevereHearing2, arrLimsSevereSGrade2, arrLimsSevereMedical2, arrLimsSevereHeat2, arrLimsSevereCold2, arrLimsSeverePreg, arrLimsSevereChampix, arrLimsSevereRoaccutane
+
+        // var arrCommentsE2Shaving, arrCommentsE2SCT
+        // var arrCommentsLimitedLower, arrCommentsLimitedUpper, arrCommentsLimitedBack, arrCommentsLimitedHearing, arrCommentsLimitedSGrade, arrCommentsLimitedMedical, arrCommentsLimitedHeat, arrCommentsLimitedCold
+        // var arrCommentsSevereLower2, arrCommentsSevereUpper2, arrCommentsSevereBack2, arrCommentsSevereHearing2, arrCommentsSevereSGrade2, arrCommentsSevereMedical2, arrCommentsSevereHeat2, arrCommentsSevereCold2, arrCommentsSeverePreg, arrCommentsSevereChampix, arrCommentsSevereRoaccutane
+
+        arrLimsE2Shaving = []
+        arrLimsE2SCT = []
+        arrSGE2Lims = [arrLimsE2Shaving, arrLimsE2SCT]
+
+        arrLimsLimitedLower = [4400, 4402, 5501, 6004, 8000, 9200, 9201]
+        arrLimsLimitedUpper = [4400, 4402, 5501, 6009, 6200]
+        arrLimsLimitedBack = [4400, 4402, 5501, 6200, 6201, 8000, 9200, 9201]
+        arrLimsLimitedHearing = [5501, 7000, 7001, 7002]
+        arrLimsLimitedSGrade = [5501, 9000, 9200]
+        arrLimsLimitedMedical = [5501]
+        arrLimsLimitedHeat = [5501, 5102]
+        arrLimsLimitedCold = [5501, 5103]
+
+        arrSGLimitedLims = [arrLimsLimitedLower, arrLimsLimitedUpper, arrLimsLimitedBack, arrLimsLimitedHearing, arrLimsLimitedSGrade, arrLimsLimitedMedical, arrLimsLimitedHeat, arrLimsLimitedCold]
+
+        arrLimsSevereLower2 = [4400, 4402, 5501, 6002, 6004, 8000, 8101, 8102, 9200, 9201]
+        arrLimsSevereUpper2 = [4400, 4402, 5501, 6009, 6200, 8102]
+        arrLimsSevereBack2 = [4400, 4402, 5501, 6200, 6201, 8000, 8101, 8102, 9200, 9201]
+        arrLimsSevereHearing2 = [5501, 7000, 7001, 7002, 7003]
+        arrLimsSevereSGrade2 = [1200, 1201, 1210, 5501, 9000, 9200]
+        arrLimsSevereMedical2 = [5501]
+        arrLimsSevereHeat2 = [5501, 5102, 5106, 5107]
+        arrLimsSevereCold2 = [5501, 5103, 5107]
+        arrLimsSeverePreg = [1208, 5002, 5501, 8101]
+        arrLimsSevereChampix = [1203, 5501, 9000, 9003]
+        arrLimsSevereRoaccutane = [3200, 5105, 5501]
+
+        arrSGSevereLims = [arrLimsSevereLower2, arrLimsSevereUpper2, arrLimsSevereBack2, arrLimsSevereHearing2, arrLimsSevereSGrade2, arrLimsSevereMedical2, arrLimsSevereHeat2, arrLimsSevereCold2, arrLimsSeverePreg, arrLimsSevereChampix, arrLimsSevereRoaccutane]
+
+
+    }
+
+    function subInitTooltips() {
+        arrTooltips = [
+            "1100: Restrictions on Service duties and employment not specified by a MedLim(details in med docs)",
+            "1200: Unfit shift work",
+            "1201: Unfit for night work",
+            "1202: Unfit for lone working",
+            "1203: Unfit to work at height",
+            "1204: Unfit to work on gantries",
+            "1205: Unfit to work underground",
+            "1206: Unfit to work in confined spaces",
+            "1207: Unfit to work without direct supervision",
+            "1208: Fit limited duties in trade or branch(type will be specified in Med Docs)",
+            "1209: Office duties only",
+            "1210: Fit limited working hours agreed between MO and  Line Manager",
+            "1211: Unfit to conduct EPPs",
+            "1212: Passenger - land vehicles restriction",
+            "1213: Workplace restrictions",
+            "1300: Medical marker(no functional limitation)",
+            "1301: Employment subject to single Service manning restriction",
+            "1302: Enlisted below entry standards",
+            "1303: Refer to Appendix 9",
+            "1500: Unfit food handling",
+            "1501: Unfit for galley / kitchen duties",
+            "1400: Unfit to conduct safety critical duties",
+            "1401: Unfit to undertake service driving",
+            "1402: Unfit to undertake service driving with passengers",
+            "1403: Unfit to drive specific vehicle(type will be specified in Med Docs)",
+            "1404: Not to be responsible for operating machinery",
+            "1405: Unfit for work with unguarded machinery",
+            "1406: Below required colour perception standard requires supervision for colour discrimination tasks",
+            "1600: Must have opportunity for regular meals",
+            "1601: To have access to a gluten free diet at all times",
+            "1602: To have access to specialist diet(type will be specified in Med Docs)",
+            "2000: Unfit solo pilot - must fly with a pilot suitably qualified on type",
+            "2001: Unfit solo(aircrew category will be specified in Med Docs)",
+            "2002: Unfit specific aircraft(type(s) to be specified in Med Docs)",
+            "2003: Fit(details to be specified in Med Docs) flying duties only",
+            "2004: Unfit(conditions of flight to be specified in Med Docs)",
+            "2005: Permanently unfit flying duties",
+            "2006: Unfit to climb on aircraft",
+            "2007: Unfit ejection seat aircraft",
+            "2008: Restricted employability because of anthropometric limitations",
+            "2100: Unfit aircraft controlling duties",
+            "2101: Fit to control only when another qualified controller is on duty and in close proximity",
+            "2200: Aircrew assessed as hearing standard < H1 but with a satisfactory functional hearing test iaw AP1269A",
+            "2201: Must wear approved visual correction when flying or controlling aircraft",
+            "2203: Must carry approved corrective flying spectacles when flying or controlling aircraft",
+            "2300: Unfit aircrew respirators",
+            "2400: Fit dry / poolside STASS training only",
+            "2401: Unfit any STASS training",
+            "2500: Unfit land parachuting",
+            "2501: Unfit sea parachuting",
+            "3000: Limited operational land deployments. Employable within the confines of a rear echelon only",
+            "3001: No operational land deployments.Must not deploy to any operational arena",
+            "3002: Fit for short land deployments subject to Medical Risk Assessment",
+            "3003: Fit detachments in worldwide areas not exceeding 30 days",
+            "3100: Infantry activities(including digging) restrictions",
+            "3101: Travel on foot across rough terrain restrictions",
+            "3102: Move tactically and adopting fire positions restrictions",
+            "3200: Living in field conditions restrictions",
+            "4000: Fit to serve in frigates and above only",
+            "4001: Fit for short visits to a ships / submarine alongside only",
+            "4002: Fit to serve in ships or submarines at sea in UK waters only",
+            "4003: Fit to serve in ships or submarines at sea in UK and Northern European waters only",
+            "4004: Fit for submarines in UK and US fleet exercise areas within medevac range",
+            "4005: Temporarily unfit submarine service",
+            "4006: Permanently unfit submarine service",
+            "4007: Permanently unfit service on a submarine at sea (fit SM duties alongside / ashore)",
+            "4008: Permanently unfit service on a submarine at sea or alongside (fit SM duties ashore only)",
+            "4100: Unfit fast boat transits and boat operations in rough sea states",
+            "4200: Permanently unfit for Royal Marines General Service",
+            "4300: Temporarily unfit diving",
+            "4301: Permanently unfit diving",
+            "4302: Fit to dive\054 with restrictions assigned by SMO Underwater Med/NSMBOS.  DW MO for medical restrictor",
+            "4303: Unfit mixed gas diving\054 navigation and watch keeping duties ñ (for CP4 divers iaw BR1750A 1219b)",
+            "4400: Unfit for BSSC or ISSC",
+            "4401: Unfit BSSC / ISSC but fit Embarked Forces Fire Fighting Training",
+            "4402: Unfit  fire fighting training and duties",
+            "4500: Unfit to work on dockyard edges",
+            "4600: Fit for short embarked deployments subject to MRA",
+            "4601: Fit to serve in ships\054 submarines or RM Units with a permanent MO borne only",
+            "4602: Needs access to a MO within 24 hours when deployed outside UK waters",
+            "4603: Needs access to a MO within 2 days when deployed outside UK waters",
+            "4604: Needs access to a MO within 3 days when deployed outside UK waters",
+            "4605: Needs access to a MO within 5 days when deployed outside UK waters",
+            "4606: Needs access to a MO within 7 days when deployed outside UK waters",
+            "5000: Geographical/Regional assignment restrictions (details specified in medical documents)",
+            "5001: Unfit to deploy\054 travel or reside in malarious areas",
+            "5002: Unfit Service outside base areas",
+            "5100: Climatic restrictions  - To be employed in appropriate thermal environment",
+            "5101: Unfit for work outdoors  ",
+            "5102: Unfit exposure to hot environments (including within the UK) seek guidance from medical staff",
+            "5103: Unfit exposure to cold environments (including within the UK) seek guidance from medical staff",
+            "5104: Unfit exposure to excessively wet environments",
+            "5105: Unfit exposure bright light / strong sunlight",
+            "5106: To wear Service / civilian PPE to ensure hands and feet are kept warm",
+            "5107: Fit to be employed in temperate climates only",
+            "5200: Unfit exposure skin irritants / sensitizers (type will be specified in Med Docs)",
+            "5201: Unfit exposure to dusts\054 fumes and vapours (type will be specified in Med Docs)",
+            "5202: Has (or may have) been exposed to environ hazard\054 avoid further exposure\054 refer to med docs/JPA",
+            "5300: Not to conduct safety critical duties if medical support device(s) unavailable",
+            "5301: To have access to appropriate power supply for medical equipment",
+            "5302: Requires access to irradiated Blood Products",
+            "5400: ROHC auto-upgrade: if not upgraded MFD within 12 mths is to return to NSMBOS/FMB/",
+            "5401: ROHC auto-upgrade: if not upgraded MFD or MLD (8001/5503) within 12 mths return to NSMBOS/FMB",
+            "5402: PMO/SMO auto-upgrade: if not upgraded MFD/MLD (8001/5503) within 12 mths return to NSMBOS/FMB",
+            "5500: Must have MRA undertaken by ROHC prior to Exercise / IPDT / deployment",
+            "5501: To be made available for regular medical reviews",
+            "5502: For annual review by PMO / SMO",
+            "5503: For annual review by Regional OH Consultant",
+            "5504: Requires MRA prior to attendance on Command Course",
+            "5600: Fit for modified JCC or SCC / JCC or SCC (RM Band) only",
+            "6000: Unfit strenuous physical exertion",
+            "6001: Requires to be seated at place of work",
+            "6002: Fit sedentary duties only",
+            "6003: Unable to sit for long periods",
+            "6004: Unable to stand for long periods",
+            "6005: Unfit for work kneeling down",
+            "6006: Unfit marching / drill",
+            "6007: Able to walk short distances only",
+            "6008: Unable to climb stairs regularly in course of duty",
+            "6009: Unable to climb vertical ladders",
+            "6100: Fit limited use of one hand / arm (details will be specified in Med Docs)",
+            "6200: Unfit heavy lifting",
+            "6201: No load carrying",
+            "7000: To have annual audiograms with subsequent review by PMO / SMO",
+            "7001: To ensure correct use of hearing personal protective equipment iaw Hearing Conservation Programme",
+            "7002: To avoid unprotected exposure to loud noise",
+            "7003: Unfit exposure to noise above (to be specified) level",
+            "7004: Unfit wearing of headsets",
+            "7005: Unfit split headsets",
+            "7100: To wear appropriate eye protection including specialist or tinted eyewear",
+            "8000: Medically exempt from all requirements of RNFT / RAFFT / PFA",
+            "8001: Fit for Alternative Aerobic Assessment or Rockport Walk element of RNFT / RAFFT ",
+            "8002: Unfit upper body / strength test element of the RNFT",
+            "8003: Unfit RM BFT / CFT / ACFT / speed marches",
+            "8004: Unfit  AFT / OFT / speed marches",
+            "8005: Unfit to walk 3.2km carrying 15kg ",
+            "8006: Unfit OFT ",
+            "8007: Unfit Alternative Aerobic Assessment ",
+            "8008: Unfit press-ups",
+            "8009: Alternative press-up hand position allowed",
+            "8010: Unfit sit-ups",
+            "8100: Unfit running",
+            "8101: Unfit impact activity",
+            "8102: Unfit organised physical training; fit individual PT programme only",
+            "8103: Unfit  Upper body PT",
+            "8104: Restricted lower limb non-impact physical training",
+            "8200: Individual to be made available to follow rehabilitation PT programme",
+            "8201: Graduated Rehabilitation as directed by Clinical Lead",
+            "8202: Graduated rehab including supervised phased return to limited sea duties as directed by Clin Lead",
+            "8203: Fit travel outside UK on duty for adaptive sport/adventurous trg/represent the Service following MRA",
+            "8204: Unfit Multi Activity Course",
+            "8205: Unfit Core Recovery Event 1",
+            "8206: Unfit Core Recovery Event 2",
+            "8207: Unfit Core Recovery Event 3",
+            "8300: Unfit sport (to be specified in Med Docs)",
+            "8301: Unfit contact sports",
+            "8302: Unfit solo swimming",
+            "9000: Unfit handling live arms",
+            "9001: Unfit live weapons / fit simunition",
+            "9002: Unfit APWT",
+            "9003: Ranges restrictions",
+            "9004: Weapon handling restrictions",
+            "9200: Unfit guard duties",
+            "9201: Unfit for ceremonial duties",
+            "9300: Clothing restrictions / military PPE (to be specified in med docs)",
+            "9301: Unfit wearing Service footwear (to be specified in Med Docs)",
+            "9302: Unfit non-aircrew respirators",
+            "9400: Unfit for dog handling",
+            "9500: Unfit CBRN threat areas\054 unable to tolerate CBRN protection and / or prophylactic measures",
+            "9600: Unfit to return to original unit",
+            "9700: Permanently unfit UKSF Selection",
+        ]
+    }
+
+    function subResetAll() {
+        console.log("Resetting form...");
+
+        // Reset dropdowns and list-groups
+        document.querySelectorAll(".list-group.eformListBox").forEach(el => {
+            el.querySelectorAll('a.list-group-item').forEach(a => {
+                a.classList.remove('active');
+                a.style.backgroundColor = sClear;
+            });
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
+        // Reset internal arrays (so evaluation logic doesn't hold stale data)
+        arrE2OptSelected.fill(false);
+        arrLimOptSelected.fill(false);
+        arrSevOptSelected.fill(false);
+        //arrayLims.fill(9);
+        //arrayComments.fill("");
+
+        subResetClinTypes();
+        bolE2Enabled = false
+        bolLimitedEnabled = false
+        bolSevereEnabled = false
+        iLBToGrade = 1;
+        subSetULSM();
+        CBPulP.options[0].selected = true
+        CBJMESA.options[3].selected = true
+        CBJMESL.options[0].selected = true
+        CBJMESM.options[0].selected = true
+        CBJMESE.options[0].selected = true
+
+        TBPermTemp2.textContent = 'N/A';
+        TBMDS.textContent = 'Full';
+
+        console.log("Reset complete.");
+    }
+
+    subResetAll();
+
+    window.LBToGradeFunc = function (e) {
+        // nothing for now
+    }
+}
+
+
+</script>
+
+<!-- keep your HTML/CSS as-is -->
+
+<script>
+// ---- constants (declare ONCE) ----
+    const MIN_SCALE = 0.75;
+    const MAX_SCALE = 1.5;
+    const VIEWPORT_PADDING = 10; // avoid touching edges / account for small chrome
+
+    // Measure the absolute-positioned canvas by scanning direct children.
+    // Falls back to CSS --page-w/--page-h if children aren't there yet.
+    function measureAbsCanvas(el){
+    let maxR = 0, maxB = 0;
+    el.querySelectorAll(':scope > .abs').forEach(n => {
+        const left = parseFloat(n.style.left)  || n.offsetLeft || 0;
+        const top  = parseFloat(n.style.top)   || n.offsetTop  || 0;
+        const w    = n.offsetWidth  || parseFloat(n.style.width)  || 0;
+        const h    = n.offsetHeight || parseFloat(n.style.height) || 0;
+        maxR = Math.max(maxR, left + w);
+        maxB = Math.max(maxB, top  + h);
+    });
+
+    // fallback to CSS vars if we measured nothing yet
+    if (maxR === 0 || maxB === 0) {
+        const cs = getComputedStyle(el);
+        const natW = parseFloat(cs.getPropertyValue('--page-w')) || el.offsetWidth  || 1;
+        const natH = parseFloat(cs.getPropertyValue('--page-h')) || el.offsetHeight || 1;
+        return { w: Math.ceil(natW), h: Math.ceil(natH) };
+    }
+    return { w: Math.ceil(maxR), h: Math.ceil(maxB) };
+    }
+
+    function fitPage() {
+        const outer = document.getElementById('page-outer');
+        const page  = document.getElementById('page');
+        if (!outer || !page) return;
+
+        const { w: natW, h: natH } = measureAbsCanvas(page);
+
+        const availW = Math.max(1, outer.clientWidth  - VIEWPORT_PADDING);
+        const availH = Math.max(1, outer.clientHeight - VIEWPORT_PADDING);
+
+        const rawScale = Math.min(availW / natW, availH / natH);
+        const SCALE_MARGIN = 0.94; // your safety margin
+        const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, rawScale)) * SCALE_MARGIN;
+
+        // Prefer CSS zoom (crisp text in Chromium/Edge). Fallback to transform for Firefox.
+        if (CSS.supports('zoom', '1')) {
+            page.style.zoom = String(scale);
+            page.style.transform = '';                   // clear transform
+            page.style.transformOrigin = '';
+        } else {
+            page.style.zoom = '';                        // clear zoom
+            page.style.transformOrigin = 'top left';
+            page.style.transform = `scale(${scale})`;
+        }
+
+        // Keep scroll area correct either way
+        const scaledW = Math.ceil(natW * scale);
+        const scaledH = Math.ceil(natH * scale);
+        outer.style.setProperty('--scaled-w', scaledW + 'px');
+        outer.style.setProperty('--scaled-h', scaledH + 'px');
+
+        outer.style.justifyContent = scaledW < outer.clientWidth  ? 'center' : 'flex-start';
+        outer.style.alignItems     = scaledH < outer.clientHeight ? 'start'  : 'flex-start';
+    }
+
+    // Run once on load (after CSS is applied)
+    window.addEventListener('load', () => {
+    requestAnimationFrame(fitPage);
+    });
+
+    // Keep it responsive (debounced)
+    let _fitTimer;
+    window.addEventListener('resize', () => {
+    clearTimeout(_fitTimer);
+    _fitTimer = setTimeout(fitPage, 100);
+    });
+
+    // IMPORTANT: also call fitPage() right after your bootstrap/render code finishes,
+    // e.g. at the end of your existing bootstrap() that appends all .abs controls:
+    // bootstrap(); fitPage();
+</script>
+
+
+</body>
+</html>
+
+{% endblock %}

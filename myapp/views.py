@@ -33,6 +33,13 @@ def naval_grading(request):
         pass
     return render(request, "naval_grading.html")
 
+def raf_grading(request):
+    if request.method == "POST":
+        # TODO: persist request.POST as needed
+        # return redirect(...) or show a success message
+        pass
+    return render(request, "raf_grading.html")
+
 def _read_targetpath_from_content(text):
     """
     Find TARGETPATH=... inside the TEX header. Returns a cleaned path string or ''.

@@ -34,4 +34,5 @@ urlpatterns = [
     path("audio/", views.audio_poc, name="audio_poc"),
     path("army/grading/", views.army_grading, name="army_grading"),
     path("naval/grading/", views.naval_grading, name="naval_grading"),
+    path("raf/grading/", views.raf_grading, name="raf_grading"),
 ]
