@@ -155,11 +155,18 @@
 
 /* ===== Charts (2×2; smaller) ===== */
 .charts-grid {
-  margin-top: 8px;
   display: grid;
   grid-template-columns: repeat(2, minmax(260px, 1fr));
   gap: 10px;
 }
+
+.charts-grid figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
 .charts-grid canvas {
   width: 100%;
   height: auto; /* respects intrinsic 480x320 ratio */
@@ -167,6 +174,14 @@
   border-radius: 10px;
   background: #fff;
   box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.charts-grid figcaption {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  margin-top: 4px;
+  color: #333;
 }
 
 /* ===== Analysis (right column stacked) ===== */
