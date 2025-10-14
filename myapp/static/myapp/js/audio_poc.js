@@ -1,13 +1,6 @@
 // static/myapp/js/audio_poc.js
 $(document).ready(function () {
-    // Insert canvases into a simple container (keeps your IDs & sizes)
-    // const $root = $("#audio-root");
-    // $root.append('<canvas id="canvas"  width="450" height="300" style="left:10px;  top:140px; position:absolute; z-index:0;"></canvas>');
-    // $root.append('<canvas id="canvas2" width="450" height="300" style="left:460px; top:140px; position:absolute; z-index:0;"></canvas>');
-    // $root.append('<canvas id="canvas3" width="450" height="300" style="left:10px;  top:500px; position:absolute; z-index:0;"></canvas>');
-    // $root.append('<canvas id="canvas4" width="450" height="300" style="left:460px; top:500px; position:absolute; z-index:0;"></canvas>');
-
-    // (Unchanged variables from your code)
+    // Insert canvases into a simple container (keep IDs & sizes)
     var iRefer = 0;
     var iWarning = 0;
 
@@ -28,8 +21,23 @@ $(document).ready(function () {
     var cMonth = currentDate.getMonth() + 1;
     var cYear = currentDate.getFullYear();
     dtCurrent.value = "" + cDay + "/" + cMonth + "/" + cYear;
-    dtPrevious.addEventListener("blur", fnDateChange);
-    function fnDateChange() { showAnalysis(); }
+    if (dtPrevious) dtPrevious.addEventListener("change", () => updateAudio("canvas"));
+    if (dtCurrent)  dtCurrent.addEventListener("change",  () => updateAudio("canvas"));
+
+    function setToday(el) {
+        if (!el) return;
+        if (el.type === "date") {
+            // Best: use valueAsDate so browser handles formatting
+            el.valueAsDate = new Date();
+        } else {
+            const d = new Date();
+            const pad = n => String(n).padStart(2, "0");
+            el.value = `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+        }
+    }
+
+    if (dtCurrent && !dtCurrent.value)  setToday(dtCurrent);
+
 
     // === Your original functions (unaltered logic) ===
     window.draw = function (bolCalc, canvasName) {
@@ -55,7 +63,7 @@ $(document).ready(function () {
         yScale = (canvas.height - columnSize - BOTTOM_PAD) / (Val_max - Val_min);
         xScale = (canvas.width  - ORIGIN_X   - RIGHT_PAD)  / sections;
 
-        var xOffSet = (0.06 * xScale); // slightly tighter than 0.08
+        var xOffSet = (0.06 * xScale);
 
         context.strokeStyle = "#888888";
         context.beginPath();
@@ -135,9 +143,9 @@ $(document).ready(function () {
     };
 
     function drawLegendFor(canvasName) {
-        // legend placement inside the top-left padding band
+        // legend placement
         const startX = ORIGIN_X - 40;
-        const baseY  = ORIGIN_Y - 39;   // sits above X-axis labels (which are at ORIGIN_Y - 8)
+        const baseY  = ORIGIN_Y - 39; 
         const lineW  = 14;
         const rowH   = 14;
         const txtOff = 20;
@@ -153,8 +161,8 @@ $(document).ready(function () {
         } else {
             // Right / Left charts -> Current vs Previous
             rows = [
-            { label: "Current",  color: "#ff6d4e", symbol: "x" },   // matches second plot color
-            { label: "Previous", color: "#009a00", symbol: "o" },   // matches first plot color
+            { label: "Current",  color: "#ff6d4e", symbol: "x" }, 
+            { label: "Previous", color: "#009a00", symbol: "o" },   
             ];
         }
 
@@ -164,14 +172,14 @@ $(document).ready(function () {
 
         rows.forEach((r, i) => {
             const y = baseY + i * rowH;
-            // sample line
+            // line
             context.beginPath();
             context.strokeStyle = r.color;
             context.moveTo(startX, y);
             context.lineTo(startX + lineW, y);
             context.stroke();
 
-            // little symbol at the end (using same characters you use for datapoints)
+            // symbol at the end (using same characters as for datapoints)
             context.fillStyle = r.color;
             context.fillText(r.symbol, startX + lineW + 4, y + 1);
 
@@ -341,17 +349,40 @@ $(document).ready(function () {
     function Round1(val) { return Math.round(val * 10) / 10; }
 
     function DateDiff(date1, date2) {
-        // dd/mm/yyyy → years
+        // returns years as a floating-point number (not floored)
         function parse(d) {
             if (!d) return null;
-            const [dd, mm, yyyy] = d.split('/');
-            return new Date(+yyyy, (+mm) - 1, +dd);
+
+            // Support native date inputs: YYYY-MM-DD
+            if (d.includes("-")) {
+            const [yyyy, mm, dd] = d.split("-").map(Number);
+            if (!yyyy || !mm || !dd) return null;
+            return new Date(yyyy, mm - 1, dd);
+            }
+
+            // Support legacy text inputs: DD/MM/YYYY
+            if (d.includes("/")) {
+            const [dd, mm, yyyy] = d.split("/").map(Number);
+            if (!yyyy || !mm || !dd) return null;
+            return new Date(yyyy, mm - 1, dd);
+            }
+
+            // Fallback: let Date try
+            const t = new Date(d);
+            return isNaN(t) ? null : t;
         }
-        var dt1 = parse(date1), dt2 = parse(date2);
-        if (!dt1 || !dt2) return 1; // guard against divide-by-zero
-        var ms = Date.UTC(dt2.getFullYear(), dt2.getMonth(), dt2.getDate()) - Date.UTC(dt1.getFullYear(), dt1.getMonth(), dt1.getDate());
-        return Math.floor(ms / (1000 * 60 * 60 * 24)) / 365;
-    }
+
+        const dt1 = parse(date1);
+        const dt2 = parse(date2);
+        if (!dt1 || !dt2) return 1; // safe fallback (prevents NaN and /0)
+
+        const ms = dt2.getTime() - dt1.getTime();
+        // Use 365.25 to approximate leap years
+        const years = ms / (1000 * 60 * 60 * 24 * 365.25);
+
+        // Guard against zero/negative intervals (same day or reversed)
+        return (years > 0 ? years : 1);
+     }
 
     function fnGetLowH(iSum) { return (iSum > 150) ? 4 : (iSum > 84) ? 3 : (iSum > 45) ? 2 : 1; }
     function fnGetHighH(iSum) { return (iSum > 210) ? 4 : (iSum > 123) ? 3 : (iSum > 45) ? 2 : 1; }
