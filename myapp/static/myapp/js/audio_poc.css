@@ -180,7 +180,7 @@
   font-size:12px; white-space:pre-wrap; color:#111;
 }
 .analysis-stack textarea {
-  width: 100%; min-height: 90px; resize: vertical;
+  width: 95%; min-height: 90px; resize: vertical;
   padding: 6px 8px; font: 12px/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   border: 1px solid #e5e7eb; border-radius: 8px; background:#fafafa; margin-top:4px;
 }
@@ -190,4 +190,8 @@
 @media (max-width: 1080px) {
   .layout { grid-template-columns: 1fr; }
   .analysis-stack { grid-template-columns: 1fr; }
+
+  .analysis-stack textarea {
+    width: 97.5%;
+  }
 }
