@@ -110,6 +110,8 @@ $(document).ready(function () {
         }
         plotData(LeftEar, "x", 4);
 
+        drawLegendFor(canvasName);
+
         if (bolCalc == 1) { showAnalysis(canvasName); }
     };
 
@@ -131,6 +133,56 @@ $(document).ready(function () {
         }
         context.stroke();
     };
+
+    function drawLegendFor(canvasName) {
+        // legend placement inside the top-left padding band
+        const startX = ORIGIN_X - 40;
+        const baseY  = ORIGIN_Y - 39;   // sits above X-axis labels (which are at ORIGIN_Y - 8)
+        const lineW  = 14;
+        const rowH   = 14;
+        const txtOff = 20;
+
+        // legend rows per canvas
+        let rows = [];
+        if (canvasName === "canvas" || canvasName === "canvas2") {
+            // Current / Previous charts -> Right vs Left
+            rows = [
+            { label: "Right", color: "#FF0066", symbol: "o" },
+            { label: "Left",  color: "#3341ff", symbol: "x" },
+            ];
+        } else {
+            // Right / Left charts -> Current vs Previous
+            rows = [
+            { label: "Current",  color: "#ff6d4e", symbol: "x" },   // matches second plot color
+            { label: "Previous", color: "#009a00", symbol: "o" },   // matches first plot color
+            ];
+        }
+
+        context.save();
+        context.font = "11px Verdana";
+        context.textBaseline = "middle";
+
+        rows.forEach((r, i) => {
+            const y = baseY + i * rowH;
+            // sample line
+            context.beginPath();
+            context.strokeStyle = r.color;
+            context.moveTo(startX, y);
+            context.lineTo(startX + lineW, y);
+            context.stroke();
+
+            // little symbol at the end (using same characters you use for datapoints)
+            context.fillStyle = r.color;
+            context.fillText(r.symbol, startX + lineW + 4, y + 1);
+
+            // label
+            context.fillStyle = "#333";
+            context.fillText(r.label, startX + lineW + txtOff, y + 1);
+        });
+
+        context.restore();
+    }
+
 
     window.showAnalysis = function (canvasName) {
         var lblA;
