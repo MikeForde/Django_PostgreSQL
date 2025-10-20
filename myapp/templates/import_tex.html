@@ -3746,7 +3746,7 @@ function mapReadCode(ctrl){
 
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = 'Export to OpenText JSON';
+    btn.textContent = 'Export to OpenText Schema JSON';
     btn.style.marginLeft = '10px';
     btn.style.padding = '6px 10px';
     btn.style.fontSize = '12px';
@@ -4170,7 +4170,7 @@ function mapReadCode(ctrl){
   }
 
   // Init
-  addOpenTextExportButton();
+  //addOpenTextExportButton();
 })();
 </script>
 
@@ -4182,7 +4182,7 @@ function mapReadCode(ctrl){
     if (!toolbar) return;
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = 'Export to OpenText UI JSON';
+    btn.textContent = 'Export to OpenText/AppWorks JSON';
     btn.style.marginLeft = '10px';
     btn.style.padding = '6px 10px';
     btn.style.fontSize = '12px';
@@ -4493,9 +4493,9 @@ function mapReadCode(ctrl){
   // We lay out simple design controls into a responsive grid. We don’t try to
   // preserve XY — we put them in rows: Label(s), Link(s), Button(s).
   function buildDesignLayer(){
-    const idCanvas = uuidv4().replace(/-/g,'');
-    const idForm   = uuidv4().replace(/-/g,'');
-    const idGrid   = uuidv4().replace(/-/g,'');
+    const idCanvas = controlId();
+    const idForm   = controlId();
+    const idGrid   = controlId();
 
     // Collect UI elements
     const labels = qa('.ctrl label').filter(l => {
@@ -4505,9 +4505,123 @@ function mapReadCode(ctrl){
     const links  = qa('.ctrl a[href]');
     const buttons= qa('.ctrl button');
 
+    function controlId() {
+      // always start with lowercase 'c' followed by 31 hex chars
+      return 'c' + crypto.getRandomValues(new Uint8Array(15))
+        .reduce((acc, b) => acc + b.toString(16).padStart(2, '0'), '');
+    }
+
+    const OT_FONT_SIZES = [8, 10, 12, 14, 16, 20, 24, 32, 48, 64];
+
+    function snapOTFontSize(px){
+      const n = Math.round(parseFloat(px));
+      if (!isFinite(n)) return "";            // leave empty if we can't parse
+      let best = OT_FONT_SIZES[0], diff = Math.abs(n - best);
+      for (const s of OT_FONT_SIZES){
+        const d = Math.abs(n - s);
+        if (d < diff){ best = s; diff = d; }
+      }
+      return `${best}px`;
+    }
+
+    // Convert CSS color to {r,g,b} or null
+    function parseRGB(color){
+      if (!color) return null;
+
+      // #rgb / #rrggbb
+      const hex = color.trim().toLowerCase();
+      let m = hex.match(/^#([0-9a-f]{3})$/i);
+      if (m){
+        const h = m[1];
+        return {
+          r: parseInt(h[0]+h[0], 16),
+          g: parseInt(h[1]+h[1], 16),
+          b: parseInt(h[2]+h[2], 16),
+        };
+      }
+      m = hex.match(/^#([0-9a-f]{6})$/i);
+      if (m){
+        const h = m[1];
+        return {
+          r: parseInt(h.slice(0,2),16),
+          g: parseInt(h.slice(2,4),16),
+          b: parseInt(h.slice(4,6),16),
+        };
+      }
+
+      // rgb()/rgba()
+      m = color.match(/^rgba?\s*\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i);
+      if (m){
+        return { r: +m[1], g: +m[2], b: +m[3] };
+      }
+
+      // basic names (just a couple for safety)
+      const names = { red: {r:255,g:0,b:0}, blue:{r:0,g:0,b:255}, black:{r:0,g:0,b:0} };
+      const named = names[hex];
+      return named || null;
+    }
+
+    // Map to the OT-approved palette:
+    // - black/anything-else → #000000
+    // - red-ish → #e00051
+    // - blue-ish → #0084ce
+    function normalizeOTColor(color){
+      const rgb = parseRGB(color);
+      if (!rgb) return "#000000";
+
+      const { r, g, b } = rgb;
+      // quick dominance checks (tuned to be forgiving)
+      const isRed  = (r - Math.max(g,b)) >= 40;
+      const isBlue = (b - Math.max(r,g)) >= 40;
+
+      if (isRed)  return "#e00051";
+      if (isBlue) return "#0084ce";
+      return "#000000";
+    }
+
+    function pxInt(px){
+      const n = parseFloat(px);
+      if (isNaN(n)) return "";
+      return `${Math.round(n)}px`;
+    }
+
     // Helper to make a design control block with grid coords
-    function makeLabelControl(text, row, col=1){
-      const id = uuidv4().replace(/-/g,'');
+    function makeLabelControl(labelElOrText, row, col = 1){
+      const id = controlId();
+
+      let text = 'Label Text';
+      let font = {
+        alignment: "",
+        color: "",
+        decoration: "",
+        family: "Arial, sans-serif",         // force OT-friendly family
+        size: "",
+        style: "",
+        weight: ""
+      };
+
+      if (labelElOrText && labelElOrText.nodeType === 1) {
+        const el = labelElOrText;
+        text = (el.textContent || '').trim() || text;
+
+        const cs = getComputedStyle(el);
+
+        font.color = normalizeOTColor(cs.color);
+        font.size  = snapOTFontSize(cs.fontSize);
+        font.style = (cs.fontStyle?.toLowerCase() === 'italic') ? 'italic' : '';
+
+        const fw = cs.fontWeight || '';
+        font.weight = (String(fw).toLowerCase() === 'bold' || parseInt(fw,10) >= 600) ? 'bold' : '';
+
+        const deco = (cs.textDecorationLine || '').toLowerCase();
+        font.decoration = (/^(underline|line-through)$/.test(deco)) ? deco : '';
+
+        // Keep family hardcoded to Arial for OT compatibility
+        font.family = "Arial, sans-serif";
+      } else {
+        text = (labelElOrText || text);
+      }
+
       return {
         data:{
           designer:{ allowHeightToBeResized:true, isContainer:false },
@@ -4530,13 +4644,13 @@ function mapReadCode(ctrl){
             maxSnapRows:1,
             label:{
               alignment:"start",
-              font:{ alignment:"", color:"#a0006b", decoration:"", family:"Arial, sans-serif", size:"12px", style:"", weight:"bold" },
+              font,
               position:"column",
               show:true,
-              text: text || "Label Text",
+              text,
               width:""
             },
-            gridChild: {
+            gridChild:{
               gridColumnEnd: 1,
               gridColumnStart: 1,
               gridRowEnd: 1,
@@ -4550,7 +4664,7 @@ function mapReadCode(ctrl){
     }
 
     function makeLinkControl(text, href, row, col=1){
-      const id = uuidv4().replace(/-/g,'');
+      const id = controlId();
       return {
         data:{
           designer:{ allowHeightToBeResized:true, isContainer:false },
@@ -4598,7 +4712,7 @@ function mapReadCode(ctrl){
     }
 
     function makeButtonControl(text, row, col=1){
-      const id = uuidv4().replace(/-/g,'');
+      const id = controlId();
       return {
         data:{
           designer:{ allowHeightToBeResized:true, isContainer:false },
@@ -4726,7 +4840,7 @@ function mapReadCode(ctrl){
     const childIds = []; // collect child control IDs
 
     labels.slice(0, 12).forEach(l => {
-      const ctrl = makeLabelControl(txt(l), row++, 1);
+      const ctrl = makeLabelControl(l, row++, 1);
       controlsDesign.push(ctrl);
       childIds.push(ctrl.id);
     });
@@ -4788,9 +4902,9 @@ function mapReadCode(ctrl){
       id: compId,
       schemaId: "https://www.opentext.com/ocp/devx/ui/1.0.0/UIComponent",
       data: {
-        namespace: keyify((document.location.host || 'local')).toLowerCase(),
+        namespace: "ttmickp",
         name: keyify(baseName).toLowerCase(),
-        displayName: title,
+        displayName: baseName.replace(/_/g,' '),
         description: "",
         versionLabels: [""],
         defaultLocale: "en",
