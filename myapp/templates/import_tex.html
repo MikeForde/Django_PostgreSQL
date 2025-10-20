@@ -4182,7 +4182,7 @@ function mapReadCode(ctrl){
     if (!toolbar) return;
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = 'Export to OpenText/AppWorks JSON';
+    btn.textContent = 'Export to OpenText JSON';
     btn.style.marginLeft = '10px';
     btn.style.padding = '6px 10px';
     btn.style.fontSize = '12px';
@@ -4237,14 +4237,27 @@ function mapReadCode(ctrl){
     }
     const wrap = el.closest('label');
     if (wrap){ const t = txt(wrap); if (t) return t; }
-    const rl = el.closest('.rl-wrap')?.querySelector('.rl-caption');
-    if (rl){ const t = txt(rl); if (t) return t; }
-    let p = el.previousElementSibling;
-    if (p && /^(LABEL|SPAN|STRONG|DIV)$/i.test(p.tagName)){ const t = txt(p); if (t) return t; }
-    const fs = el.closest('fieldset'); const lg = fs?.querySelector('legend');
-    if (lg){ const t = txt(lg); if (t) return t; }
-    return el.name || el.placeholder || 'Field';
-  }
+
+    // Classic ReadList helpers
+    const rl = el.closest('.rl-wrap');
+    if (rl){
+      const capEl = rl.querySelector('.rl-caption');
+      if (capEl){ const t = txt(capEl); if (t) return t; }
+      const capAttr = rl.getAttribute('data-caption');
+      if (capAttr && capAttr.trim()) return capAttr.trim();
+    }
+
+  // aria-label as last-ditch caption (classic select has it)
+  const aria = el.getAttribute && el.getAttribute('aria-label');
+  if (aria && aria.trim()) return aria.trim();
+
+  let p = el.previousElementSibling;
+  if (p && /^(LABEL|SPAN|STRONG|DIV)$/i.test(p.tagName)){ const t = txt(p); if (t) return t; }
+  const fs = el.closest('fieldset'); const lg = fs?.querySelector('legend');
+  if (lg){ const t = txt(lg); if (t) return t; }
+  return el.name || el.placeholder || 'Field';
+}
+
 
   // Readcode meta (first non-empty line): code — label
   function readcodeInfo(el){
@@ -4372,19 +4385,33 @@ function mapReadCode(ctrl){
   function mapClassicReadList(ctrl, properties){
     const select = ctrl.querySelector('select');
     if (!select) return;
+
     const label = findLabelFor(select, ctrl);
-    const opts = Array.from(select.querySelectorAll('option'))
-      .map(o => ({ value: o.value || txt(o), label: txt(o) || o.value || '' }))
-      .filter(o => o.value || o.label);
-    const values = opts.map(o => o.value || o.label);
+
+    // Build options; ignore the placeholder (usually value="" and disabled/hidden/selected)
+    const opts = Array.from(select.querySelectorAll('option')).map(o => ({
+      value: (o.value || '').trim(),
+      label: txt(o),
+      isPlaceholder:
+        (!o.value || o.value === '') &&
+        (o.disabled || o.hidden || o.hasAttribute('disabled') || o.hasAttribute('hidden') || o.hasAttribute('selected'))
+    })).filter(o => o.label && !o.isPlaceholder);
+
+    // Enum must be the user-facing labels (not Read codes)
+    const enumLabels = opts.map(o => o.label);
+
     const multiple = !!select.multiple;
     const key = uniquePropKey(label, multiple ? 'multi_select' : 'selectbox');
+
     if (multiple){
-      const def = Array.from(select.selectedOptions || []).map(o => o.value || txt(o));
-      properties[key] = propMultiselect(label, values, def);
+      const defLabels = Array.from(select.selectedOptions || [])
+        .map(o => txt(o))
+        .filter(Boolean);
+      properties[key] = propMultiselect(label, enumLabels, defLabels);
     } else {
-      const def = select.value || '';
-      properties[key] = propSelectbox(label, values, def);
+      const selected = select.selectedOptions && select.selectedOptions[0];
+      const defLabel = selected ? txt(selected) : '';
+      properties[key] = propSelectbox(label, enumLabels, defLabel || undefined);
     }
   }
 
@@ -4427,22 +4454,31 @@ function mapReadCode(ctrl){
       });
     }
 
-    // selects
     const selects = Array.from(ctrl.querySelectorAll('select'));
     selects.forEach(sel => {
       const label = findLabelFor(sel, ctrl);
-      const opts = Array.from(sel.querySelectorAll('option'))
-        .map(o => ({ value:o.value || txt(o), label: txt(o) || o.value || '' }))
-        .filter(o => o.value || o.label);
-      const values = opts.map(o => o.value || o.label);
+
+      const opts = Array.from(sel.querySelectorAll('option')).map(o => ({
+        value: (o.value || '').trim(),
+        label: txt(o),
+        isPlaceholder:
+          (!o.value || o.value === '') &&
+          (o.disabled || o.hidden || o.hasAttribute('disabled') || o.hasAttribute('hidden') || o.hasAttribute('selected'))
+      })).filter(o => o.label && !o.isPlaceholder);
+
+      const enumLabels = opts.map(o => o.label);
       const multiple = !!sel.multiple;
       const key = uniquePropKey(label, multiple ? 'multi_select' : 'selectbox');
+
       if (multiple){
-        const def = Array.from(sel.selectedOptions || []).map(o => o.value || txt(o));
-        properties[key] = propMultiselect(label, values, def);
+        const defLabels = Array.from(sel.selectedOptions || [])
+          .map(o => txt(o))
+          .filter(Boolean);
+        properties[key] = propMultiselect(label, enumLabels, defLabels);
       } else {
-        const def = sel.value || '';
-        properties[key] = propSelectbox(label, values, def);
+        const selected = sel.selectedOptions && sel.selectedOptions[0];
+        const defLabel = selected ? txt(selected) : '';
+        properties[key] = propSelectbox(label, enumLabels, defLabel || undefined);
       }
     });
 
