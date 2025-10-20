@@ -1,0 +1,1316 @@
+{
+  "id": "beb36515-1d71-4728-87e1-db2b89486e18",
+  "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/UIComponent",
+  "data": {
+    "namespace": "ttmick",
+    "name": "ttmickpgentest",
+    "displayName": "TT-Mick-P Generation Test",
+    "description": "",
+    "versionLabels": [
+      ""
+    ],
+    "defaultLocale": "en",
+    "content": {
+      "schema": {
+        "required": [],
+        "properties": {
+          "Date_admitted_MRS_Sickbay": {
+            "type": "string",
+            "otFormat": {
+              "dataType": "date",
+              "repeating": false
+            },
+            "format": "date",
+            "title": "Date admitted MRS/Sickbay",
+            "maxLength": 64
+          },
+          "Admitting_Clinician": {
+            "type": "string",
+            "otFormat": {
+              "repeating": false
+            },
+            "title": "Admitting Clinician",
+            "maxLength": 64
+          },
+          "Admission_medication": {
+            "type": "string",
+            "otFormat": {
+              "repeating": false
+            },
+            "title": "Admission medication",
+            "maxLength": 64
+          },
+          "Nurse_Administered_Medication": {
+            "type": "boolean",
+            "otFormat": {
+              "repeating": false
+            },
+            "title": "Nurse Administered Medication",
+            "default": false
+          },
+          "Self_Administered_Medication": {
+            "type": "boolean",
+            "otFormat": {
+              "repeating": false
+            },
+            "title": "Self Administered Medication",
+            "default": false
+          },
+          "Instructed_on_Fire_Drill_Fire_Assembly_Point": {
+            "type": "boolean",
+            "otFormat": {
+              "repeating": false
+            },
+            "title": "Instructed on Fire Drill & Fire Assembly Point",
+            "default": false
+          },
+          "Patient_Standing_Orders_Signed": {
+            "type": "boolean",
+            "otFormat": {
+              "repeating": false
+            },
+            "title": "Patient Standing Orders Signed",
+            "default": false
+          },
+          "Patient_s_next_of_kin": {
+            "type": "string",
+            "otFormat": {
+              "repeating": false
+            },
+            "title": "Patient's next of kin",
+            "maxLength": 64
+          },
+          "Consent_to_contact_next_of_kin": {
+            "type": "string",
+            "otFormat": {
+              "dataType": "date",
+              "repeating": false
+            },
+            "format": "date",
+            "title": "Consent to contact next of kin",
+            "maxLength": 64
+          },
+          "Next_of_Kin_Relationship": {
+            "type": "string",
+            "otFormat": {
+              "repeating": false
+            },
+            "title": "Next of Kin Relationship",
+            "maxLength": 64
+          },
+          "Next_of_kin_contact_details": {
+            "type": "string",
+            "otFormat": {
+              "repeating": false
+            },
+            "title": "Next of kin contact details",
+            "maxLength": 64
+          },
+          "Unit_Contact": {
+            "type": "string",
+            "otFormat": {
+              "repeating": false
+            },
+            "title": "Unit Contact",
+            "maxLength": 64
+          },
+          "Unit_Contact_Address": {
+            "type": "string",
+            "otFormat": {
+              "repeating": false
+            },
+            "title": "Unit Contact Address",
+            "maxLength": 64
+          }
+        },
+        "$id": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+        "type": "object"
+      },
+      "design": {
+        "controls": [
+          {
+            "id": "c8a324a836c534b0593196b884bceb3eb",
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": true,
+                "isContainer": true,
+                "grid": {
+                  "inheritParentColumnCount": true,
+                  "numberOfColumns": 4,
+                  "numberOfRows": 0
+                }
+              },
+              "id": "c8a324a836c534b0593196b884bceb3eb",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Canvas",
+                "height": {
+                  "unit": "px",
+                  "value": "52"
+                },
+                "parentId": "",
+                "placeholder": "",
+                "propertyPath": "",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "",
+                "sort": "",
+                "tooltip": "",
+                "type": "canvas",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 100
+                },
+                "themes": {},
+                "rearrangeControlsForSmallScreens": true
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls"
+          },
+          {
+            "id": "cc721a23dfbea473a8802318314bd23c0",
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": true,
+                "isContainer": true,
+                "grid": {
+                  "inheritParentColumnCount": true,
+                  "numberOfColumns": 4,
+                  "numberOfRows": 0
+                }
+              },
+              "id": "cc721a23dfbea473a8802318314bd23c0",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Form control",
+                "height": {
+                  "unit": "px",
+                  "value": "52"
+                },
+                "parentId": "c8a324a836c534b0593196b884bceb3eb",
+                "placeholder": "",
+                "propertyPath": "",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "",
+                "sort": "",
+                "tooltip": "",
+                "type": "form-container",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 100
+                },
+                "themes": {},
+                "rearrangeControlsForSmallScreens": true
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls"
+          },
+          {
+            "id": "c0bc27e2b9012495c8e8a53ddae97c638",
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": true,
+                "isContainer": true
+              },
+              "id": "c0bc27e2b9012495c8e8a53ddae97c638",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [
+                  "cbbe938b387764346bd5b335c01ed7332",
+                  "c629e8aea7d4c4b5da8f2911b9e939202",
+                  "c8bf57c6da1db4d9a84a7162aaf1476f3",
+                  "c1b8ee97a29dd4498beb4254a0dee3fe6",
+                  "c29867d8cc9f948339c70b5fb95b68084",
+                  "c1fc0c118fb5d4b498a7fb50fe3154d41",
+                  "cf9cb3e7446904513a8e4205cb9cd09e5",
+                  "c5c7fd265053a49fa87e6740eeb11d77c",
+                  "c3fb0a0e153504df2ba9b404ea1df6b4e",
+                  "cdcd1ee6d29c04c0e990548be7b94f88b",
+                  "cd09196cd578b4a01873dbd11f184e0c9",
+                  "c0fd75e082dcd4827975fd0f152f3401b",
+                  "c8217da5451b44bf9bf95893976d3d06f"
+                ],
+                "displayName": "Grid container",
+                "height": {
+                  "unit": "px",
+                  "value": 512
+                },
+                "parentId": "cc721a23dfbea473a8802318314bd23c0",
+                "placeholder": "",
+                "propertyPath": "",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "",
+                "sort": "",
+                "tooltip": "",
+                "type": "responsive-form-grid",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 800
+                },
+                "themes": {},
+                "border": {
+                  "borderRadius": "",
+                  "color": "",
+                  "onBottom": true,
+                  "onLeft": true,
+                  "onRight": true,
+                  "onTop": true,
+                  "style": "",
+                  "width": {
+                    "value": "",
+                    "unit": "px"
+                  }
+                },
+                "grid": {
+                  "gap": 16,
+                  "numberOfColumns": 4,
+                  "padding": 16
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "cbbe938b387764346bd5b335c01ed7332",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Date",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Date_admitted_MRS_Sickbay",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "datetime",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "dataType": "date",
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "column",
+                  "show": true,
+                  "text": "Date admitted MRS/Sickbay",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 1,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 1
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "cbbe938b387764346bd5b335c01ed7332"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "c629e8aea7d4c4b5da8f2911b9e939202",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Text",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Admitting_Clinician",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "text-box",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "dataType": "string",
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "column",
+                  "show": true,
+                  "text": "Admitting Clinician",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 1,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 2
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "c629e8aea7d4c4b5da8f2911b9e939202"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "c8bf57c6da1db4d9a84a7162aaf1476f3",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Text",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Admission_medication",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "text-box",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "dataType": "string",
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "column",
+                  "show": true,
+                  "text": "Admission medication",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 1,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 3
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "c8bf57c6da1db4d9a84a7162aaf1476f3"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "c1b8ee97a29dd4498beb4254a0dee3fe6",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Checkbox",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Nurse_Administered_Medication",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "check-box",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "row-reverse",
+                  "show": true,
+                  "text": "Nurse Administered Medication",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 2,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 4
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "c1b8ee97a29dd4498beb4254a0dee3fe6"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "c29867d8cc9f948339c70b5fb95b68084",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Checkbox",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Self_Administered_Medication",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "check-box",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "row-reverse",
+                  "show": true,
+                  "text": "Self Administered Medication",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 2,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 5
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "c29867d8cc9f948339c70b5fb95b68084"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "c1fc0c118fb5d4b498a7fb50fe3154d41",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Checkbox",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Instructed_on_Fire_Drill_Fire_Assembly_Point",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "check-box",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "row-reverse",
+                  "show": true,
+                  "text": "Instructed on Fire Drill & Fire Assembly Point",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 2,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 6
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "c1fc0c118fb5d4b498a7fb50fe3154d41"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "cf9cb3e7446904513a8e4205cb9cd09e5",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Checkbox",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Patient_Standing_Orders_Signed",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "check-box",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "row-reverse",
+                  "show": true,
+                  "text": "Patient Standing Orders Signed",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 2,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 7
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "cf9cb3e7446904513a8e4205cb9cd09e5"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "c5c7fd265053a49fa87e6740eeb11d77c",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Date",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Consent_to_contact_next_of_kin",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "datetime",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "dataType": "date",
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "column",
+                  "show": true,
+                  "text": "Consent to contact next of kin",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 1,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 8
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "c5c7fd265053a49fa87e6740eeb11d77c"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "c3fb0a0e153504df2ba9b404ea1df6b4e",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Text",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Patient_s_next_of_kin",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "text-box",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "dataType": "string",
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "column",
+                  "show": true,
+                  "text": "Patient's next of kin",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 1,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 9
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "c3fb0a0e153504df2ba9b404ea1df6b4e"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "cdcd1ee6d29c04c0e990548be7b94f88b",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Text",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Next_of_Kin_Relationship",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "text-box",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "dataType": "string",
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "column",
+                  "show": true,
+                  "text": "Next of Kin Relationship",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 1,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 10
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "cdcd1ee6d29c04c0e990548be7b94f88b"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "cd09196cd578b4a01873dbd11f184e0c9",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Text",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Next_of_kin_contact_details",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "text-box",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "dataType": "string",
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "column",
+                  "show": true,
+                  "text": "Next of kin contact details",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 1,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 11
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "cd09196cd578b4a01873dbd11f184e0c9"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "c68165964de7342499511c029b75b1989",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Text",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "",
+                "placeholder": "",
+                "propertyPath": "Unit_Contact",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "text-box",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "dataType": "string",
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "column",
+                  "show": true,
+                  "text": "Unit Contact",
+                  "width": ""
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "c68165964de7342499511c029b75b1989"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "c0fd75e082dcd4827975fd0f152f3401b",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Text",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Unit_Contact",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "text-box",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "dataType": "string",
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "column",
+                  "show": true,
+                  "text": "Unit Contact",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 1,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 12
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "c0fd75e082dcd4827975fd0f152f3401b"
+          },
+          {
+            "data": {
+              "designer": {
+                "allowHeightToBeResized": false,
+                "isContainer": false
+              },
+              "id": "c8217da5451b44bf9bf95893976d3d06f",
+              "runtime": {
+                "backgroundColor": "",
+                "controls": [],
+                "displayName": "Text",
+                "height": {
+                  "unit": "px",
+                  "value": 52
+                },
+                "parentId": "c0bc27e2b9012495c8e8a53ddae97c638",
+                "placeholder": "",
+                "propertyPath": "Unit_Contact_Address",
+                "readOnly": false,
+                "repeating": false,
+                "required": false,
+                "schemaId": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+                "sort": "",
+                "tooltip": "",
+                "type": "text-box",
+                "user": {
+                  "showGroups": false,
+                  "showUsers": false
+                },
+                "width": {
+                  "unit": "%",
+                  "value": 300
+                },
+                "themes": {},
+                "dataType": "string",
+                "maxSnapRows": 1,
+                "input": {
+                  "alignment": "",
+                  "color": "",
+                  "decoration": "",
+                  "family": "",
+                  "size": "",
+                  "style": "",
+                  "weight": ""
+                },
+                "label": {
+                  "alignment": "start",
+                  "font": {
+                    "alignment": "",
+                    "color": "",
+                    "decoration": "",
+                    "family": "",
+                    "size": "",
+                    "style": "",
+                    "weight": ""
+                  },
+                  "position": "column",
+                  "show": true,
+                  "text": "Unit Contact Address",
+                  "width": ""
+                },
+                "gridChild": {
+                  "gridColumnEnd": 1,
+                  "gridColumnStart": 1,
+                  "gridRowEnd": 1,
+                  "gridRowStart": 13
+                }
+              }
+            },
+            "schemaId": "https://www.opentext.com/ocp/devx/ui/1.0.0/designerControls",
+            "id": "c8217da5451b44bf9bf95893976d3d06f"
+          }
+        ]
+      },
+      "localizations": {},
+      "formSchema": {
+        "required": [],
+        "properties": {
+          "Date_admitted_MRS_Sickbay": {},
+          "Admitting_Clinician": {},
+          "Admission_medication": {},
+          "Nurse_Administered_Medication": {},
+          "Self_Administered_Medication": {},
+          "Instructed_on_Fire_Drill_Fire_Assembly_Point": {},
+          "Patient_Standing_Orders_Signed": {},
+          "Consent_to_contact_next_of_kin": {},
+          "Patient_s_next_of_kin": {},
+          "Next_of_Kin_Relationship": {},
+          "Next_of_kin_contact_details": {},
+          "Unit_Contact": {},
+          "Unit_Contact_Address": {}
+        }
+      },
+      "designSchemaId": "https://www.opentext.com/ocp/devx/ui/2.0.0/Design"
+    },
+    "localizations": {}
+  },
+  "serviceName": "ui"
+}

@@ -1,0 +1,115 @@
+{
+  "required": [],
+  "properties": {
+    "Date_admitted_MRS_Sickbay": {
+      "type": "string",
+      "otFormat": {
+        "dataType": "date",
+        "repeating": false
+      },
+      "format": "date",
+      "title": "Date admitted MRS/Sickbay",
+      "maxLength": 64
+    },
+    "Admitting_Clinician": {
+      "type": "string",
+      "otFormat": {
+        "repeating": false
+      },
+      "title": "Admitting Clinician",
+      "maxLength": 64
+    },
+    "Admission_medication": {
+      "type": "string",
+      "otFormat": {
+        "repeating": false
+      },
+      "title": "Admission medication",
+      "maxLength": 64
+    },
+    "Nurse_Administered_Medication": {
+      "type": "boolean",
+      "otFormat": {
+        "repeating": false
+      },
+      "title": "Nurse Administered Medication",
+      "default": false
+    },
+    "Self_Administered_Medication": {
+      "type": "boolean",
+      "otFormat": {
+        "repeating": false
+      },
+      "title": "Self Administered Medication",
+      "default": false
+    },
+    "Instructed_on_Fire_Drill_Fire_Assembly_Point": {
+      "type": "boolean",
+      "otFormat": {
+        "repeating": false
+      },
+      "title": "Instructed on Fire Drill & Fire Assembly Point",
+      "default": false
+    },
+    "Patient_Standing_Orders_Signed": {
+      "type": "boolean",
+      "otFormat": {
+        "repeating": false
+      },
+      "title": "Patient Standing Orders Signed",
+      "default": false
+    },
+    "Patient_s_next_of_kin": {
+      "type": "string",
+      "otFormat": {
+        "repeating": false
+      },
+      "title": "Patient's next of kin",
+      "maxLength": 64
+    },
+    "Consent_to_contact_next_of_kin": {
+      "type": "string",
+      "otFormat": {
+        "dataType": "date",
+        "repeating": false
+      },
+      "format": "date",
+      "title": "Consent to contact next of kin",
+      "maxLength": 64
+    },
+    "Next_of_Kin_Relationship": {
+      "type": "string",
+      "otFormat": {
+        "repeating": false
+      },
+      "title": "Next of Kin Relationship",
+      "maxLength": 64
+    },
+    "Next_of_kin_contact_details": {
+      "type": "string",
+      "otFormat": {
+        "repeating": false
+      },
+      "title": "Next of kin contact details",
+      "maxLength": 64
+    },
+    "Unit_Contact": {
+      "type": "string",
+      "otFormat": {
+        "repeating": false
+      },
+      "title": "Unit Contact",
+      "maxLength": 64
+    },
+    "Unit_Contact_Address": {
+      "type": "string",
+      "otFormat": {
+        "repeating": false
+      },
+      "title": "Unit Contact Address",
+      "maxLength": 64
+    }
+  },
+  "$id": "https://www.opentext.com/ocp/devx/ui/localhost:8000/1.0/dc3cbd64-6db9-46ba-88f0-2e9d8809753f",
+  "type": "object"
+}
