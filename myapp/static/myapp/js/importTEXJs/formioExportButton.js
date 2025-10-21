@@ -6,7 +6,7 @@
 
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = 'Export to Form.io JSON';
+    btn.textContent = '-> Form.io JSON';
     btn.style.marginLeft = '10px';
     btn.style.padding = '6px 10px';
     btn.style.fontSize = '12px';

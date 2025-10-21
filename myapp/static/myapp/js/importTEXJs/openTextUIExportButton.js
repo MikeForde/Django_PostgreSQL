@@ -5,7 +5,7 @@
     if (!toolbar) return;
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = 'Export to OpenText JSON';
+    btn.textContent = '-> OpenText JSON';
     btn.style.marginLeft = '10px';
     btn.style.padding = '6px 10px';
     btn.style.fontSize = '12px';

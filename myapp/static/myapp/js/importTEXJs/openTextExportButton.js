@@ -6,7 +6,7 @@
 
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = 'Export to OpenText Schema JSON';
+    btn.textContent = '-> OT Schema Only JSON';
     btn.style.marginLeft = '10px';
     btn.style.padding = '6px 10px';
     btn.style.fontSize = '12px';
