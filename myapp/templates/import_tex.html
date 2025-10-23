@@ -1227,7 +1227,7 @@
       z-index:99999;
       display:none;
       max-width:260px;
-      background:#D4D452;
+      background:#ffff8f;
       color:#111;
       font-size:12px;
       line-height:1.25;
@@ -3067,7 +3067,7 @@
       panel.style.right = '10px';
       panel.style.bottom = '10px';
       panel.style.zIndex = '9999';
-      panel.style.background = '#fff';
+      panel.style.background = '#ffff8f';
       panel.style.border = '1px solid #ddd';
       panel.style.borderRadius = '6px';
       panel.style.boxShadow = '0 2px 8px rgba(0,0,0,.15)';
@@ -3086,7 +3086,7 @@
       </div>`;
 
     panel.innerHTML = `
-      <div style="font-weight:bold; margin-bottom:6px;">Code Mix</div>
+      <div style="font-weight:bold; margin-bottom:6px;">SnowFusion Mix</div>
       <div>Total unique codes: <strong>${uniqueCodes}</strong></div>
       <div>Included (DMS + non-DMS): <strong>${totalConsidered}</strong></div>
       <div style="margin-top:6px;">
@@ -3099,11 +3099,11 @@
       <div style="margin-top:8px;">DMSCreate / (DMSCreate + Rest): <strong>${pct(ratio)}%</strong></div>
       ${barOuter}
       <div style="display:flex; gap:8px; margin-top:10px;">
-        <button type="button" id="cmx-apply" style="padding:4px 8px;">Apply heat-map</button>
+        <button type="button" id="cmx-apply" style="padding:4px 8px;">Apply</button>
         <button type="button" id="cmx-clear" style="padding:4px 8px;">Clear</button>
       </div>
       <div style="margin-top:6px; font-size:11px; opacity:.8;">
-        Scale: <span style="color:#0072B2;">Non-DMS</span> → <span style="color:#009E73;">DMSCreate</span>
+        Scale: <span style="color:#2B8CBE;"><strong>Non-DMS</strong></span> → <span style="color:#E85E0C;"><strong>DMSCreate</strong></</span>
       </div>
     `;
 
