@@ -3007,13 +3007,19 @@
 
   // ===================== SCAN CONTROLS FOR CODES ==============================
   function collectCodes(){
-    const seen = new Set(); // unique codes encountered
+    const seen = new Set();
     const buckets = { DMSCreate:0, APIMap:0, ManualMap:0, Other:0, Inactivate:0 };
     const otherList = [];
 
     document.querySelectorAll('.rc-row[data-read-code]').forEach(row => {
-      const code = (row.getAttribute('data-read-code') || '').trim();
-      if (!code || seen.has(code)) return;
+      const raw = (row.getAttribute('data-read-code') || '').trim();
+      if (!raw) return;
+
+      // Ignore NEGATION-/QUERY- here so they don’t enter the denominator
+      if (/^(NEGATION-|QUERY-)/i.test(raw)) { buckets.Inactivate++; return; }
+
+      const code = raw;                   // already normalized elsewhere
+      if (seen.has(code)) return;
       seen.add(code);
 
       const cat = classifyFromTipOrClasses(row);
@@ -3025,24 +3031,29 @@
       }
     });
 
-    // Denominator excludes Inactivate
-    const nonDms = (buckets.APIMap || 0) + (buckets.ManualMap || 0) + (buckets.Other || 0);
-    const dms    = (buckets.DMSCreate || 0);
+    const nonDms = (buckets.APIMap||0) + (buckets.ManualMap||0) + (buckets.Other||0);
+    const dms    = (buckets.DMSCreate||0);
     const denom  = dms + nonDms;
     const ratio  = denom ? (dms / denom) : 0;
+    const hasData = denom > 0;
 
-    // Console aid
     if (otherList.length) {
       console.log(`🟦 OTHER (${otherList.length}):`, otherList);
     } else {
       console.log('🟦 No codes classified as "Other".');
     }
 
-    return { buckets, ratio, totalConsidered: denom, uniqueCodes: seen.size };
+    return { buckets, ratio, totalConsidered: denom, uniqueCodes: seen.size, hasData };
   }
 
   // ===================== APPLY HEATMAP ========================================
-  function applyHeat(ratio){
+  function applyHeat(ratio, hasData){
+    if (!hasData) {
+      // ensure pure white and no residual gradient
+      RENDER.style.background = '#fff';
+      RENDER.style.transition = 'background 200ms ease-in-out';
+      return;
+    }
     // ratio 0 -> all OTHER (blue), 1 -> all DMS (green)
     const col = lerpColor(COLOR_OTHER, COLOR_DMS, ratio);
 
@@ -3077,13 +3088,16 @@
       document.body.appendChild(panel);
     }
 
-    const { buckets, ratio, totalConsidered, uniqueCodes } = stats;
+    const { buckets, ratio, totalConsidered, uniqueCodes, hasData } = stats;
 
-    // Accessible bar
-    const barOuter = `
+    const barOuter = hasData ? `
       <div style="margin-top:8px; background:#f2f2f2; height:10px; border-radius:6px; overflow:hidden;" aria-hidden="true">
         <div style="width:${pct(ratio)}%; height:100%; background:${lerpColor(COLOR_OTHER, COLOR_DMS, ratio)};"></div>
-      </div>`;
+      </div>` : '';
+
+    const ratioLine = hasData
+      ? `<div style="margin-top:8px;">DMSCreate / (DMSCreate + Rest): <strong>${pct(ratio)}%</strong></div>`
+      : `<div style="margin-top:8px; opacity:.8;">No relevant codes.</div>`;
 
     panel.innerHTML = `
       <div style="font-weight:bold; margin-bottom:6px;">SnowFusion Mix</div>
@@ -3096,31 +3110,29 @@
         <div>Non-DMS: <strong>${buckets.Other}</strong></div>
         <div style="opacity:.7;">Inactivate/NEGATION/QUERY (ignored): ${buckets.Inactivate}</div>
       </div>
-      <div style="margin-top:8px;">DMSCreate / (DMSCreate + Rest): <strong>${pct(ratio)}%</strong></div>
+      ${ratioLine}
       ${barOuter}
       <div style="display:flex; gap:8px; margin-top:10px;">
         <button type="button" id="cmx-apply" style="padding:4px 8px;">Apply</button>
         <button type="button" id="cmx-clear" style="padding:4px 8px;">Clear</button>
       </div>
       <div style="margin-top:6px; font-size:11px; opacity:.8;">
-        Scale: <span style="color:#2B8CBE;"><strong>Non-DMS</strong></span> → <span style="color:#E85E0C;"><strong>DMSCreate</strong></</span>
+        Scale: <span style="color:#2B8CBE;"><strong>Non-DMS</strong></span> → <span style="color:#E85E0C;"><strong>DMSCreate</strong></span>
       </div>
     `;
 
-    //panel.querySelector('#cmx-apply').onclick = () => applyHeat(ratio);
-    //panel.querySelector('#cmx-clear').onclick  = () => { CANVAS.style.background = ''; };
-    panel.querySelector('#cmx-apply').onclick = () => applyHeat(ratio);
+    panel.querySelector('#cmx-apply').onclick = () => applyHeat(ratio, hasData);
     panel.querySelector('#cmx-clear').onclick  = () => { RENDER.style.background = '#fff'; };
   }
 
-  function debounce(fn, ms){
-  let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
-}
+    function debounce(fn, ms){
+    let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+  }
 const recompute = debounce(() => {
   const stats = collectCodes();
   renderPanel(stats);
   // If you want live tinting each time:
-   applyHeat(stats.ratio);
+   applyHeat(stats.ratio, stats.hasData);
 }, 150);
 
 // ===== readiness check: wait for SnowFusion classification ====================
