@@ -3070,6 +3070,8 @@
 
   // ===================== SUMMARY PANEL ========================================
   function renderPanel(stats){
+    const sidebar = document.getElementById('readcodes-sidebar');
+
     let panel = document.getElementById('code-mix-panel');
     if (!panel){
       panel = document.createElement('div');
@@ -3096,7 +3098,7 @@
       </div>` : '';
 
     const ratioLine = hasData
-      ? `<div style="margin-top:8px;">DMSCreate / (DMSCreate + Rest): <strong>${pct(ratio)}%</strong></div>`
+      ? `<div style="margin-top:8px;">DMSCreate %: <strong>${pct(ratio)}%</strong></div>`
       : `<div style="margin-top:8px; opacity:.8;">No relevant codes.</div>`;
 
     panel.innerHTML = `
@@ -3104,10 +3106,10 @@
       <div>Total unique codes: <strong>${uniqueCodes}</strong></div>
       <div>Included (DMS + non-DMS): <strong>${totalConsidered}</strong></div>
       <div style="margin-top:6px;">
-        <div>DMSCreate: <strong>${buckets.DMSCreate}</strong></div>
-        <div>APIMap: <strong>${buckets.APIMap}</strong></div>
-        <div>ManualMap: <strong>${buckets.ManualMap}</strong></div>
-        <div>Non-DMS: <strong>${buckets.Other}</strong></div>
+        <div><span class="rc-decision badge--create">✔</span> Needing Creation (DMSCreate): <strong>${buckets.DMSCreate}</strong></div>
+        <div><span class="rc-decision badge--ok">↔</span> Exact Map to SNOMED (APIMap): <strong>${buckets.APIMap}</strong></div>
+        <div><span class="rc-decision badge--warn">↔</span> Manually mapped to SNOMED (ManualMap): <strong>${buckets.ManualMap}</strong></div>
+        <div>Non-DMS (NHS Mapped): <strong>${buckets.Other}</strong></div>
         <div style="opacity:.7;">Inactivate/NEGATION/QUERY (ignored): ${buckets.Inactivate}</div>
       </div>
       ${ratioLine}
