@@ -2270,9 +2270,12 @@
     .then(r => r.ok ? r.json() : Promise.reject(r.statusText))
     .then(({ results } = { results:{} }) => {
       items.forEach(li => {
-        const code = (li.querySelector('code')?.textContent || '').trim();
+        // --- Normalise code for lookup ---
+        let code = (li.querySelector('code')?.textContent || '').trim();
+        const cleanCode = code.replace(/^Last Entry for\s+/i, '').trim();
+
         const badge = li.querySelector('.rc-decision');
-        const hit = results && results[code];
+        const hit = results && results[cleanCode];   // ← use cleaned code for lookup
 
         if (!badge) return;
 
@@ -2288,7 +2291,7 @@
           const desc = hit.description || '';
           const info = hit.info || '';
 
-          // Symbol selection (as you already had)
+          // Symbol selection (as before)
           let symbol = '•';
           if (decision === 'DMSCreate') symbol = '✔';
           else if (decision === 'ManualMap' || decision === 'APIMap') symbol = '↔';
@@ -2301,7 +2304,7 @@
           const parts = [decision, desc].filter(Boolean).join(' • ');
           const tip = info ? `${parts}\n${info}` : (parts || decision);
           badge.setAttribute('data-tip', `${tip}${extra}`);
-          badge.removeAttribute('title'); // disable native delay
+          badge.removeAttribute('title');
         }
       });
     })
@@ -2912,6 +2915,297 @@
   flyout.addEventListener('focusout', scheduleHide);
 })();
 </script>
+
+<script>
+(function(){
+  // ========================== CONFIG =========================================
+  // Color-blind friendly endpoints (Okabe-Ito palette)
+  const COLOR_OTHER = { r: 0x2B, g: 0x8C, b: 0xBE }; // cold blue
+  const COLOR_DMS   = { r: 0xE8, g: 0x5E, b: 0x0C }; // warm orange
+  //const COLOR_OTHER = { r: 0x2B, g: 0x8C, b: 0xBE }; // sky blue
+  //const COLOR_DMS   = { r: 0xE8, g: 0x5E, b: 0x0C }; // bright orange
+  //const COLOR_OTHER = { r: 0x00, g: 0x57, b: 0xA7 }; // #0057A7 (deep blue)
+  //const COLOR_DMS   = { r: 0xE6, g: 0x8F, b: 0x00 }; // #E68F00 (orange)
+  //const COLOR_DMS   = { r: 0x00, g: 0x9E, b: 0x73 }; // #009E73 (green)
+  //const COLOR_DMS   == { r:0xE6, g:0x9F, b:0x00 }; // #E69F00 (orange)
+  // Where to tint; fallback to body if not found
+  const CANVAS = document.querySelector('.tex-work') || document.body;
+
+  const RENDER =
+    document.querySelector('.tex-work > div[style*="position:relative"]') ||
+    document.querySelector('.tex-work > div') ||
+    document.querySelector('.tex-work') ||
+    document.body;
+
+  // ========================== UTILS ===========================================
+  function lerp(a, b, t){ return a + (b - a) * t; }
+  function lerpColor(c1, c2, t){
+    const r = Math.round(lerp(c1.r, c2.r, t));
+    const g = Math.round(lerp(c1.g, c2.g, t));
+    const b = Math.round(lerp(c1.b, c2.b, t));
+    return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+  }
+  function pct(n){ return Math.round(n * 100); }
+
+  function txt(n){ return (n && (n.textContent || '').trim()) || ''; }
+
+  // Parse "data-readcodes" blob (lines like "CODE — Label")
+  function extractCodesFromBlob(blob){
+    if (!blob) return [];
+    const lines = blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const codes = [];
+    for (const line of lines){
+      // Skip helper lines
+      if (/^\s*Auto-Entered Text\s*:/i.test(line)) continue;
+      const parts = line.split('—');
+      const code = (parts[0] || '').trim();
+      if (code) codes.push(code);
+    }
+    return codes;
+  }
+
+  // ================== BUILD CODE→CATEGORY LOOKUP (from sidebar) ===============
+  // Categories we care about: DMSCreate, APIMap, ManualMap, Inactivate, Other
+  function classifyFromTipOrClasses(row){
+    const code = (row.getAttribute('data-read-code') || '').trim();
+
+    // Prefix-based ignore
+    if (/^(NEGATION-|QUERY-)/i.test(code)) return 'Ignored';
+
+    // Prefer decision badge classes (most robust)
+    const dec = row.querySelector('.rc-decision');
+    if (dec) {
+      const cl = dec.classList;
+      if (cl.contains('badge--create'))   return 'DMSCreate';   // ✔ DMS
+      if (cl.contains('badge--loose'))    return 'Inactivate';  // ✗ inactivate
+      // Some builds might have explicit classes for maps; if not, we'll use tip text below
+      if (cl.contains('badge--apimap'))   return 'APIMap';
+      if (cl.contains('badge--manual'))   return 'ManualMap';
+      if (cl.contains('badge--miss'))     return 'Other';       // "Not in SnowFusion" etc
+    }
+    // Fallback: parse the tip text (e.g., "DMSCreate • …", "APIMap • …")
+    const tip = dec ? (dec.getAttribute('data-tip') || '') : '';
+    const head = tip.split('•')[0].trim().toLowerCase();
+    if (head.includes('dmscreate')) return 'DMSCreate';
+    if (head.includes('apimap'))    return 'APIMap';
+    if (head.includes('manualmap')) return 'ManualMap';
+    if (head.includes('inactivate'))return 'Inactivate';
+    return 'Other';
+  }
+
+  function buildSidebarMap(){
+    const map = new Map(); // code -> category
+    // Scan ANY rc-row, not just a specific sidebar container
+    const rows = document.querySelectorAll('.rc-row[data-read-code]');
+    rows.forEach(row => {
+      const code = row.getAttribute('data-read-code') || '';
+      if (!code) return;
+      map.set(code, classifyFromTipOrClasses(row));
+    });
+    return map;
+  }
+
+  // ===================== SCAN CONTROLS FOR CODES ==============================
+  function collectCodes(){
+    const seen = new Set(); // unique codes encountered
+    const buckets = { DMSCreate:0, APIMap:0, ManualMap:0, Other:0, Inactivate:0 };
+    const otherList = [];
+
+    document.querySelectorAll('.rc-row[data-read-code]').forEach(row => {
+      const code = (row.getAttribute('data-read-code') || '').trim();
+      if (!code || seen.has(code)) return;
+      seen.add(code);
+
+      const cat = classifyFromTipOrClasses(row);
+      buckets[cat] = (buckets[cat] || 0) + 1;
+
+      if (cat === 'Other') {
+        const label = (row.querySelector('.rc-label')?.textContent || '').trim();
+        otherList.push(label ? `${code} — ${label}` : code);
+      }
+    });
+
+    // Denominator excludes Inactivate
+    const nonDms = (buckets.APIMap || 0) + (buckets.ManualMap || 0) + (buckets.Other || 0);
+    const dms    = (buckets.DMSCreate || 0);
+    const denom  = dms + nonDms;
+    const ratio  = denom ? (dms / denom) : 0;
+
+    // Console aid
+    if (otherList.length) {
+      console.log(`🟦 OTHER (${otherList.length}):`, otherList);
+    } else {
+      console.log('🟦 No codes classified as "Other".');
+    }
+
+    return { buckets, ratio, totalConsidered: denom, uniqueCodes: seen.size };
+  }
+
+  // ===================== APPLY HEATMAP ========================================
+  function applyHeat(ratio){
+    // ratio 0 -> all OTHER (blue), 1 -> all DMS (green)
+    const col = lerpColor(COLOR_OTHER, COLOR_DMS, ratio);
+
+    // Gentle background + subtle gradient for depth
+    //CANVAS.style.background = `linear-gradient(180deg, ${col}1A, ${col}33)`;
+    //CANVAS.style.transition = 'background 200ms ease-in-out';
+    RENDER.style.background = `linear-gradient(180deg, ${col}1A, ${col}33)`;
+    RENDER.style.transition = 'background 200ms ease-in-out';
+
+    // Add an outline that strengthens with purity of either end if you like:
+    // CANVAS.style.boxShadow = `inset 0 0 0 2px ${col}80`;
+  }
+  
+
+  // ===================== SUMMARY PANEL ========================================
+  function renderPanel(stats){
+    let panel = document.getElementById('code-mix-panel');
+    if (!panel){
+      panel = document.createElement('div');
+      panel.id = 'code-mix-panel';
+      panel.style.position = 'fixed';
+      panel.style.right = '10px';
+      panel.style.bottom = '10px';
+      panel.style.zIndex = '9999';
+      panel.style.background = '#fff';
+      panel.style.border = '1px solid #ddd';
+      panel.style.borderRadius = '6px';
+      panel.style.boxShadow = '0 2px 8px rgba(0,0,0,.15)';
+      panel.style.padding = '10px 12px';
+      panel.style.font = '12px/1.4 Arial, sans-serif';
+      panel.style.minWidth = '260px';
+      document.body.appendChild(panel);
+    }
+
+    const { buckets, ratio, totalConsidered, uniqueCodes } = stats;
+
+    // Accessible bar
+    const barOuter = `
+      <div style="margin-top:8px; background:#f2f2f2; height:10px; border-radius:6px; overflow:hidden;" aria-hidden="true">
+        <div style="width:${pct(ratio)}%; height:100%; background:${lerpColor(COLOR_OTHER, COLOR_DMS, ratio)};"></div>
+      </div>`;
+
+    panel.innerHTML = `
+      <div style="font-weight:bold; margin-bottom:6px;">Code Mix</div>
+      <div>Total unique codes: <strong>${uniqueCodes}</strong></div>
+      <div>Included (DMS + non-DMS): <strong>${totalConsidered}</strong></div>
+      <div style="margin-top:6px;">
+        <div>DMSCreate: <strong>${buckets.DMSCreate}</strong></div>
+        <div>APIMap: <strong>${buckets.APIMap}</strong></div>
+        <div>ManualMap: <strong>${buckets.ManualMap}</strong></div>
+        <div>Non-DMS: <strong>${buckets.Other}</strong></div>
+        <div style="opacity:.7;">Inactivate/NEGATION/QUERY (ignored): ${buckets.Inactivate}</div>
+      </div>
+      <div style="margin-top:8px;">DMSCreate / (DMSCreate + Rest): <strong>${pct(ratio)}%</strong></div>
+      ${barOuter}
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button type="button" id="cmx-apply" style="padding:4px 8px;">Apply heat-map</button>
+        <button type="button" id="cmx-clear" style="padding:4px 8px;">Clear</button>
+      </div>
+      <div style="margin-top:6px; font-size:11px; opacity:.8;">
+        Scale: <span style="color:#0072B2;">Non-DMS</span> → <span style="color:#009E73;">DMSCreate</span>
+      </div>
+    `;
+
+    //panel.querySelector('#cmx-apply').onclick = () => applyHeat(ratio);
+    //panel.querySelector('#cmx-clear').onclick  = () => { CANVAS.style.background = ''; };
+    panel.querySelector('#cmx-apply').onclick = () => applyHeat(ratio);
+    panel.querySelector('#cmx-clear').onclick  = () => { RENDER.style.background = '#fff'; };
+  }
+
+  function debounce(fn, ms){
+  let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+const recompute = debounce(() => {
+  const stats = collectCodes();
+  renderPanel(stats);
+  // If you want live tinting each time:
+   applyHeat(stats.ratio);
+}, 150);
+
+// ===== readiness check: wait for SnowFusion classification ====================
+function isClassificationReady(){
+  // We consider it "ready" when we have rc-rows AND at least one row
+  // has a .rc-decision with either a known class OR a non-empty data-tip.
+  const rows = document.querySelectorAll('.rc-row[data-read-code]');
+  if (!rows.length) return false;
+  for (const row of rows){
+    const dec = row.querySelector('.rc-decision');
+    if (!dec) continue;
+    const hasKnownClass =
+      dec.classList.contains('badge--create') ||
+      dec.classList.contains('badge--loose')  ||
+      dec.classList.contains('badge--apimap') ||
+      dec.classList.contains('badge--manual') ||
+      dec.classList.contains('badge--miss');
+    const hasTip = !!(dec.getAttribute('data-tip') || '').trim();
+    if (hasKnownClass || hasTip) return true;
+  }
+  return false;
+}
+
+function whenReadyToClassify(cb, timeoutMs=10000, pollEvery=200){
+  const start = performance.now();
+  (function tick(){
+    if (isClassificationReady()) { cb(); return; }
+    if ((performance.now() - start) >= timeoutMs) { cb(); return; } // give up gracefully
+    setTimeout(tick, pollEvery);
+  })();
+}
+
+// ===== observe dynamic changes (new rows or updated badges) ===================
+function attachObserver(){
+  const target = document.body;
+  const mo = new MutationObserver(muts => {
+    // If rows or their decision badges change, recompute.
+    for (const m of muts){
+      if (m.type === 'childList'){
+        if (m.addedNodes.length || m.removedNodes.length){
+          if (m.target && (m.target.closest?.('.rc-row') || m.target.id === 'readcode-list' || m.target.id === 'diarycode-list')){
+            recompute();
+            return;
+          }
+        }
+      } else if (m.type === 'attributes'){
+        if (m.target.matches('.rc-decision')){
+          recompute();
+          return;
+        }
+      }
+    }
+  });
+  mo.observe(target, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ['class', 'data-tip']
+  });
+  return mo;
+}
+
+// ===== RUN ====================================================================
+// Kick off once SnowFusion classifications are present (or after timeout).
+whenReadyToClassify(() => {
+  recompute();            // initial compute + render
+  attachObserver();       // keep it up to date as the page changes
+});
+
+// Safety: also do a delayed one-shot in case everything was already present
+setTimeout(recompute, 500);
+
+  // Optionally auto-apply heat on load:
+  // applyHeat(stats.ratio);
+
+  // If your page content changes dynamically, you can observe and refresh:
+  // const mo = new MutationObserver(() => {
+  //   const s = collectCodes();
+  //   renderPanel(s);
+  //   // applyHeat(s.ratio);
+  // });
+  // mo.observe(document.body, { subtree:true, childList:true, attributes:true });
+})();
+</script>
+
 
 <script src="{% static 'myapp/js/importTEXJs/formioExportButton.js' %}"></script>
 <script src="{% static 'myapp/js/importTEXJs/openTextUIExportButton.js' %}"></script>
