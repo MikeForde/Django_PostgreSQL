@@ -83,11 +83,11 @@
 
           {# Labels #}
           {% if 'Label' in c.type %}
-            <label style="display:block; width:{{ c.width|add:10 }}px;
+            <label class="tex-label" style="display:block; width:{{ c.width|add:10 }}px;
                           {% if c.font_name %}font-family:{% if ' ' in c.font_name %}'{{ c.font_name }}'{% else %}{{ c.font_name }}{% endif %}, sans-serif;{% endif %}
                           {% if c.font_size_pt %}font-size:{{ c.font_size_pt|add:-1 }}pt;{% endif %}
                           {% if c.font_color %}color:{{ c.font_color }};{% endif %}
-                          font-weight:{% if c.is_bold %}700{% else %}400{% endif %};background-color:#fff;">
+                          font-weight:{% if c.is_bold %}700{% else %}400{% endif %};">
               {{ c.caption|default:c.name }}
             </label>
 
@@ -1202,6 +1202,10 @@
       display: flex;
       justify-content: center;   /* horizontally centre */
       width: 100%;
+  }
+
+  .tex-label {
+    background-color: var(--label-bg, #fff);
   }
 
     .badge{ margin-left:8px; padding:1px 6px; border-radius:4px; font-size:11px; border:1px solid transparent; }
@@ -3108,6 +3112,7 @@
       // ensure pure white and no residual gradient
       RENDER.style.background = '#fff';
       RENDER.style.transition = 'background 200ms ease-in-out';
+      document.documentElement.style.removeProperty('--label-bg');
       return;
     }
     // ratio 0 -> all OTHER (blue), 1 -> all DMS (green)
@@ -3118,6 +3123,8 @@
     //CANVAS.style.transition = 'background 200ms ease-in-out';
     RENDER.style.background = `linear-gradient(180deg, ${col}1A, ${col}33)`;
     RENDER.style.transition = 'background 200ms ease-in-out';
+
+    document.documentElement.style.setProperty('--label-bg', `linear-gradient(180deg, ${col}1A, ${col}33)`);
 
     // Add an outline that strengthens with purity of either end if you like:
     // CANVAS.style.boxShadow = `inset 0 0 0 2px ${col}80`;
@@ -3180,7 +3187,7 @@
     `;
 
     panel.querySelector('#cmx-apply').onclick = () => applyHeat(ratio, hasData);
-    panel.querySelector('#cmx-clear').onclick  = () => { RENDER.style.background = '#fff'; };
+    panel.querySelector('#cmx-clear').onclick  = () => { RENDER.style.background = '#fff'; document.documentElement.style.removeProperty('--label-bg');};
   }
 
     function debounce(fn, ms){
