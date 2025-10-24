@@ -3105,6 +3105,26 @@
     };
   }
 
+  function lighten(hex, amt=0.2){
+    const num = parseInt(hex.slice(1),16);
+    let r=(num>>16)+Math.round(255*amt);
+    let g=(num>>8&0x00FF)+Math.round(255*amt);
+    let b=(num&0x0000FF)+Math.round(255*amt);
+    r=(r<255)?r:255; g=(g<255)?g:255; b=(b<255)?b:255;
+    return `#${(r<<16|g<<8|b).toString(16).padStart(6,'0')}`;
+  }
+
+  function blendOverWhite(hex, alpha = 0.15) {
+    const num = parseInt(hex.slice(1), 16);
+    const r = (num >> 16) & 0xff;
+    const g = (num >> 8) & 0xff;
+    const b = num & 0xff;
+    const blend = c => Math.round((1 - alpha) * 255 + alpha * c);
+    return `#${[blend(r), blend(g), blend(b)]
+      .map(v => v.toString(16).padStart(2, '0'))
+      .join('')}`;
+  }
+
 
   // ===================== APPLY HEATMAP ========================================
   function applyHeat(ratio, hasData){
@@ -3124,7 +3144,8 @@
     RENDER.style.background = `linear-gradient(180deg, ${col}1A, ${col}33)`;
     RENDER.style.transition = 'background 200ms ease-in-out';
 
-    document.documentElement.style.setProperty('--label-bg', `linear-gradient(180deg, ${col}1A, ${col}33)`);
+    const labelColor = blendOverWhite(col, 0.15);
+    document.documentElement.style.setProperty('--label-bg', labelColor);
 
     // Add an outline that strengthens with purity of either end if you like:
     // CANVAS.style.boxShadow = `inset 0 0 0 2px ${col}80`;
