@@ -47,18 +47,42 @@ def _read_tex_or_html(p: Path) -> str:
     return p.read_text(encoding="utf-8")
 
 def looks_like_read_code(s: str) -> bool:
+    """
+    Heuristic for 'this smells like a clinical Read/DMICP code'.
+
+    Rules:
+    - length <= 12
+    - allowed chars: A–Z / a–z / 0–9 / dot
+    - must either:
+        (a) contain at least one digit OR a dot
+        OR
+        (b) be an all-caps alpha code starting with DMS or EMIS
+           (e.g. DMSRREFP, DMSRREFR)
+    This still excludes junk like HEADER, USER, TARGETPATH, etc.
+    """
     if not s:
         return False
+
     s = s.strip()
-    if len(s) > 20:  # keep sane
+    if len(s) > 12:
         return False
-    # allow ellipsis codes (1T...), dotted families (22K..), numeric+dot (4671.)
-    if s.endswith("..."):
+
+    # only letters/digits/dots
+    if not re.fullmatch(r"[A-Za-z0-9.]+", s):
+        return False
+
+    # case (a): has a digit or dot
+    if re.search(r"\d", s) or "." in s:
         return True
-    if "." in s:
+
+    # case (b): pure letters, ALL CAPS, starts with DMS or EMIS
+    # e.g. DMSRREFP, DMSRREFR
+    if re.fullmatch(r"(DMS|EMIS)[A-Z]+", s):
         return True
-    # alpha+digits like EMISNQRE312 / DMS4274
-    return bool(re.fullmatch(r"[A-Za-z]{2,}[A-Za-z0-9]+", s))
+
+    return False
+
+
 
 def _readlist_pick_code(tokens: list[str]) -> str | None:
     """
@@ -122,7 +146,7 @@ def extract_codes_from_tex_content(tex_str: str) -> list[str]:
         if not code:
             return
         # Normalise case like the webapp sidebar (upper) to match SnowFusion keys
-        code_norm = code.upper()
+        code_norm = code
         if code_norm not in seen:
             seen.add(code_norm)
             out.append(code_norm)
@@ -283,8 +307,23 @@ def summarize_file(api_url: str, file_path: Path) -> Tuple[dict, List[dict]]:
     all_codes = extract_codes_from_tex_content(text)
 
     # 2) Fallback: HTML/text scraping (covers genuine HTML library files)
+    # if not all_codes:
+    #     all_codes = extract_codes_from_text(text)
+
     if not all_codes:
-        all_codes = extract_codes_from_text(text)
+        summary_row = {
+            "file": file_path.name,
+            "total_unique_codes": 0,
+            "included": 0,
+            "DMSCreate": 0,
+            "APIMap": 0,
+            "ManualMap": 0,
+            "Other": 0,
+            "Ignored": 0,
+            "ratio_percent": "",
+        }
+        # and there are no detail rows
+        return summary_row, []
 
     # Pre-class ignore (NEGATION-/QUERY-)
     to_query = []

@@ -2970,7 +2970,7 @@
     const code = (row.getAttribute('data-read-code') || '').trim();
 
     // Prefix-based ignore
-    if (/^(NEGATION-|QUERY-)/i.test(code)) return 'Ignored';
+    if (/^(NEGATION-|QUERY-|Last Entry for QUERY-|Last Entry for NEGATION-)/i.test(code)) return 'Ignored';
 
     // Prefer decision badge classes (most robust)
     const dec = row.querySelector('.rc-decision');
@@ -2990,6 +2990,7 @@
     if (head.includes('apimap'))    return 'APIMap';
     if (head.includes('manualmap')) return 'ManualMap';
     if (head.includes('inactivate'))return 'Inactivate';
+    if (head.includes('investigate'))return 'DMSCreate'; // treat as DMS
     return 'Other';
   }
 
@@ -3005,9 +3006,39 @@
     return map;
   }
 
+  const IGNORE_PREFIX_RE = /^(NEGATION-|QUERY-)/i;
+  const LAST_ENTRY_RE    = /^Last Entry for\s+/i;
+
+  // Return an object describing what this row represents.
+  function normalizeForCounting(raw) {
+    // raw is whatever was in data-read-code, e.g.
+    // "PCS15089CH3"
+    // "Last Entry for PCS15089CH3"
+    // "NEGATION-PCS15089CH3"
+    // "Last Entry for NEGATION-PCS15089CH3"
+
+    if (!raw) return { kind: 'skip' };
+
+    let code = raw.trim();
+
+    // Strip "Last Entry for " prefix if present
+    code = code.replace(LAST_ENTRY_RE, '').trim();
+
+    // If it's NEGATION-/QUERY- after stripping, it's an ignored code
+    if (IGNORE_PREFIX_RE.test(code)) {
+      // Return stable identity for the ignored code (the NEGATION-… thing itself)
+      return { kind: 'ignored', id: code.toUpperCase() };
+    }
+
+    // Otherwise it's a "real" code that contributes to ratio
+    return { kind: 'real', id: code.toUpperCase() };
+  }
+
   // ===================== SCAN CONTROLS FOR CODES ==============================
   function collectCodes(){
-    const seen = new Set();
+    const seenReal     = new Set(); // unique "real" codes
+    const seenIgnored  = new Set(); // unique ignored (NEGATION-/QUERY-) codes
+
     const buckets = { DMSCreate:0, APIMap:0, ManualMap:0, Other:0, Inactivate:0 };
     const otherList = [];
 
@@ -3015,22 +3046,40 @@
       const raw = (row.getAttribute('data-read-code') || '').trim();
       if (!raw) return;
 
-      // Ignore NEGATION-/QUERY- here so they don’t enter the denominator
-      if (/^(NEGATION-|QUERY-)/i.test(raw)) { buckets.Inactivate++; return; }
+      const normInfo = normalizeForCounting(raw);
 
-      const code = raw;                   // already normalized elsewhere
-      if (seen.has(code)) return;
-      seen.add(code);
-
-      const cat = classifyFromTipOrClasses(row);
-      buckets[cat] = (buckets[cat] || 0) + 1;
-
-      if (cat === 'Other') {
-        const label = (row.querySelector('.rc-label')?.textContent || '').trim();
-        otherList.push(label ? `${code} — ${label}` : code);
+      if (normInfo.kind === 'ignored') {
+        // only count this ignored code once
+        if (!seenIgnored.has(normInfo.id)) {
+          seenIgnored.add(normInfo.id);
+          buckets.Inactivate++;
+        }
+        return;
       }
+
+      if (normInfo.kind === 'real') {
+        const codeId = normInfo.id;
+        if (!codeId) return;
+
+        // de-dupe reals (handles "Last Entry for PCS..." vs "PCS..." etc)
+        if (seenReal.has(codeId)) return;
+        seenReal.add(codeId);
+
+        const cat = classifyFromTipOrClasses(row);
+        buckets[cat] = (buckets[cat] || 0) + 1;
+
+        if (cat === 'Other') {
+          const label = (row.querySelector('.rc-label')?.textContent || '').trim();
+          otherList.push(label ? `${codeId} — ${label}` : codeId);
+        }
+
+        return;
+      }
+
+      // normInfo.kind === 'skip' fallback (shouldn't really trigger)
     });
 
+    // Denominator logic unchanged: only “real” codes, and we split them by buckets
     const nonDms = (buckets.APIMap||0) + (buckets.ManualMap||0) + (buckets.Other||0);
     const dms    = (buckets.DMSCreate||0);
     const denom  = dms + nonDms;
@@ -3043,8 +3092,15 @@
       console.log('🟦 No codes classified as "Other".');
     }
 
-    return { buckets, ratio, totalConsidered: denom, uniqueCodes: seen.size, hasData };
+    return {
+      buckets,
+      ratio,
+      totalConsidered: denom,
+      uniqueCodes: seenReal.size + seenIgnored.size, // total distinct things seen
+      hasData
+    };
   }
+
 
   // ===================== APPLY HEATMAP ========================================
   function applyHeat(ratio, hasData){
@@ -3103,7 +3159,7 @@
 
     panel.innerHTML = `
       <div style="font-weight:bold; margin-bottom:6px;">SnowFusion Mix</div>
-      <div>Total unique codes: <strong>${uniqueCodes}</strong></div>
+      <div>Total codes: <strong>${uniqueCodes}</strong></div>
       <div>Included (DMS + non-DMS): <strong>${totalConsidered}</strong></div>
       <div style="margin-top:6px;">
         <div><span class="rc-decision badge--create">✔</span> Needing Creation (DMSCreate): <strong>${buckets.DMSCreate}</strong></div>

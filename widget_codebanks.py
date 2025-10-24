@@ -30,11 +30,6 @@ WIDGET_CODES: dict[str, set[str]] = {
         "RAFMETE5","RAFMEPE1","RAFMENO3",
         # Diary entry
         "RAFPUPU1",
-        # Eyes summary mini-boxes (Right U/C, Left U/C)
-        "RAFPUER1","RAFPUER2","RAFPUER3","RAFPUER4","RAFPUER5","RAFPUER6","RAFPUER7","RAFPUER8",
-        "RAFPUEC17","RAFPUEC2","RAFPUEC3","RAFPUEC4","RAFPUEC5","RAFPUEC6","RAFPUEC7","RAFPUEC8",
-        "RAFPUEL3","RAFPUEL4","RAFPUEL5","RAFPUEL6","RAFPUEL7","RAFPUEL8","RAFPUEL9","RAFPUEU1",
-        "RAFPUEC1","RAFPUEC10","RAFPUEC11","RAFPUEC12","RAFPUEC13","RAFPUEC14","RAFPUEC15","RAFPUEC16",
     },
 
     # --- VisualAcuity (uncorrected/corrected lists + summary boxes) -----------
