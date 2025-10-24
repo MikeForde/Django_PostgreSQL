@@ -3141,10 +3141,14 @@
     // Gentle background + subtle gradient for depth
     //CANVAS.style.background = `linear-gradient(180deg, ${col}1A, ${col}33)`;
     //CANVAS.style.transition = 'background 200ms ease-in-out';
-    RENDER.style.background = `linear-gradient(180deg, ${col}1A, ${col}33)`;
-    RENDER.style.transition = 'background 200ms ease-in-out';
+
 
     const labelColor = blendOverWhite(col, 0.15);
+    RENDER.style.background = labelColor;
+    //RENDER.style.background = `linear-gradient(180deg, ${col}1A, ${col}33)`;
+    RENDER.style.transition = 'background 200ms ease-in-out';
+
+    
     document.documentElement.style.setProperty('--label-bg', labelColor);
 
     // Add an outline that strengthens with purity of either end if you like:
