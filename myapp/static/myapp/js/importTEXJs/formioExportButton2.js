@@ -239,6 +239,44 @@
       return out;
     }
 
+    // VALUE + DATE combo (e.g. rc-val + rc-date, no yes/no)
+    if (hasVal && hasDate && !hasYesNo) {
+      // numeric / value field
+      out.push({
+        type: 'number',
+        input: true,
+        key: keyFrom(labelText, 'value'),
+        label: labelText,
+        tableView: true,
+        labelPosition: 'left-left',
+        suffix: unitText || undefined,
+        validate: {
+          required: valEl.hasAttribute('required'),
+          step: 'any'
+        },
+        tooltip: unifiedTooltip
+      });
+
+      // date field
+      out.push({
+        type: 'datetime',
+        input: true,
+        key: keyFrom(labelText, 'date'),
+        label: `${labelText} (date)`,
+        labelPosition: 'left-left',
+        tableView: true,
+        enableDate: true,
+        enableTime: false,
+        datePicker: { showWeeks: true },
+        validate: {
+          required: dateEl.hasAttribute('required')
+        },
+        tooltip: unifiedTooltip
+      });
+
+      return out;
+    }
+
     // YES/NO question -> radio
     if (hasYesNo){
       const yesVal = yesInput?.value || 'yes';
