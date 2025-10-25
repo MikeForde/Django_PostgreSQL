@@ -93,7 +93,7 @@
       const host = el.closest('.readcode-host');
       if (!host) return [];
 
-      const blob = host.getAttribute('data-readcodes') || '';
+      let blob = host.getAttribute('data-readcodes') || '';
       blob = decodeUnicodeEscapes(blob);
 
       // normalize escaped newlines (\u000A) just in case
@@ -166,7 +166,7 @@
 
     // pull full readcode metadata from the host (same logic as readcodeInfo but inline here)
     const host = ctrl.closest('.readcode-host') || ctrl;
-    const blob = host.getAttribute('data-readcodes') || '';
+    let blob = host.getAttribute('data-readcodes') || '';
     blob = decodeUnicodeEscapes(blob);
 
     // normalize escaped newlines (\u000A) just in case
