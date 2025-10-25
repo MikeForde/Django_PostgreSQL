@@ -81,34 +81,29 @@
     return !!root.querySelector('select,textarea,input[type="text"],input[type="date"],input[type="number"],input[type="checkbox"],input[type="radio"]');
   }
 
-  function buildTooltipFromReadcodeMeta(meta){
-    // meta may have code, label, autoText, desc etc. We'll assemble a nice compact tooltip.
-    if (!meta) return undefined;
+  function buildTooltipFromReadcodeMeta(metaArray){
+    if (!metaArray || !metaArray.length) return undefined;
 
-    const parts = [];
-    if (meta.code) {
-      // e.g. "TRIQQNMF1 Full medical deployability"
-      const codePart = meta.code.trim();
-      const labelPart = (meta.label || '').trim();
-      if (labelPart) {
-        parts.push(codePart + ' ' + labelPart);
-      } else {
-        parts.push(codePart);
+    const lines = [];
+
+    metaArray.forEach(m => {
+      if (!m) return;
+      const c = (m.code || '').trim();
+      const l = (m.label || '').trim();
+      const a = (m.autoText || '').trim();
+
+      if (c || l) {
+        // e.g. "TRIQQNMF1 MFD - Medically Fully Deployable"
+        lines.push(c && l ? (c + ' ' + l) : (c || l));
       }
-    }
 
-    // If there's an autoText or similar, append
-    if (meta.autoText) {
-      parts.push('Auto: ' + meta.autoText.trim());
-    }
+      if (a) {
+        lines.push('Auto: ' + a);
+      }
+    });
 
-    // Fallback – if we never had code but we had desc like "Readcode: XYZ"
-    if (!parts.length && meta.desc) {
-      parts.push(meta.desc);
-    }
-
-    if (!parts.length) return undefined;
-    return parts.join('\n');
+    if (!lines.length) return undefined;
+    return lines.join('\n');
   }
 
   // ====== bits of logic copied/adapted from original ==========================
@@ -120,27 +115,35 @@
     // pull full readcode metadata from the host (same logic as readcodeInfo but inline here)
     const host = ctrl.closest('.readcode-host') || ctrl;
     const blob = host.getAttribute('data-readcodes') || '';
-    const lines = blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).filter(Boolean);
-    let rcCode = '', rcLabel = '';
-    for (const line of lines){
-      if (/^\s*Auto-Entered Text\s*:/i.test(line)) continue;
-      const m = line.split('—');
-      rcCode  = (m[0] || '').trim();
-      rcLabel = (m.slice(1).join('—') || '').trim();
-      break;
-    }
-    const autoLine = lines.find(l => /^\s*Auto-Entered Text\s*:/i.test(l));
+    const rawLines = blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).filter(Boolean);
+
+    // grab shared autoText if present
     let rcAutoText = '';
-    if (autoLine) {
-      rcAutoText = autoLine.replace(/^\s*Auto-Entered Text\s*:\s*/i,'').trim();
-    }
-    const fieldMeta = {
-      code: rcCode,
-      label: rcLabel,
-      autoText: rcAutoText,
-      desc: rcCode ? `Readcode: ${rcCode}` : undefined
-    };
-    const unifiedTooltip = buildTooltipFromReadcodeMeta(fieldMeta);
+    rawLines.forEach(line => {
+      if (/^\s*Auto-Entered Text\s*:/i.test(line)) {
+        rcAutoText = line.replace(/^\s*Auto-Entered Text\s*:\s*/i,'').trim();
+      }
+    });
+
+    // build array of {code,label,autoText}
+    const metaArray = [];
+    rawLines.forEach(line => {
+      if (/^\s*Auto-Entered Text\s*:/i.test(line)) return;
+      const m = line.split('—');
+      const code  = (m[0] || '').trim();
+      const label = (m.slice(1).join('—') || '').trim();
+      if (code || label) {
+        metaArray.push({
+          code,
+          label,
+          autoText: rcAutoText,
+          desc: code ? `Readcode: ${code}` : undefined
+        });
+      }
+    });
+
+    // unified tooltip across all codes for this control
+    const unifiedTooltip = buildTooltipFromReadcodeMeta(metaArray);
 
     const keyFrom = (base, hint='') => {
       const raw = (base || '').replace(/\s+/g,' ').trim() || 'field';
@@ -498,31 +501,41 @@
 
     function readcodeInfo(el){
       const host = el.closest('.readcode-host');
-      if (!host) return {};
+      if (!host) return [];
+
       const blob = host.getAttribute('data-readcodes') || '';
-      const lines = blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).filter(Boolean);
+      const rawLines = blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).filter(Boolean);
 
-      // first non "Auto-Entered Text:" line gives code — term
-      let code = '', label = '';
-      for (const line of lines){
-        if (/^\s*Auto-Entered Text\s*:/i.test(line)) continue;
-        const m = line.split('—');
-        code  = (m[0] || '').trim();
-        label = (m.slice(1).join('—') || '').trim();
-        break;
-      }
-
-      // grab auto text if present
-      const autoLine = lines.find(l => /^\s*Auto-Entered Text\s*:/i.test(l));
+      // Extract shared autoText (if any)
       let autoText = '';
-      if (autoLine) {
-        autoText = autoLine.replace(/^\s*Auto-Entered Text\s*:\s*/i,'').trim();
-      }
+      rawLines.forEach(line => {
+        if (/^\s*Auto-Entered Text\s*:/i.test(line)) {
+          autoText = line.replace(/^\s*Auto-Entered Text\s*:\s*/i,'').trim();
+        }
+      });
 
-      // desc kept for backwards compat but won't be emitted anymore
-      const desc = code ? `Readcode: ${code}` : undefined;
+      // Extract *all* code — label pairs (skip Auto-Entered Text lines)
+      const entries = [];
+      rawLines.forEach(line => {
+        if (/^\s*Auto-Entered Text\s*:/i.test(line)) return;
 
-      return { code, label, autoText, desc };
+        // split by "—"
+        const m = line.split('—');
+        const code  = (m[0] || '').trim();
+        const label = (m.slice(1).join('—') || '').trim();
+
+        // must have at least something meaningful
+        if (code || label) {
+          entries.push({
+            code,
+            label,
+            autoText,
+            desc: code ? `Readcode: ${code}` : undefined
+          });
+        }
+      });
+
+      return entries;
     }
 
     // group radio buttons by name
