@@ -413,6 +413,9 @@
 
   function mapReadList(ctrl){
     const geom = geomFrom(ctrl);
+    const metaArray = readcodeInfo(ctrl);
+    const unifiedTooltip = buildTooltipFromReadcodeMeta(metaArray);
+
     const cap =
       txt(ctrl.querySelector('.rl-caption')) ||
       txt(ctrl.querySelector('label')) ||
@@ -438,6 +441,7 @@
           ? (Array.from(select.selectedOptions || []).map(o => o.value))
           : (select.value || ''),
         template: '<span>{{ item.label }}</span>',
+        tooltip: unifiedTooltip,
         properties: { kind: 'ReadList', ...geom }
       }];
     }
@@ -463,6 +467,7 @@
         tableView: true,
         values,
         defaultValue: def,
+        tooltip: unifiedTooltip,
         properties: { kind: 'ReadListMulti', ...geom }
       }];
     }
@@ -489,6 +494,7 @@
         inline: true,
         values,
         defaultValue: def,
+        tooltip: unifiedTooltip,
         properties: { kind: 'ReadListExclusive', ...geom }
       }];
     }
