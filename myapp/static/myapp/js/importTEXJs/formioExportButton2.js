@@ -81,6 +81,45 @@
     return !!root.querySelector('select,textarea,input[type="text"],input[type="date"],input[type="number"],input[type="checkbox"],input[type="radio"]');
   }
 
+  function readcodeInfo(el){
+      const host = el.closest('.readcode-host');
+      if (!host) return [];
+
+      const blob = host.getAttribute('data-readcodes') || '';
+      const rawLines = blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).filter(Boolean);
+
+      // Extract shared autoText (if any)
+      let autoText = '';
+      rawLines.forEach(line => {
+        if (/^\s*Auto-Entered Text\s*:/i.test(line)) {
+          autoText = line.replace(/^\s*Auto-Entered Text\s*:\s*/i,'').trim();
+        }
+      });
+
+      // Extract *all* code — label pairs (skip Auto-Entered Text lines)
+      const entries = [];
+      rawLines.forEach(line => {
+        if (/^\s*Auto-Entered Text\s*:/i.test(line)) return;
+
+        // split by "—"
+        const m = line.split('—');
+        const code  = (m[0] || '').trim();
+        const label = (m.slice(1).join('—') || '').trim();
+
+        // must have at least something meaningful
+        if (code || label) {
+          entries.push({
+            code,
+            label,
+            autoText,
+            desc: code ? `Readcode: ${code}` : undefined
+          });
+        }
+      });
+
+      return entries;
+    }
+
   function buildTooltipFromReadcodeMeta(metaArray){
     if (!metaArray || !metaArray.length) return undefined;
 
@@ -94,7 +133,7 @@
 
       if (c || l) {
         // e.g. "TRIQQNMF1 MFD - Medically Fully Deployable"
-        lines.push(c && l ? (c + ' ' + l) : (c || l));
+        lines.push(c && l ? (c + ' = ' + l) : (c || l));
       }
 
       if (a) {
@@ -541,45 +580,6 @@
       const lg = fs?.querySelector('legend');
       if (lg) return txt(lg);
       return el.name || el.placeholder || 'Field';
-    }
-
-    function readcodeInfo(el){
-      const host = el.closest('.readcode-host');
-      if (!host) return [];
-
-      const blob = host.getAttribute('data-readcodes') || '';
-      const rawLines = blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).filter(Boolean);
-
-      // Extract shared autoText (if any)
-      let autoText = '';
-      rawLines.forEach(line => {
-        if (/^\s*Auto-Entered Text\s*:/i.test(line)) {
-          autoText = line.replace(/^\s*Auto-Entered Text\s*:\s*/i,'').trim();
-        }
-      });
-
-      // Extract *all* code — label pairs (skip Auto-Entered Text lines)
-      const entries = [];
-      rawLines.forEach(line => {
-        if (/^\s*Auto-Entered Text\s*:/i.test(line)) return;
-
-        // split by "—"
-        const m = line.split('—');
-        const code  = (m[0] || '').trim();
-        const label = (m.slice(1).join('—') || '').trim();
-
-        // must have at least something meaningful
-        if (code || label) {
-          entries.push({
-            code,
-            label,
-            autoText,
-            desc: code ? `Readcode: ${code}` : undefined
-          });
-        }
-      });
-
-      return entries;
     }
 
     // group radio buttons by name
