@@ -81,11 +81,66 @@
     return !!root.querySelector('select,textarea,input[type="text"],input[type="date"],input[type="number"],input[type="checkbox"],input[type="radio"]');
   }
 
-  // readcode -> array of components
+  function buildTooltipFromReadcodeMeta(meta){
+    // meta may have code, label, autoText, desc etc. We'll assemble a nice compact tooltip.
+    if (!meta) return undefined;
+
+    const parts = [];
+    if (meta.code) {
+      // e.g. "TRIQQNMF1 Full medical deployability"
+      const codePart = meta.code.trim();
+      const labelPart = (meta.label || '').trim();
+      if (labelPart) {
+        parts.push(codePart + ' ' + labelPart);
+      } else {
+        parts.push(codePart);
+      }
+    }
+
+    // If there's an autoText or similar, append
+    if (meta.autoText) {
+      parts.push('Auto: ' + meta.autoText.trim());
+    }
+
+    // Fallback – if we never had code but we had desc like "Readcode: XYZ"
+    if (!parts.length && meta.desc) {
+      parts.push(meta.desc);
+    }
+
+    if (!parts.length) return undefined;
+    return parts.join('\n');
+  }
+
+  // ====== bits of logic copied/adapted from original ==========================
   function mapReadCode(ctrl){
     const out = [];
+
     const labelText = (ctrl.querySelector('.rc-prompt')?.textContent || '').trim() || 'Read code';
-    const readcode  = (ctrl.querySelector('input[type="hidden"][name$="_readcode"]')?.value || '').trim();
+
+    // pull full readcode metadata from the host (same logic as readcodeInfo but inline here)
+    const host = ctrl.closest('.readcode-host') || ctrl;
+    const blob = host.getAttribute('data-readcodes') || '';
+    const lines = blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).filter(Boolean);
+    let rcCode = '', rcLabel = '';
+    for (const line of lines){
+      if (/^\s*Auto-Entered Text\s*:/i.test(line)) continue;
+      const m = line.split('—');
+      rcCode  = (m[0] || '').trim();
+      rcLabel = (m.slice(1).join('—') || '').trim();
+      break;
+    }
+    const autoLine = lines.find(l => /^\s*Auto-Entered Text\s*:/i.test(l));
+    let rcAutoText = '';
+    if (autoLine) {
+      rcAutoText = autoLine.replace(/^\s*Auto-Entered Text\s*:\s*/i,'').trim();
+    }
+    const fieldMeta = {
+      code: rcCode,
+      label: rcLabel,
+      autoText: rcAutoText,
+      desc: rcCode ? `Readcode: ${rcCode}` : undefined
+    };
+    const unifiedTooltip = buildTooltipFromReadcodeMeta(fieldMeta);
 
     const keyFrom = (base, hint='') => {
       const raw = (base || '').replace(/\s+/g,' ').trim() || 'field';
@@ -119,18 +174,29 @@
     // TEXT (+ optional DATE)
     if (hasText && !hasYesNo && !hasVal){
       out.push({
-        type: 'textfield', input: true, key: keyFrom(labelText), label: labelText,
-        tableView: true, labelPosition: 'left-left', inputFormat: 'plain',
+        type: 'textfield',
+        input: true,
+        key: keyFrom(labelText),
+        label: labelText,
+        tableView: true,
+        labelPosition: 'left-left',
+        inputFormat: 'plain',
         validate: { required: textEl.hasAttribute('required') },
-        description: readcode ? `Readcode: ${readcode}` : undefined
+        tooltip: unifiedTooltip
       });
       if (hasDate){
         out.push({
-          type: 'datetime', input: true, key: keyFrom(labelText, 'date'),
-          label: `${labelText} (date)`, labelPosition: 'left-left', tableView: true,
-          enableDate: true, enableTime: false, datePicker: { showWeeks: true },
+          type: 'datetime',
+          input: true,
+          key: keyFrom(labelText, 'date'),
+          label: `${labelText} (date)`,
+          labelPosition: 'left-left',
+          tableView: true,
+          enableDate: true,
+          enableTime: false,
+          datePicker: { showWeeks: true },
           validate: { required: dateEl.hasAttribute('required') },
-          description: readcode ? `Readcode: ${readcode}` : undefined
+          tooltip: unifiedTooltip
         });
       }
       return out;
@@ -139,10 +205,17 @@
     // DATE only
     if (hasDate && !hasYesNo && !hasVal){
       out.push({
-        type: 'datetime', input: true, key: keyFrom(labelText), label: labelText,
-        labelPosition: 'left-left', tableView: true, enableDate: true, enableTime: false,
-        datePicker: { showWeeks: true }, validate: { required: dateEl.hasAttribute('required') },
-        description: readcode ? `Readcode: ${readcode}` : undefined
+        type: 'datetime',
+        input: true,
+        key: keyFrom(labelText),
+        label: labelText,
+        labelPosition: 'left-left',
+        tableView: true,
+        enableDate: true,
+        enableTime: false,
+        datePicker: { showWeeks: true },
+        validate: { required: dateEl.hasAttribute('required') },
+        tooltip: unifiedTooltip
       });
       return out;
     }
@@ -150,10 +223,15 @@
     // VALUE only
     if (hasVal && !hasYesNo && !hasText && !hasDate){
       out.push({
-        type: 'number', input: true, key: keyFrom(labelText), label: labelText, tableView: true,
-        labelPosition: 'left-left', suffix: unitText || undefined,
+        type: 'number',
+        input: true,
+        key: keyFrom(labelText),
+        label: labelText,
+        tableView: true,
+        labelPosition: 'left-left',
+        suffix: unitText || undefined,
         validate: { required: valEl.hasAttribute('required'), step: 'any' },
-        description: readcode ? `Readcode: ${readcode}` : undefined
+        tooltip: unifiedTooltip
       });
       return out;
     }
@@ -166,38 +244,60 @@
       const noChecked  = !!(noInput  && noInput.checked);
 
       out.push({
-        type: 'radio', input: true, key: keyFrom(labelText), label: labelText, tableView: true, inline: true,
+        type: 'radio',
+        input: true,
+        key: keyFrom(labelText),
+        label: labelText,
+        tableView: true,
+        inline: true,
         values: [
           { value: yesVal, label: 'Yes', shortcut: '' },
           { value: noVal,  label: 'No',  shortcut: '' }
         ],
         defaultValue: yesChecked ? yesVal : (noChecked ? noVal : ''),
         properties: { kind: 'QuestionReadCode', readcode: yesVal, negcode: noVal },
-        description: readcode ? `Readcode: ${readcode}` : undefined
+        tooltip: unifiedTooltip
       });
 
       if (hasText){
         out.push({
-          type: 'textfield', input: true, key: keyFrom(labelText, 'text'),
-          label: `${labelText} (text)`, tableView: true, labelPosition: 'left-left', inputFormat: 'plain',
+          type: 'textfield',
+          input: true,
+          key: keyFrom(labelText, 'text'),
+          label: `${labelText} (text)`,
+          tableView: true,
+          labelPosition: 'left-left',
+          inputFormat: 'plain',
           validate: { required: textEl.hasAttribute('required') },
-          description: readcode ? `Readcode: ${readcode}` : undefined
+          tooltip: unifiedTooltip
         });
       }
       if (hasVal){
         out.push({
-          type: 'number', input: true, key: keyFrom(labelText, 'value'),
-          label: `${labelText} (value)`, tableView: true, labelPosition: 'left-left', suffix: unitText || undefined,
+          type: 'number',
+          input: true,
+          key: keyFrom(labelText, 'value'),
+          label: `${labelText} (value)`,
+          tableView: true,
+          labelPosition: 'left-left',
+          suffix: unitText || undefined,
           validate: { required: valEl.hasAttribute('required'), step: 'any' },
-          description: readcode ? `Readcode: ${readcode}` : undefined
+          tooltip: unifiedTooltip
         });
       }
       if (hasDate){
         out.push({
-          type: 'datetime', input: true, key: keyFrom(labelText, 'date'),
-          label: `${labelText} (date)`, labelPosition: 'left-left', tableView: true, enableDate: true, enableTime: false,
-          datePicker: { showWeeks: true }, validate: { required: dateEl.hasAttribute('required') },
-          description: readcode ? `Readcode: ${readcode}` : undefined
+          type: 'datetime',
+          input: true,
+          key: keyFrom(labelText, 'date'),
+          label: `${labelText} (date)`,
+          labelPosition: 'left-left',
+          tableView: true,
+          enableDate: true,
+          enableTime: false,
+          datePicker: { showWeeks: true },
+          validate: { required: dateEl.hasAttribute('required') },
+          tooltip: unifiedTooltip
         });
       }
       return out;
@@ -206,33 +306,53 @@
     // Simple checkbox
     if (hasChk){
       out.push({
-        type: 'checkbox', input: true, key: keyFrom(labelText, 'chk'),
-        label: labelText, labelPosition: 'left', tableView: true,
-        tooltip: readcode ? `Readcode: ${readcode}` : undefined
+        type: 'checkbox',
+        input: true,
+        key: keyFrom(labelText, 'chk'),
+        label: labelText,
+        labelPosition: 'left',
+        tableView: true,
+        tooltip: unifiedTooltip
       });
 
       if (hasText){
         out.push({
-          type: 'textfield', input: true, key: keyFrom(labelText, 'text'),
-          label: `${labelText} (text)`, tableView: true, labelPosition: 'left-left', inputFormat: 'plain',
+          type: 'textfield',
+          input: true,
+          key: keyFrom(labelText, 'text'),
+          label: `${labelText} (text)`,
+          tableView: true,
+          labelPosition: 'left-left',
+          inputFormat: 'plain',
           validate: { required: textEl.hasAttribute('required') },
-          description: readcode ? `Readcode: ${readcode}` : undefined
+          tooltip: unifiedTooltip
         });
       }
       if (hasVal){
         out.push({
-          type: 'number', input: true, key: keyFrom(labelText, 'value'),
-          label: `${labelText} (value)`, tableView: true, labelPosition: 'left-left',
+          type: 'number',
+          input: true,
+          key: keyFrom(labelText, 'value'),
+          label: `${labelText} (value)`,
+          tableView: true,
+          labelPosition: 'left-left',
           validate: { required: valEl.hasAttribute('required'), step: 'any' },
-          description: readcode ? `Readcode: ${readcode}` : undefined
+          tooltip: unifiedTooltip
         });
       }
       if (hasDate){
         out.push({
-          type: 'datetime', input: true, key: keyFrom(labelText, 'date'),
-          label: `${labelText} (date)`, labelPosition: 'left-left', tableView: true, enableDate: true, enableTime: false,
-          datePicker: { showWeeks: true }, validate: { required: dateEl.hasAttribute('required') },
-          description: readcode ? `Readcode: ${readcode}` : undefined
+          type: 'datetime',
+          input: true,
+          key: keyFrom(labelText, 'date'),
+          label: `${labelText} (date)`,
+          labelPosition: 'left-left',
+          tableView: true,
+          enableDate: true,
+          enableTime: false,
+          datePicker: { showWeeks: true },
+          validate: { required: dateEl.hasAttribute('required') },
+          tooltip: unifiedTooltip
         });
       }
       return out;
@@ -380,11 +500,29 @@
       const host = el.closest('.readcode-host');
       if (!host) return {};
       const blob = host.getAttribute('data-readcodes') || '';
-      const line = (blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).find(l => /\S/.test(l)) || '').trim();
-      if (!line) return {};
-      const parts = line.split('—');
-      const code = (parts[0] || '').trim();
-      return { desc: code ? `Readcode: ${code}` : undefined };
+      const lines = blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).filter(Boolean);
+
+      // first non "Auto-Entered Text:" line gives code — term
+      let code = '', label = '';
+      for (const line of lines){
+        if (/^\s*Auto-Entered Text\s*:/i.test(line)) continue;
+        const m = line.split('—');
+        code  = (m[0] || '').trim();
+        label = (m.slice(1).join('—') || '').trim();
+        break;
+      }
+
+      // grab auto text if present
+      const autoLine = lines.find(l => /^\s*Auto-Entered Text\s*:/i.test(l));
+      let autoText = '';
+      if (autoLine) {
+        autoText = autoLine.replace(/^\s*Auto-Entered Text\s*:\s*/i,'').trim();
+      }
+
+      // desc kept for backwards compat but won't be emitted anymore
+      const desc = code ? `Readcode: ${code}` : undefined;
+
+      return { code, label, autoText, desc };
     }
 
     // group radio buttons by name
@@ -419,7 +557,7 @@
 
       const def = (group.find(r => r.checked) || {}).value || '';
       const meta = readcodeInfo(group[0]);
-
+      const unifiedTooltip = buildTooltipFromReadcodeMeta(meta);
       out.push({
         type: 'radio',
         input: true,
@@ -429,7 +567,7 @@
         inline: true,
         values,
         defaultValue: def,
-        description: meta.desc,
+        tooltip: unifiedTooltip,
         properties: { ...geom }
       });
     });
@@ -449,7 +587,7 @@
         : (sel.value || '');
 
       const meta = readcodeInfo(sel);
-
+      const unifiedTooltip = buildTooltipFromReadcodeMeta(meta);
       out.push({
         type: 'select',
         input: true,
@@ -461,7 +599,7 @@
         multiple,
         defaultValue: def,
         template: '<span>{{ item.label }}</span>',
-        description: meta.desc,
+        tooltip: unifiedTooltip,
         properties: { ...geom }
       });
     });
@@ -471,6 +609,7 @@
     checks.forEach(ch => {
       const label = findLabelFor(ch);
       const meta = readcodeInfo(ch);
+      const unifiedTooltip = buildTooltipFromReadcodeMeta(meta);
       out.push({
         type: 'checkbox',
         input: true,
@@ -478,7 +617,7 @@
         label,
         tableView: true,
         defaultValue: !!ch.checked,
-        tooltip: meta.desc,
+        tooltip: unifiedTooltip,
         properties: { ...geom }
       });
     });
@@ -488,6 +627,7 @@
     dates.forEach(d => {
       const label = findLabelFor(d);
       const meta = readcodeInfo(d);
+      const unifiedTooltip = buildTooltipFromReadcodeMeta(meta);
       out.push({
         type: 'datetime',
         input: true,
@@ -499,7 +639,7 @@
         enableTime: false,
         datePicker: { showWeeks: true },
         validate: { required: d.hasAttribute('required') },
-        description: meta.desc,
+        tooltip: unifiedTooltip,
         properties: { ...geom }
       });
     });
@@ -509,6 +649,7 @@
     areas.forEach(a => {
       const label = findLabelFor(a);
       const meta = readcodeInfo(a);
+      const unifiedTooltip = buildTooltipFromReadcodeMeta(meta);
       out.push({
         type: 'textarea',
         input: true,
@@ -517,7 +658,7 @@
         tableView: true,
         rows: Math.max(1, parseInt(a.getAttribute('rows') || '3', 10)),
         defaultValue: a.value || '',
-        description: meta.desc,
+        tooltip: unifiedTooltip,
         properties: { ...geom }
       });
     });
@@ -528,6 +669,8 @@
     texts.forEach(ti => {
       const label = findLabelFor(ti);
       const meta = readcodeInfo(ti);
+      const unifiedTooltip = buildTooltipFromReadcodeMeta(meta);
+
       if (ti.type === 'number') {
         out.push({
           type: 'number',
@@ -536,7 +679,7 @@
           label,
           tableView: true,
           validate: { step: 'any', required: ti.hasAttribute('required') },
-          description: meta.desc,
+          tooltip: unifiedTooltip,
           properties: { ...geom }
         });
       } else {
@@ -549,7 +692,7 @@
           inputFormat: 'plain',
           validate: { required: ti.hasAttribute('required') },
           defaultValue: ti.value || '',
-          description: meta.desc,
+          tooltip: unifiedTooltip,
           properties: { ...geom }
         });
       }
