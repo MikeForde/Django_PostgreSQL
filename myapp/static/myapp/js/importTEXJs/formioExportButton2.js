@@ -77,6 +77,14 @@
     );
   }
 
+  function decodeUnicodeEscapes(str){
+    if (!str) return '';
+    // Replace \u followed by 4 hex digits with the actual char
+    return str.replace(/\\u([0-9a-fA-F]{4})/g, (_, g1) =>
+      String.fromCharCode(parseInt(g1, 16))
+    );
+  }
+
   function hasAnyFormInputs(root){
     return !!root.querySelector('select,textarea,input[type="text"],input[type="date"],input[type="number"],input[type="checkbox"],input[type="radio"]');
   }
@@ -86,7 +94,12 @@
       if (!host) return [];
 
       const blob = host.getAttribute('data-readcodes') || '';
-      const rawLines = blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).filter(Boolean);
+      blob = decodeUnicodeEscapes(blob);
+
+      // normalize escaped newlines (\u000A) just in case
+      blob = blob.replace(/\\u000A/gi, '\n');
+
+      const rawLines = blob.split(/\r?\n/).filter(Boolean);
 
       // Extract shared autoText (if any)
       let autoText = '';
@@ -154,7 +167,12 @@
     // pull full readcode metadata from the host (same logic as readcodeInfo but inline here)
     const host = ctrl.closest('.readcode-host') || ctrl;
     const blob = host.getAttribute('data-readcodes') || '';
-    const rawLines = blob.replace(/\\u000A/gi, '\n').split(/\r?\n/).filter(Boolean);
+    blob = decodeUnicodeEscapes(blob);
+
+    // normalize escaped newlines (\u000A) just in case
+    blob = blob.replace(/\\u000A/gi, '\n');
+
+    const rawLines = blob.split(/\r?\n/).filter(Boolean);
 
     // grab shared autoText if present
     let rcAutoText = '';
