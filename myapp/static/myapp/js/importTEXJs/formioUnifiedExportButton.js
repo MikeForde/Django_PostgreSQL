@@ -555,6 +555,209 @@
     return [];
   }
 
+  function mapGenericControls(ctrl){
+    const out = [];
+    const geom = geomFrom(ctrl);
+
+    function findLabelFor(el){
+      if (el.id) {
+        const m = ctrl.querySelector(`label[for="${CSS.escape(el.id)}"]`);
+        if (m) return txt(m);
+      }
+      const wrap = el.closest('label');
+      if (wrap) return txt(wrap);
+      let p = el.previousElementSibling;
+      if (p && /^(LABEL|SPAN|STRONG)$/i.test(p.tagName)) {
+        const t = txt(p); if (t) return t;
+      }
+      const fs = el.closest('fieldset');
+      const lg = fs?.querySelector('legend');
+      if (lg) return txt(lg);
+      return el.name || el.placeholder || 'Field';
+    }
+
+    // group radio buttons by name
+    const radios = Array.from(ctrl.querySelectorAll('input[type="radio"]'));
+    const radioGroups = new Map();
+    radios.forEach(r => {
+      const name = r.name || '_radio_' + Math.random().toString(36).slice(2);
+      if (!radioGroups.has(name)) radioGroups.set(name, []);
+      radioGroups.get(name).push(r);
+    });
+
+    radioGroups.forEach(group => {
+      const label = findLabelFor(group[0]);
+      const values = [];
+      const seen = new Set();
+
+      group.forEach(r => {
+        let optLabel = '';
+        const lab = r.closest('label');
+        if (lab) optLabel = txt(lab);
+        if (!optLabel) {
+          const sib = r.nextSibling;
+          if (sib && sib.nodeType === 3) optLabel = (sib.nodeValue || '').trim();
+        }
+        if (!optLabel) optLabel = r.value || 'Option';
+
+        const optVal = r.value || keyify(optLabel);
+        if (seen.has(optVal)) return;
+        seen.add(optVal);
+        values.push({ value: optVal, label: optLabel, shortcut: '' });
+      });
+
+      const def = (group.find(r => r.checked) || {}).value || '';
+      const meta = readcodeInfo(group[0]);
+      const unifiedTooltip = buildTooltipFromReadcodeMeta(meta);
+      out.push({
+        type: 'radio',
+        input: true,
+        key: uniqueKey(label),
+        label,
+        tableView: true,
+        inline: true,
+        values,
+        defaultValue: def,
+        tooltip: unifiedTooltip,
+        properties: { ...geom }
+      });
+    });
+
+    // selects
+    const selects = Array.from(ctrl.querySelectorAll('select'));
+    selects.forEach(sel => {
+      const label = findLabelFor(sel);
+      const opts = Array.from(sel.querySelectorAll('option')).map(o => ({
+        value: o.value || txt(o),
+        label: txt(o) || o.value || ''
+      })).filter(o => o.value || o.label);
+
+      const multiple = !!sel.multiple;
+      const def = multiple
+        ? Array.from(sel.selectedOptions || []).map(o => o.value || txt(o))
+        : (sel.value || '');
+
+      const meta = readcodeInfo(sel);
+      const unifiedTooltip = buildTooltipFromReadcodeMeta(meta);
+      out.push({
+        type: 'select',
+        input: true,
+        key: uniqueKey(label),
+        label,
+        tableView: true,
+        dataSrc: 'values',
+        data: { values: opts },
+        multiple,
+        defaultValue: def,
+        template: '<span>{{ item.label }}</span>',
+        tooltip: unifiedTooltip,
+        properties: { ...geom }
+      });
+    });
+
+    // checkboxes
+    const checks = Array.from(ctrl.querySelectorAll('input[type="checkbox"]'));
+    checks.forEach(ch => {
+      const label = findLabelFor(ch);
+      const meta = readcodeInfo(ch);
+      const unifiedTooltip = buildTooltipFromReadcodeMeta(meta);
+      out.push({
+        type: 'checkbox',
+        input: true,
+        key: uniqueKey(label),
+        label,
+        tableView: true,
+        defaultValue: !!ch.checked,
+        tooltip: unifiedTooltip,
+        properties: { ...geom }
+      });
+    });
+
+    // dates
+    const dates = Array.from(ctrl.querySelectorAll('input[type="date"]'));
+    dates.forEach(d => {
+      const label = findLabelFor(d);
+      const meta = readcodeInfo(d);
+      const unifiedTooltip = buildTooltipFromReadcodeMeta(meta);
+      out.push({
+        type: 'datetime',
+        input: true,
+        key: uniqueKey(label),
+        label,
+        labelPosition: 'left-left',
+        tableView: true,
+        enableDate: true,
+        enableTime: false,
+        datePicker: { showWeeks: true },
+        validate: { required: d.hasAttribute('required') },
+        tooltip: unifiedTooltip,
+        properties: { ...geom }
+      });
+    });
+
+    // textareas
+    const areas = Array.from(ctrl.querySelectorAll('textarea'));
+    areas.forEach(a => {
+      const label = findLabelFor(a);
+      const meta = readcodeInfo(a);
+      const unifiedTooltip = buildTooltipFromReadcodeMeta(meta);
+      out.push({
+        type: 'textarea',
+        input: true,
+        key: uniqueKey(label),
+        label,
+        tableView: true,
+        rows: Math.max(1, parseInt(a.getAttribute('rows') || '3', 10)),
+        defaultValue: a.value || '',
+        tooltip: unifiedTooltip,
+        properties: { ...geom }
+      });
+    });
+
+    // text/number inputs (not readOnly)
+    const texts = Array.from(ctrl.querySelectorAll('input[type="text"],input[type="number"]'))
+      .filter(i => !i.readOnly);
+    texts.forEach(ti => {
+      const label = findLabelFor(ti);
+      const meta = readcodeInfo(ti);
+      const unifiedTooltip = buildTooltipFromReadcodeMeta(meta);
+
+      if (ti.type === 'number') {
+        out.push({
+          type: 'number',
+          input: true,
+          key: uniqueKey(label),
+          label,
+          tableView: true,
+          validate: { step: 'any', required: ti.hasAttribute('required') },
+          tooltip: unifiedTooltip,
+          properties: { ...geom }
+        });
+      } else {
+        out.push({
+          type: 'textfield',
+          input: true,
+          key: uniqueKey(label),
+          label,
+          tableView: true,
+          inputFormat: 'plain',
+          validate: { required: ti.hasAttribute('required') },
+          defaultValue: ti.value || '',
+          tooltip: unifiedTooltip,
+          properties: { ...geom }
+        });
+      }
+    });
+
+    if (!out.length) {
+      const legend = ctrl.querySelector('legend');
+      if (legend) return [ makeHtmlEl(txt(legend)) ];
+      const anyLabel = ctrl.querySelector('label');
+      if (anyLabel) return [ makeHtmlEl(txt(anyLabel)) ];
+    }
+    return out;
+  }
+
   // =========================================================
   // Shared "collect everything into atomicComponents"
   // =========================================================
