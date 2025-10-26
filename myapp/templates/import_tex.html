@@ -425,8 +425,12 @@
                       data-readcodes="RAFPUP01 — P0\u000ARAFPUP02 — P0R\u000ARAFPUP21 — P2\u000ARAFPUP22 — P2R\u000ARAFPUP31 — P3\u000ARAFPUP32 — P3R\u000ARAFPUP41 — P4\u000ARAFPUP42 — P4R\u000ARAFPUP71 — P7\u000ARAFPUP72 — P7R\u000ARAFPUP81 — P8\u000ARAFPUP82 — P8R">
                     <label>Physical</label>
                     <select name="{{ c.name }}_physical" style="width:40px;">
-                      <option>2</option><option>3</option>
-                      <option>4</option><option>7</option><option>8</option><option>0</option>
+                      <option value="RAFPUP21">2</option>
+                      <option value="RAFPUP31">3</option>
+                      <option value="RAFPUP41">4</option>
+                      <option value="RAFPUP71">7</option>
+                      <option value="RAFPUP81">8</option>
+                      <option value="RAFPUP01">0</option>
                     </select>
                     <input type="checkbox" name="{{ c.name }}_physical_remedial">
                     <label>Remedial</label>
@@ -437,8 +441,11 @@
                     data-readcodes="RAFPUU01 — U0\u000ARAFPUU02 — U0R\u000ARAFPUU21 — U2\u000ARAFPUU22 — U2R\u000ARAFPUU31 — U3\u000ARAFPUU32 — U3R\u000ARAFPUU71 — U7\u000ARAFPUU72 — U7R\u000ARAFPUU81 — U8\u000ARAFPUU82 — U8R">
                     <label>Upper Limbs</label>
                     <select name="{{ c.name }}_upper" style="width:40px;">
-                      <option>2</option><option>3</option>
-                      <option>7</option><option>8</option><option>0</option>
+                      <option value="RAFPUU21">2</option>
+                      <option value="RAFPUU31">3</option>
+                      <option value="RAFPUU71">7</option>
+                      <option value="RAFPUU81">8</option>
+                      <option value="RAFPUU01">0</option>
                     </select>
                     <input type="checkbox" name="{{ c.name }}_upper_remedial">
                     <label>Remedial</label>
@@ -449,8 +456,11 @@
                       data-readcodes="RAFPUL01 — L0\u000ARAFPUL02 — L0R\u000ARAFPUL21 — L2\u000ARAFPUL22 — L2R\u000ARAFPUL31 — L3\u000ARAFPUL32 — L3R\u000ARAFPUL71 — L7\u000ARAFPUL72 — L7R\u000ARAFPUL81 — L8\u000ARAFPUL82 — L8R">
                     <label>Lower Limbs</label>
                     <select name="{{ c.name }}_lower">
-                      <option>2</option><option>3</option>
-                      <option>7</option><option>8</option><option>0</option>
+                      <option value="RAFPUL21">2</option>
+                      <option value="RAFPUL31">3</option>
+                      <option value="RAFPUL71">7</option>
+                      <option value="RAFPUL81">8</option>
+                      <option value="RAFPUL01">0</option>
                     </select>
                     <input type="checkbox" name="{{ c.name }}_lower_remedial">
                     <label>Remedial</label>
@@ -495,7 +505,10 @@
                       data-readcodes="RAFPUM21 — M2\u000ARAFPUM31 — M3\u000ARAFPUM71 — M7\u000ARAFPUM81 — M8">
                     <label>Mental</label>
                     <select name="{{ c.name }}_mental" style="width:40px;">
-                      <option>2</option><option>3</option><option>7</option><option>8</option>
+                      <option value="RAFPUM21">2</option>
+                      <option value="RAFPUM31">3</option>
+                      <option value="RAFPUM71">7</option>
+                      <option value="RAFPUM81">8</option>
                     </select>
                   </div>
 
@@ -504,7 +517,11 @@
                       data-readcodes="RAFPUS01 — S0\u000ARAFPUS02 — S0R\u000ARAFPUS21 — S2\u000ARAFPUS22 — S2R\u000ARAFPUS31 — S3\u000ARAFPUS32 — S3R\u000ARAFPUS71 — S7\u000ARAFPUS72 — S7R\u000ARAFPUS81 — S8\u000ARAFPUS82 — S8R">
                     <label>Stability</label>
                     <select name="{{ c.name }}_stability" style="width:40px;">
-                      <option>2</option><option>3</option><option>7</option><option>8</option><option>0</option>
+                      <option value="RAFPUS21">2</option>
+                      <option value="RAFPUS31">3</option>
+                      <option value="RAFPUS71">7</option>
+                      <option value="RAFPUS81">8</option>
+                      <option value="RAFPUS01">0</option>
                     </select>
                     <input type="checkbox" name="{{ c.name }}_stability_remedial">
                     <label>Remedial</label>
@@ -528,32 +545,44 @@
                   <label>A</label>
                   <select name="{{ c.name }}_jmes_A" class="readcode-host"
                           data-readcodes="TRIQQNA11 — A1 - Fit for flying duties without restriction\u000ATRIQQNA21 — A2 - Fit for flying duties but has reduced hearing or eyesight\u000ATRIQQNA31 — A3 - Fit for duties in the air within the stated employment or MedLims\u000ATRIQQNA41 — A4 - Fit to be flown in a passenger aircraft\u000ATRIQQNA51 — A5 - Unfit to be taken in the air\u000ATRIQQNA61 — A6 - Unfit for any duties in the aviation environment">
-                    {% for i in "123456"|make_list %}
-                      <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
+                    <option value="TRIQQNA11">1</option>
+                    <option value="TRIQQNA21">2</option>
+                    <option value="TRIQQNA31">3</option>
+                    <option value="TRIQQNA41">4</option>
+                    <option value="TRIQQNA51">5</option>
+                    <option value="TRIQQNA61">6</option>
                   </select>
                   <label>L</label>
                   <select name="{{ c.name }}_jmes_L" class="readcode-host"
                           data-readcodes="TRIQQNL11 — L1 - Fit for unrestricted duty\u000ATRIQQNL21 — L2 - Fit for high readiness roles with minor limitations\u000ATRIQQNL31 — L3 - Fit for limited duties but with some restriction subject to MRA\u000ATRIQQNL41 — L4 - Fit for certain deployed roles into well-established MOB locations subject to Consultant Occupational Physician MRA\u000ATRIQQNL51 — L5 - Unfit deployment. Fit for branch/trade and limited UK operations\u000ATRIQQNL61 — L6 - Unfit for service in the land environment">
-                    {% for i in "123456"|make_list %}
-                      <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
+                    <option value="TRIQQNL11">1</option>
+                    <option value="TRIQQNL21">2</option>
+                    <option value="TRIQQNL31">3</option>
+                    <option value="TRIQQNL41">4</option>
+                    <option value="TRIQQNL51">5</option>
+                    <option value="TRIQQNL61">6</option>
                   </select>
 
                   <label>M</label>
                   <select name="{{ c.name }}_jmes_M" class="readcode-host"
                           data-readcodes="TRIQQNM11 — M1 - Fit for unrestricted duties\u000ATRIQQNM21 — M2 - Fit for restricted duties afloat within the limitations as stated\u000ATRIQQNM31 — M3 - Fit for restricted duties in a vessel in harbour or alongside with the limitations as stated\u000ATRIQQNM41 — M4 - Fit to be carried as embarked forces in transit\u000ATRIQQNM51 — M5 - Fit for restricted duties ashore within the limitations as stated\u000ATRIQQNM61 — M6 - Unfit for any duties in the maritime environment">
-                    {% for i in "123456"|make_list %}
-                      <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
+                    <option value="TRIQQNM11">1</option>
+                    <option value="TRIQQNM21">2</option>
+                    <option value="TRIQQNM31">3</option>
+                    <option value="TRIQQNM41">4</option>
+                    <option value="TRIQQNM51">5</option>
+                    <option value="TRIQQNM61">6</option>
                   </select>
 
                   <label>E</label>
                   <select name="{{ c.name }}_jmes_E" class="readcode-host"
                           data-readcodes="TRIQQNE11 — E1 - Fit for worldwide service in all environments\u000ATRIQQNE21 — E2 - Fit for unrestricted duties but with a medical risk marker\u000ATRIQQNE31 — E3 - Restricted employment outside UK due to medical support or environmental requirements\u000ATRIQQNE41 — E4 - Only to be employed out of the UK with access to established, 'NHS equivalent or better' Primary and Secondary Healthcare\u000ATRIQQNE51 — E5 - May be employed within the UK only\u000ATRIQQNE61 — E6 - Pregnancy/Maternity">
-                    {% for i in "123456"|make_list %}
-                      <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
+                    <option value="TRIQQNE11">1</option>
+                    <option value="TRIQQNE21">2</option>
+                    <option value="TRIQQNE31">3</option>
+                    <option value="TRIQQNE41">4</option>
+                    <option value="TRIQQNE51">5</option>
+                    <option value="TRIQQNE61">6</option>
                   </select>
 
                 </div>
@@ -561,9 +590,9 @@
                   <label>JMES Status</label>
                   <select name="{{ c.name }}_jmes_status" class="readcode-host"
                           data-readcodes="RAFMETE5 — Temporary MES\u000ARAFMEPE1 — Permanent MES\u000ARAFMENO3 — Not Applicable">
-                    <option>Temporary</option>
-                    <option>Permanent</option>
-                    <option>Not Applicable</option>
+                    <option value="RAFMETE5">Temporary</option>
+                    <option value="RAFMEPE1">Permanent</option>
+                    <option value="RAFMENO3">Not Applicable</option>
                   </select>
                 </div>
 
@@ -594,23 +623,24 @@
                 <select name="{{ c.name }}_right_uncorr" size="7" style="width:100%;"
                         class="readcode-host"
                         data-readcodes="2B6D — O/E - visual acuity R-eye=6/4\u000A2B61 — O/E - visual acuity R-eye =6/5\u000A2B62 — O/E - visual acuity R-eye =6/6\u000A2B6d — O/E - visual acuity right eye = 6/7.5\u000A2B63 — O/E - visual acuity R-eye =6/9\u000A2B64 — O/E - visual acuity R-eye=6/12\u000A2B6b — O/E- visual acuity R-eye =6/15\u000A2B65 — O/E - visual acuity R-eye=6/18\u000A2B66 — O/E - visual acuity R-eye=6/24\u000A2B67 — O/E - visual acuity R-eye=6/36\u000A2B6e — O/E - visual acuity right eye = 6/48\u000A2B68 — O/E - visual acuity R-eye=6/60\u000A2B69 — O/E -R-eye counts fingers only\u000A2B6C — O/E - R-eye sees hand movements\u000A2B6A — O/E-R-eye perceives light only\u000A2B6A — O/E - blind R-eye\u000A2B6B — O/E - R-eye completely blind">
-                  <option>O/E - visual acuity R-eye=6/4</option>
-                  <option>O/E - visual acuity R-eye =6/5</option>
-                  <option>O/E - visual acuity R-eye =6/6</option>
-                  <option>O/E - visual acuity right eye = 6/7.5</option>
-                  <option>O/E - visual acuity R-eye =6/9</option>
-                  <option>O/E - visual acuity R-eye=6/12</option>
-                  <option>O/E- visual acuity R-eye =6/15</option>
-                  <option>O/E - visual acuity R-eye=6/18</option>
-                  <option>O/E - visual acuity R-eye=6/24</option>
-                  <option>O/E - visual acuity R-eye=6/36</option>
-                  <option>O/E - visual acuity right eye = 6/48</option>
-                  <option>O/E - visual acuity R-eye=6/60</option>
-                  <option>O/E -R-eye counts fingers only</option>
-                  <option>O/E - R-eye sees hand movements</option>
-                  <option>O/E-R-eye perceives light only</option>
-                  <option>O/E - blind R-eye</option>
-                  <option>O/E - R-eye completely blind</option>
+                  <option value="2B6D">O/E - visual acuity R-eye=6/4</option>
+                  <option value="2B61">O/E - visual acuity R-eye =6/5</option>
+                  <option value="2B62">O/E - visual acuity R-eye =6/6</option>
+                  <option value="2B6d">O/E - visual acuity right eye = 6/7.5</option>
+                  <option value="2B63">O/E - visual acuity R-eye =6/9</option>
+                  <option value="2B64">O/E - visual acuity R-eye=6/12</option>
+                  <option value="2B6b">O/E- visual acuity R-eye =6/15</option>
+                  <option value="2B65">O/E - visual acuity R-eye=6/18</option>
+                  <option value="2B66">O/E - visual acuity R-eye=6/24</option>
+                  <option value="2B67">O/E - visual acuity R-eye=6/36</option>
+                  <option value="2B6e">O/E - visual acuity right eye = 6/48</option>
+                  <option value="2B68">O/E - visual acuity R-eye=6/60</option>
+                  <option value="2B69">O/E -R-eye counts fingers only</option>
+                  <option value="2B6C">O/E - R-eye sees hand movements</option>
+                  <option value="2B6A">O/E-R-eye perceives light only</option>
+                  <option value="2B6A">O/E - blind R-eye</option>
+                  <option value="2B6B">O/E - R-eye completely blind</option>
+
                 </select>
               </div>
 
@@ -619,23 +649,24 @@
                 <select name="{{ c.name }}_left_uncorr" size="7" style="width:100%;"
                         class="readcode-host"
                         data-readcodes="2B7D — O/E - visual acuity L-eye =6/4\u000A2B71 — O/E - visual acuity L-eye =6/5\u000A2B72 — O/E - visual acuity L-eye =6/6\u000A2B7e — O/E - visual acuity left eye = 6/7.5\u000A2B73 — O/E - visual acuity L-eye =6/9\u000A2B74 — O/E - visual acuity L-eye=6/12\u000A2B7b — O/E- visual acuity L-eye =6/15\u000A2B75 — O/E - visual acuity L-eye=6/18\u000A2B76 — O/E - visual acuity L-eye=6/24\u000A2B77 — O/E - visual acuity L-eye=6/36\u000A2B7d — O/E - visual acuity left eye = 6/48\u000A2B78 — O/E - visual acuity L-eye=6/60\u000A2B79 — O/E -L-eye counts fingers only\u000A2B7C — O/E - L-eye sees hand movements\u000A2B7A — O/E-L-eye perceives light only\u000A2B7A — O/E - blind L-eye\u000A2B7B — O/E - L-eye completely blind">
-                  <option>O/E - visual acuity L-eye =6/4</option>
-                  <option>O/E - visual acuity L-eye =6/5</option>
-                  <option>O/E - visual acuity L-eye =6/6</option>
-                  <option>O/E - visual acuity left eye = 6/7.5</option>
-                  <option>O/E - visual acuity L-eye =6/9</option>
-                  <option>O/E - visual acuity L-eye=6/12</option>
-                  <option>O/E- visual acuity L-eye =6/15</option>
-                  <option>O/E - visual acuity L-eye=6/18</option>
-                  <option>O/E - visual acuity L-eye=6/24</option>
-                  <option>O/E - visual acuity L-eye=6/36</option>
-                  <option>O/E - visual acuity left eye = 6/48</option>
-                  <option>O/E - visual acuity L-eye=6/60</option>
-                  <option>O/E -L-eye counts fingers only</option>
-                  <option>O/E - L-eye sees hand movements</option>
-                  <option>O/E-L-eye perceives light only</option>
-                  <option>O/E - blind L-eye</option>
-                  <option>O/E - L-eye completely blind</option>
+                  <option value="2B7D">O/E - visual acuity L-eye =6/4</option>
+                  <option value="2B71">O/E - visual acuity L-eye =6/5</option>
+                  <option value="2B72">O/E - visual acuity L-eye =6/6</option>
+                  <option value="2B7e">O/E - visual acuity left eye = 6/7.5</option>
+                  <option value="2B73">O/E - visual acuity L-eye =6/9</option>
+                  <option value="2B74">O/E - visual acuity L-eye=6/12</option>
+                  <option value="2B7b">O/E- visual acuity L-eye =6/15</option>
+                  <option value="2B75">O/E - visual acuity L-eye=6/18</option>
+                  <option value="2B76">O/E - visual acuity L-eye=6/24</option>
+                  <option value="2B77">O/E - visual acuity L-eye=6/36</option>
+                  <option value="2B7d">O/E - visual acuity left eye = 6/48</option>
+                  <option value="2B78">O/E - visual acuity L-eye=6/60</option>
+                  <option value="2B79">O/E -L-eye counts fingers only</option>
+                  <option value="2B7C">O/E - L-eye sees hand movements</option>
+                  <option value="2B7A">O/E-L-eye perceives light only</option>
+                  <option value="2B7A">O/E - blind L-eye</option>
+                  <option value="2B7B">O/E - L-eye completely blind</option>
+
                 </select>
               </div>
 
@@ -684,15 +715,15 @@
                 <select name="{{ c.name }}_right_corr" size="7" style="width:100%;"
                         class="readcode-host"
                         data-readcodes="TRIQQOE57 — O/E - visual acuity (corrected) R-eye 6/4\u000ATRISOZ2 — O/E - visual acuity (corrected) R-eye 6/5\u000ATRISOZ3 — O/E - visual acuity (corrected) R-eye 6/6\u000ATRISOZ4 — O/E - visual acuity (corrected) R-eye 6/9\u000ATRISOZ5 — O/E - visual acuity (corrected) R-eye 6/12\u000ATRISOZ6 — O/E - visual acuity (corrected) R-eye 6/18\u000ATRISOZ7 — O/E - visual acuity (corrected) R-eye 6/24\u000ATRISOZ8 — O/E - visual acuity (corrected) R-eye 6/36\u000ATRISOZ9 — O/E - visual acuity (corrected) R-eye 6/60">
-                  <option>O/E - visual acuity (corrected) R-eye 6/4</option>
-                  <option>O/E - visual acuity (corrected) R-eye 6/5</option>
-                  <option>O/E - visual acuity (corrected) R-eye 6/6</option>
-                  <option>O/E - visual acuity (corrected) R-eye 6/9</option>
-                  <option>O/E - visual acuity (corrected) R-eye 6/12</option>
-                  <option>O/E - visual acuity (corrected) R-eye 6/18</option>
-                  <option>O/E - visual acuity (corrected) R-eye 6/24</option>
-                  <option>O/E - visual acuity (corrected) R-eye 6/36</option>
-                  <option>O/E - visual acuity (corrected) R-eye 6/60</option>
+                  <option value="TRIQQOE57">O/E - visual acuity (corrected) R-eye 6/4</option>
+                  <option value="TRISOZ2">O/E - visual acuity (corrected) R-eye 6/5</option>
+                  <option value="TRISOZ3">O/E - visual acuity (corrected) R-eye 6/6</option>
+                  <option value="TRISOZ4">O/E - visual acuity (corrected) R-eye 6/9</option>
+                  <option value="TRISOZ5">O/E - visual acuity (corrected) R-eye 6/12</option>
+                  <option value="TRISOZ6">O/E - visual acuity (corrected) R-eye 6/18</option>
+                  <option value="TRISOZ7">O/E - visual acuity (corrected) R-eye 6/24</option>
+                  <option value="TRISOZ8">O/E - visual acuity (corrected) R-eye 6/36</option>
+                  <option value="TRISOZ9">O/E - visual acuity (corrected) R-eye 6/60</option>
                 </select>
               </div>
 
@@ -701,15 +732,15 @@
                 <select name="{{ c.name }}_left_corr" size="7" style="width:100%;"
                         class="readcode-host"
                         data-readcodes="TRIQQOE56 — O/E - visual acuity (corrected) L-eye 6/4\u000ATRISO/39 — O/E - visual acuity (corrected) L-eye 6/5\u000ATRISO/40 — O/E - visual acuity (corrected) L-eye 6/6\u000ATRISO/41 — O/E - visual acuity (corrected) L-eye 6/9\u000ATRISO/44 — O/E - visual acuity (corrected) L-eye 6/12\u000ATRISO/46 — O/E - visual acuity (corrected) L-eye 6/18\u000ATRISO/48 — O/E - visual acuity (corrected) L-eye 6/24\u000ATRISO/61 — O/E - visual acuity (corrected) L-eye 6/36\u000ATRISO/65 — O/E - visual acuity (corrected) L-eye 6/60">
-                  <option>O/E - visual acuity (corrected) L-eye 6/4</option>
-                  <option>O/E - visual acuity (corrected) L-eye 6/5</option>
-                  <option>O/E - visual acuity (corrected) L-eye 6/6</option>
-                  <option>O/E - visual acuity (corrected) L-eye 6/9</option>
-                  <option>O/E - visual acuity (corrected) L-eye 6/12</option>
-                  <option>O/E - visual acuity (corrected) L-eye 6/18</option>
-                  <option>O/E - visual acuity (corrected) L-eye 6/24</option>
-                  <option>O/E - visual acuity (corrected) L-eye 6/36</option>
-                  <option>O/E - visual acuity (corrected) L-eye 6/60</option>
+                  <option value="TRIQQOE56">O/E - visual acuity (corrected) L-eye 6/4</option>
+                  <option value="TRISO/39">O/E - visual acuity (corrected) L-eye 6/5</option>
+                  <option value="TRISO/40">O/E - visual acuity (corrected) L-eye 6/6</option>
+                  <option value="TRISO/41">O/E - visual acuity (corrected) L-eye 6/9</option>
+                  <option value="TRISO/44">O/E - visual acuity (corrected) L-eye 6/12</option>
+                  <option value="TRISO/46">O/E - visual acuity (corrected) L-eye 6/18</option>
+                  <option value="TRISO/48">O/E - visual acuity (corrected) L-eye 6/24</option>
+                  <option value="TRISO/61">O/E - visual acuity (corrected) L-eye 6/36</option>
+                  <option value="TRISO/65">O/E - visual acuity (corrected) L-eye 6/60</option>
                 </select>
               </div>
 
