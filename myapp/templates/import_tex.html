@@ -3244,6 +3244,8 @@
       // make the panel small/tight in collapsed mode
       panel.style.minWidth = '200px';
       panel.style.cursor = 'default';
+      panel.style.opacity = '0.7';         // semi-transparent
+      panel.style.backdropFilter = 'blur(2px)';
 
       const toggleBtn = panel.querySelector('#cmx-toggle');
       if (toggleBtn){
@@ -3306,6 +3308,8 @@
     // expanded mode styles
     panel.style.minWidth = '260px';
     panel.style.cursor = 'default';
+    panel.style.opacity = '1';              // fully opaque again
+    panel.style.backdropFilter = 'none';    // remove blur
 
     // wire buttons
     const toggleBtn = panel.querySelector('#cmx-toggle');
