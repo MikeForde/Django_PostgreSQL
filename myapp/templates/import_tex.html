@@ -3185,12 +3185,36 @@
     // Add an outline that strengthens with purity of either end if you like:
     // CANVAS.style.boxShadow = `inset 0 0 0 2px ${col}80`;
   }
+
+  function renderCollapsedPanel(panel, stats){
+    const { ratio, hasData } = stats;
+
+    const barOuter = hasData ? `
+      <div style="margin-top:4px; background:#f2f2f2; height:6px; border-radius:4px; overflow:hidden;" aria-hidden="true">
+        <div style="width:${pct(ratio)}%; height:100%; background:${lerpColor(COLOR_OTHER, COLOR_DMS, ratio)};"></div>
+      </div>` : '';
+
+    const ratioLine = hasData
+      ? `<div style="font-size:12px;">DMSCreate %: <strong>${pct(ratio)}%</strong></div>`
+      : `<div style="font-size:12px; opacity:.8;">No relevant codes.</div>`;
+
+    panel.innerHTML = `
+      <div style="display:flex; align-items:flex-start; gap:6px;">
+        <div style="flex:1; min-width:0;">
+          ${ratioLine}
+          ${barOuter}
+        </div>
+        <button type="button" id="cmx-toggle"
+          style="padding:2px 6px; font-size:11px; line-height:1.2;">
+          ⬆
+        </button>
+      </div>
+    `;
+  }
   
 
   // ===================== SUMMARY PANEL ========================================
   function renderPanel(stats){
-    const sidebar = document.getElementById('readcodes-sidebar');
-
     let panel = document.getElementById('code-mix-panel');
     if (!panel){
       panel = document.createElement('div');
@@ -3206,9 +3230,32 @@
       panel.style.padding = '10px 12px';
       panel.style.font = '12px/1.4 Arial, sans-serif';
       panel.style.minWidth = '260px';
+      panel.setAttribute('data-collapsed', 'true'); // default expanded
       document.body.appendChild(panel);
     }
 
+    // read current collapsed state from DOM
+    const collapsed = panel.getAttribute('data-collapsed') === 'true';
+
+    // if collapsed -> render the tiny version and wire the toggle, then bail
+    if (collapsed){
+      renderCollapsedPanel(panel, stats);
+
+      // make the panel small/tight in collapsed mode
+      panel.style.minWidth = '200px';
+      panel.style.cursor = 'default';
+
+      const toggleBtn = panel.querySelector('#cmx-toggle');
+      if (toggleBtn){
+        toggleBtn.onclick = () => {
+          panel.setAttribute('data-collapsed','false');
+          renderPanel(stats); // rerender expanded
+        };
+      }
+      return;
+    }
+
+    // ---------- EXPANDED MODE ----------
     const { buckets, ratio, totalConsidered, uniqueCodes, hasData } = stats;
 
     const barOuter = hasData ? `
@@ -3221,9 +3268,20 @@
       : `<div style="margin-top:8px; opacity:.8;">No relevant codes.</div>`;
 
     panel.innerHTML = `
-      <div style="font-weight:bold; margin-bottom:6px;">SnowFusion Mix</div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+        <div style="font-weight:bold; margin-bottom:6px; font-size:13px; line-height:1.2;">
+          SnowFusion Mix
+        </div>
+
+        <button type="button" id="cmx-toggle"
+          style="padding:2px 6px; font-size:11px; line-height:1.2;">
+          ⬇
+        </button>
+      </div>
+
       <div>Total codes: <strong>${uniqueCodes}</strong></div>
       <div>Included (DMS + non-DMS): <strong>${totalConsidered}</strong></div>
+
       <div style="margin-top:6px;">
         <div><span class="rc-decision badge--create">✔</span> Needing Creation (DMSCreate): <strong>${buckets.DMSCreate}</strong></div>
         <div><span class="rc-decision badge--ok">↔</span> Exact Map to SNOMED (APIMap): <strong>${buckets.APIMap}</strong></div>
@@ -3231,20 +3289,47 @@
         <div>Non-DMS (NHS Mapped): <strong>${buckets.Other}</strong></div>
         <div style="opacity:.7;">Inactivate/NEGATION/QUERY (ignored): ${buckets.Inactivate}</div>
       </div>
+
       ${ratioLine}
       ${barOuter}
+
       <div style="display:flex; gap:8px; margin-top:10px;">
         <button type="button" id="cmx-apply" style="padding:4px 8px;">Apply</button>
         <button type="button" id="cmx-clear" style="padding:4px 8px;">Clear</button>
       </div>
+
       <div style="margin-top:6px; font-size:11px; opacity:.8;">
         Scale: <span style="color:#2B8CBE;"><strong>Non-DMS</strong></span> → <span style="color:#E85E0C;"><strong>DMSCreate</strong></span>
       </div>
     `;
 
-    panel.querySelector('#cmx-apply').onclick = () => applyHeat(ratio, hasData);
-    panel.querySelector('#cmx-clear').onclick  = () => { RENDER.style.background = '#fff'; document.documentElement.style.removeProperty('--label-bg');};
+    // expanded mode styles
+    panel.style.minWidth = '260px';
+    panel.style.cursor = 'default';
+
+    // wire buttons
+    const toggleBtn = panel.querySelector('#cmx-toggle');
+    const applyBtn  = panel.querySelector('#cmx-apply');
+    const clearBtn  = panel.querySelector('#cmx-clear');
+
+    if (toggleBtn){
+      toggleBtn.onclick = () => {
+        panel.setAttribute('data-collapsed','true');
+        renderPanel(stats); // rerender collapsed
+      };
+    }
+
+    if (applyBtn){
+      applyBtn.onclick = () => applyHeat(ratio, hasData);
+    }
+    if (clearBtn){
+      clearBtn.onclick = () => {
+        RENDER.style.background = '#fff';
+        document.documentElement.style.removeProperty('--label-bg');
+      };
+    }
   }
+
 
     function debounce(fn, ms){
     let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
