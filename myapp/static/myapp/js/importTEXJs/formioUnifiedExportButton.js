@@ -449,60 +449,106 @@
     const metaArray = readcodeInfo(ctrl);
     const unifiedTooltip = buildTooltipFromReadcodeMeta(metaArray);
 
+    // Caption fallback for legacy/simple lists
     const cap =
       txt(ctrl.querySelector('.rl-caption')) ||
       txt(ctrl.querySelector('label')) ||
       'List';
 
+    // ---- NEW: detect multi-dropdown ".ms" widget (checkbox panel in a dropdown) ----
+    const msWrap = ctrl.querySelector('.ms');
+    if (msWrap) {
+      // Label comes from .ms-label
+      const msLabelText = txt(msWrap.querySelector('.ms-label')) || cap || 'List';
+
+      // Options live in .ms-panel label > input[type="checkbox"]
+      const checkLabels = Array.from(msWrap.querySelectorAll('.ms-panel label'));
+      const values = [];
+      const defaultVals = [];
+
+      checkLabels.forEach(lab => {
+        const inp = lab.querySelector('input[type="checkbox"]');
+        if (!inp) return;
+        const value = inp.value || '';
+        const label = (txt(lab) || '').replace(value, '').trim() || value;
+        // The above "replace(value)" is a light cleanup; if it's too aggressive you can drop it
+        values.push({ value, label, shortcut: '' });
+        if (inp.checked) {
+          defaultVals.push(value);
+        }
+      });
+
+      // Build a Form.io select with multiple=true
+      return [{
+        widget: "html5",
+        type: 'select',
+        key: uniqueKey('select_' + msLabelText),
+        label: msLabelText,
+        input: true,
+        tableView: true,
+        dataSrc: 'values',
+        data: { values: values },
+        multiple: true,
+        // defaultValue should be an array for multi selects
+        defaultValue: defaultVals,
+        template: '<span>{{ item.label }}</span>',
+        tooltip: unifiedTooltip,
+        properties: {
+          kind: 'ReadListMultiDropdown',
+          ...geom
+        }
+      }];
+    }
+
+    // ---- Standard <select> branch (single or multi native <select>) ----
     const select = ctrl.querySelector('select');
     if (select) {
-      // Gather raw <option>s
+      // Collect all <option> tags with some value/label
       const rawOptions = Array.from(select.querySelectorAll('option'))
-        .filter(o => (o.value || txt(o))); // ignore totally empty junk
+        .filter(o => (o.value || txt(o)));
 
-      // Build {value,label} list
       const builtOptions = rawOptions.map(o => ({
         value: o.value || txt(o),
         label: txt(o) || o.value || ''
       }));
 
-      let finalLabel = cap;
-      let finalOptions = builtOptions.slice(); // default: all of them
-
-      // Heuristic:
-      // - if we have at least 2 options
-      // - and cap was the generic fallback "List" (or empty)
-      // then assume option[0] is actually the field name, so:
-      //   * use option[0].label as the label for the Form.io component
-      //   * drop that first option from the actual selectable values
-      //
-      // We also don't want to do this for multi-selects.
       const multiple = !!select.multiple;
+
+      // Heuristic to handle TEX pattern:
+      // - first option is actually the field name, not a real choice
+      // - only apply if NOT multiple, and our "cap" is generic like 'List'
+      let finalLabel = cap;
+      let finalOptions = builtOptions.slice();
+
       if (!multiple && builtOptions.length >= 2) {
         const capIsGeneric = !cap || cap.toLowerCase() === 'list';
         if (capIsGeneric) {
           const firstOpt = builtOptions[0];
           if (firstOpt && firstOpt.label && firstOpt.label.trim()) {
             finalLabel = firstOpt.label.trim();
-            finalOptions = builtOptions.slice(1); // drop first
+            finalOptions = builtOptions.slice(1);
           }
         }
       }
 
-      // Work out defaultValue AFTER trimming options
+      // defaultValue handling
       let defaultValue;
       if (multiple) {
+        // Multiple-select default is an array
         defaultValue = Array.from(select.selectedOptions || []).map(o => o.value);
       } else {
-        // if we cut the first option, and the current select.value === that first option value,
-        // we should consider defaultValue undefined, because that "first" isn't really a choice.
         const currentVal = select.value || '';
-        const firstDroppedVal =
-          (!multiple && builtOptions.length >= 2 && finalOptions.length === builtOptions.length - 1)
+
+        // If we dropped the first option (label masquerading as option),
+        // and that dropped option was also the current value, suppress default
+        const droppedFirst =
+          (!multiple &&
+          builtOptions.length >= 2 &&
+          finalOptions.length === builtOptions.length - 1)
             ? builtOptions[0].value
             : null;
 
-        if (firstDroppedVal && currentVal === firstDroppedVal) {
+        if (droppedFirst && currentVal === droppedFirst) {
           defaultValue = '';
         } else {
           defaultValue = currentVal;
@@ -510,6 +556,7 @@
       }
 
       return [{
+        widget: "html5",
         type: 'select',
         key: uniqueKey('select_' + finalLabel),
         label: finalLabel,
@@ -521,10 +568,14 @@
         defaultValue,
         template: '<span>{{ item.label }}</span>',
         tooltip: unifiedTooltip,
-        properties: { kind: 'ReadList', ...geom }
+        properties: {
+          kind: multiple ? 'ReadListMultiDropdownNative' : 'ReadList',
+          ...geom
+        }
       }];
     }
 
+    // ---- Visible checkbox list (multi list) ----
     const checks = Array.from(ctrl.querySelectorAll('input[type="checkbox"]'));
     if (checks.length) {
       const values = checks.map(ch => {
@@ -532,13 +583,16 @@
         const value = keyify(lbl) || ('opt_' + Math.random().toString(36).slice(2));
         return { label: lbl, value, shortcut: '' };
       });
+
       const def = {};
       checks.forEach(ch => {
         const lbl = txt(ch.closest('label')) || ch.value || 'Option';
         const value = keyify(lbl);
         if (value) def[value] = !!ch.checked;
       });
+
       return [{
+        widget: "html5",
         type: 'selectboxes',
         key: uniqueKey('selectboxes_' + cap),
         label: cap,
@@ -547,10 +601,14 @@
         values,
         defaultValue: def,
         tooltip: unifiedTooltip,
-        properties: { kind: 'ReadListMulti', ...geom }
+        properties: {
+          kind: 'ReadListMulti',
+          ...geom
+        }
       }];
     }
 
+    // ---- Visible radio list (single list) ----
     const radios = Array.from(ctrl.querySelectorAll('input[type="radio"]'));
     if (radios.length) {
       const seen = new Map();
@@ -564,6 +622,7 @@
         }
       });
       const def = (radios.find(r => r.checked) || {}).value || '';
+
       return [{
         type: 'radio',
         key: uniqueKey('radio_' + cap),
@@ -574,12 +633,17 @@
         values,
         defaultValue: def,
         tooltip: unifiedTooltip,
-        properties: { kind: 'ReadListExclusive', ...geom }
+        properties: {
+          kind: 'ReadListExclusive',
+          ...geom
+        }
       }];
     }
 
+    // fallback non-input label block
     return [makeHtmlEl(cap)];
   }
+
 
   function mapLabelOrLink(ctrl){
     const a = ctrl.querySelector('a[href]');
