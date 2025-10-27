@@ -2983,6 +2983,7 @@
   //const COLOR_DMS   == { r:0xE6, g:0x9F, b:0x00 }; // #E69F00 (orange)
   // Where to tint; fallback to body if not found
   const CANVAS = document.querySelector('.tex-work') || document.body;
+  let HAS_QUERY_BADGE = false;
 
   const RENDER =
     document.querySelector('.tex-work > div[style*="position:relative"]') ||
@@ -3035,7 +3036,11 @@
       if (cl.contains('badge--apimap'))   return 'APIMap';
       if (cl.contains('badge--manual'))   return 'ManualMap';
       if (cl.contains('badge--miss'))     return 'Other'; 
-      if (cl.contains('badge--query'))     return 'DMSCreate';       // "Not in SnowFusion" etc
+      if (cl.contains('badge--query')) {
+        // mark presence of "?" codes for this render
+        HAS_QUERY_BADGE = true;
+        return 'DMSCreate'; // treat as DMSCreate-ish for ratio
+      }
     }
     // Fallback: parse the tip text (e.g., "DMSCreate • …", "APIMap • …")
     const tip = dec ? (dec.getAttribute('data-tip') || '') : '';
@@ -3044,7 +3049,10 @@
     if (head.includes('apimap'))    return 'APIMap';
     if (head.includes('manualmap')) return 'ManualMap';
     if (head.includes('inactivate'))return 'Inactivate';
-    if (head.includes('investigate'))return 'DMSCreate'; // treat as DMS
+    if (head.includes('investigate')){
+      HAS_QUERY_BADGE = true;
+      return 'DMSCreate'; // treat "investigate" like DMSCreate(?)
+    }
     return 'Other';
   }
 
@@ -3151,7 +3159,8 @@
       ratio,
       totalConsidered: denom,
       uniqueCodes: seenReal.size + seenIgnored.size, // total distinct things seen
-      hasData
+      hasData,
+      hasQuery: HAS_QUERY_BADGE
     };
   }
 
@@ -3277,7 +3286,7 @@
     }
 
     // ---------- EXPANDED MODE ----------
-    const { buckets, ratio, totalConsidered, uniqueCodes, hasData } = stats;
+    const { buckets, ratio, totalConsidered, uniqueCodes, hasData, hasQuery } = stats;
 
     const barOuter = hasData ? `
       <div style="margin-top:8px; background:#f2f2f2; height:10px; border-radius:6px; overflow:hidden;" aria-hidden="true">
@@ -3287,6 +3296,10 @@
     const ratioLine = hasData
       ? `<div style="margin-top:8px;">DMSCreate %: <strong>${pct(ratio)}%</strong></div>`
       : `<div style="margin-top:8px; opacity:.8;">No relevant codes.</div>`;
+
+    const dmsLegend = hasQuery
+      ? `<span class="rc-decision badge--create">✔</span><span>/</span><span class="rc-decision badge--query">?</span> Needing Creation(?) (DMSCreate): <strong>${buckets.DMSCreate}</strong>`
+      : `<span class="rc-decision badge--create">✔</span> Needing Creation (DMSCreate): <strong>${buckets.DMSCreate}</strong>`;
 
     panel.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
@@ -3304,7 +3317,7 @@
       <div>Included (DMS + non-DMS): <strong>${totalConsidered}</strong></div>
 
       <div style="margin-top:6px;">
-        <div><span class="rc-decision badge--create">✔</span><span>/</span><span class="rc-decision badge--query">?</span> Needing Creation(?) (DMSCreate): <strong>${buckets.DMSCreate}</strong></div>
+        <div>${dmsLegend}</div>
         <div><span class="rc-decision badge--ok">↔</span> Exact Map to SNOMED (APIMap): <strong>${buckets.APIMap}</strong></div>
         <div><span class="rc-decision badge--warn">↔</span> Manually mapped to SNOMED (ManualMap): <strong>${buckets.ManualMap}</strong></div>
         <div>Non-DMS (NHS Mapped): <strong>${buckets.Other}</strong></div>
@@ -3378,6 +3391,7 @@ function isClassificationReady(){
       dec.classList.contains('badge--loose')  ||
       dec.classList.contains('badge--apimap') ||
       dec.classList.contains('badge--manual') ||
+      dec.classList.contains('badge--query') ||
       dec.classList.contains('badge--miss');
     const hasTip = !!(dec.getAttribute('data-tip') || '').trim();
     if (hasKnownClass || hasTip) return true;
