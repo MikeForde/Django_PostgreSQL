@@ -456,23 +456,69 @@
 
     const select = ctrl.querySelector('select');
     if (select) {
-      const opts = Array.from(select.querySelectorAll('option'))
-        .filter(o => o.value || txt(o))
-        .map(o => ({ value: o.value || txt(o), label: txt(o) || o.value }));
+      // Gather raw <option>s
+      const rawOptions = Array.from(select.querySelectorAll('option'))
+        .filter(o => (o.value || txt(o))); // ignore totally empty junk
 
+      // Build {value,label} list
+      const builtOptions = rawOptions.map(o => ({
+        value: o.value || txt(o),
+        label: txt(o) || o.value || ''
+      }));
+
+      let finalLabel = cap;
+      let finalOptions = builtOptions.slice(); // default: all of them
+
+      // Heuristic:
+      // - if we have at least 2 options
+      // - and cap was the generic fallback "List" (or empty)
+      // then assume option[0] is actually the field name, so:
+      //   * use option[0].label as the label for the Form.io component
+      //   * drop that first option from the actual selectable values
+      //
+      // We also don't want to do this for multi-selects.
       const multiple = !!select.multiple;
+      if (!multiple && builtOptions.length >= 2) {
+        const capIsGeneric = !cap || cap.toLowerCase() === 'list';
+        if (capIsGeneric) {
+          const firstOpt = builtOptions[0];
+          if (firstOpt && firstOpt.label && firstOpt.label.trim()) {
+            finalLabel = firstOpt.label.trim();
+            finalOptions = builtOptions.slice(1); // drop first
+          }
+        }
+      }
+
+      // Work out defaultValue AFTER trimming options
+      let defaultValue;
+      if (multiple) {
+        defaultValue = Array.from(select.selectedOptions || []).map(o => o.value);
+      } else {
+        // if we cut the first option, and the current select.value === that first option value,
+        // we should consider defaultValue undefined, because that "first" isn't really a choice.
+        const currentVal = select.value || '';
+        const firstDroppedVal =
+          (!multiple && builtOptions.length >= 2 && finalOptions.length === builtOptions.length - 1)
+            ? builtOptions[0].value
+            : null;
+
+        if (firstDroppedVal && currentVal === firstDroppedVal) {
+          defaultValue = '';
+        } else {
+          defaultValue = currentVal;
+        }
+      }
+
       return [{
         type: 'select',
-        key: uniqueKey('select_' + cap),
-        label: cap,
+        key: uniqueKey('select_' + finalLabel),
+        label: finalLabel,
         input: true,
         tableView: true,
         dataSrc: 'values',
-        data: { values: opts },
+        data: { values: finalOptions },
         multiple,
-        defaultValue: multiple
-          ? Array.from(select.selectedOptions || []).map(o => o.value)
-          : (select.value || ''),
+        defaultValue,
         template: '<span>{{ item.label }}</span>',
         tooltip: unifiedTooltip,
         properties: { kind: 'ReadList', ...geom }
@@ -560,19 +606,38 @@
     const geom = geomFrom(ctrl);
 
     function findLabelFor(el){
+      // 1. for/id match
       if (el.id) {
         const m = ctrl.querySelector(`label[for="${CSS.escape(el.id)}"]`);
         if (m) return txt(m);
       }
+
+      // 2. wrapping label
       const wrap = el.closest('label');
       if (wrap) return txt(wrap);
+
+      // 3. immediate previous sibling like <span><strong> etc.
       let p = el.previousElementSibling;
       if (p && /^(LABEL|SPAN|STRONG)$/i.test(p.tagName)) {
-        const t = txt(p); if (t) return t;
+        const t = txt(p);
+        if (t) return t;
       }
+
+      // 4. fieldset legend
       const fs = el.closest('fieldset');
       const lg = fs?.querySelector('legend');
       if (lg) return txt(lg);
+
+      // 5. NEW: try to infer "Last Entry for CODE" from readcodeInfo
+      const metaArray = readcodeInfo(el); // array [{code,label,autoText},...]
+      if (metaArray && metaArray.length) {
+        const first = metaArray[0];
+        if (first && first.code) {
+          return `Last Entry for ${first.code}`;
+        }
+      }
+
+      // 6. old fallback
       return el.name || el.placeholder || 'Field';
     }
 
