@@ -1077,23 +1077,94 @@
     const toolbar = document.querySelector('form[method="post"]') || document.body;
     if (!toolbar) return;
 
-    // Button 1: flat form
+    // Button 1: flat Form.io JSON export (image styled as normal button)
     const btn1 = document.createElement('button');
     btn1.type = 'button';
-    btn1.textContent = '-> Form.io JSON';
+    btn1.title = 'Export to Public/GitHub Form.io JSON';
     btn1.style.marginLeft = '10px';
     btn1.style.padding = '6px 10px';
     btn1.style.fontSize = '12px';
+    btn1.style.border = '1px solid #888';
+    btn1.style.borderRadius = '4px';
+    btn1.style.background = '#f5f5f5';
+    btn1.style.cursor = 'pointer';
+    // btn1.style.display = 'flex';
+    // btn1.style.alignItems = 'center';
+    // btn1.style.justifyContent = 'center';
+    btn1.style.transition = 'background 0.2s, box-shadow 0.2s';
+
+    // Hover / click effects
+    btn1.addEventListener('mouseenter', () => {
+      btn1.style.background = '#eaeaea';
+      btn1.style.boxShadow = 'inset 0 1px 2px rgba(0,0,0,0.1)';
+    });
+    btn1.addEventListener('mouseleave', () => {
+      btn1.style.background = '#f5f5f5';
+      btn1.style.boxShadow = 'none';
+    });
+    btn1.addEventListener('mousedown', () => {
+      btn1.style.background = '#ddd';
+    });
+    btn1.addEventListener('mouseup', () => {
+      btn1.style.background = '#eaeaea';
+    });
+
+    // Add the logo image
+    const img1 = document.createElement('img');
+    img1.src = '/static/myapp/images/formio-logo.png'; // path for formio-logo.png
+    img1.alt = 'Export to Form.io JSON';
+    img1.style.height = '14px';
+    img1.style.width = 'auto';
+    img1.style.display = 'block';
+    img1.style.pointerEvents = 'none';
+    btn1.appendChild(img1);
+
+    // Click handler
     btn1.addEventListener('click', exportFlatForm);
 
+
     // Button 2: bundled project
+    // Button 2: bundled project (image styled as normal button)
     const btn2 = document.createElement('button');
     btn2.type = 'button';
-    btn2.textContent = '-> Form.io Project';
+    btn2.title = 'Export to Enterprise Form.io Project Template Import Format'; // tooltip
     btn2.style.marginLeft = '10px';
     btn2.style.padding = '6px 10px';
     btn2.style.fontSize = '12px';
+    btn2.style.border = '1px solid #888';
+    btn2.style.borderRadius = '4px';
+    btn2.style.background = '#f5f5f5';
+    btn2.style.cursor = 'pointer';
+    btn2.style.transition = 'background 0.2s, box-shadow 0.2s';
+
+    // Hover and active effect
+    btn2.addEventListener('mouseenter', () => {
+      btn2.style.background = '#eaeaea';
+      btn2.style.boxShadow = 'inset 0 1px 2px rgba(0,0,0,0.1)';
+    });
+    btn2.addEventListener('mouseleave', () => {
+      btn2.style.background = '#f5f5f5';
+      btn2.style.boxShadow = 'none';
+    });
+    btn2.addEventListener('mousedown', () => {
+      btn2.style.background = '#ddd';
+    });
+    btn2.addEventListener('mouseup', () => {
+      btn2.style.background = '#eaeaea';
+    });
+
+    // Add the logo image
+    const img = document.createElement('img');
+    img.src = '/static/myapp/images/formio-logo-bg.png'; // static path
+    img.alt = 'Export to Form.io Project';
+    img.style.height = '14px';
+    img.style.width = 'auto';
+    img.style.display = 'block';
+    img.style.pointerEvents = 'none'; // let the button handle clicks
+    btn2.appendChild(img);
+
     btn2.addEventListener('click', exportBundleProject);
+
 
     const renderBtn = toolbar.querySelector('button[type="submit"]');
     if (renderBtn && renderBtn.parentNode) {
