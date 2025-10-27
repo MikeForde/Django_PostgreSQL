@@ -1239,12 +1239,13 @@
     background-color: var(--label-bg, #fff);
   }
 
-    .badge{ margin-left:8px; padding:1px 6px; border-radius:4px; font-size:11px; border:1px solid transparent; }
+    .badge{ margin-left:8px; padding:1px 6px; border-radius:4px; font-size:11px; }
     .badge--pending{ background:#eee; color:#666; }
     .badge--create{ background:#c9fcd6; border-color:#91d5ff; color:#055118; }
     .badge--ok{ background:#e6f7ff; border-color:#91d5ff; color:#096dd9; }
     .badge--warn{ background:#fffbe6; border-color:#ffe58f; color:#ad6800; }
     .badge--miss{ background:#ffffff; border-color:#ffffff; color:#ffffff; }
+    .badge--query { background: #353535ff; border-color: #9a9a9aff; color: #ffffff; }
     .badge--loose{ background:#fb9295; border-color:#e8e8e8; color:#ffffff; }
     .rc-decision{ cursor:pointer; } 
     .readcode-highlight {
@@ -2310,23 +2311,40 @@
         const cleanCode = code.replace(/^Last Entry for\s+/i, '').trim();
 
         const badge = li.querySelector('.rc-decision');
-        const hit = results && results[cleanCode];   // ← use cleaned code for lookup
-
+        const hit = results && results[cleanCode];
         if (!badge) return;
 
         const extra = li.dataset.autotext ? `\n${li.dataset.autotext}` : '';
 
+        // --- Helper: detect DMS-like missing codes -------------------------------
+        const looksLikeDms = (s) => {
+          const stripped = s.replace(/^(NEGATION-|QUERY-)/i, '');
+          // ≥3 uppercase letters at start, total length ≥6
+          return /^[A-Z]{3,}/.test(stripped) && stripped.length >= 6;
+        };
+
         if (!hit) {
-          badge.textContent = '✗';
-          badge.className = 'rc-decision badge badge--miss';
-          badge.removeAttribute('title');
-          badge.setAttribute('data-tip', `Not in SnowFusion${extra}`);
+          // Missing or unknown
+          // looksLikeDms and not NEGATION- or QUERY;
+          const isDmsLike = looksLikeDms(cleanCode) && !/^NEGATION-|^QUERY-/i.test(cleanCode);
+
+          if (isDmsLike) {
+            badge.textContent = '?';
+            badge.className = 'rc-decision badge--query';
+            badge.removeAttribute('title');
+            badge.setAttribute('data-tip', `SnowFusion Status Unknown (was not a template code in 2022)${extra}`);
+          } else {
+            badge.textContent = '✗';
+            badge.className = 'rc-decision badge badge--miss';
+            badge.removeAttribute('title');
+            badge.setAttribute('data-tip', `Excluded from SnowFusion${extra}`);
+          }
         } else {
           const decision = hit.decision || '—';
           const desc = hit.description || '';
           const info = hit.info || '';
 
-          // Symbol selection (as before)
+          // Symbol selection
           let symbol = '•';
           if (decision === 'DMSCreate') symbol = '✔';
           else if (decision === 'ManualMap' || decision === 'APIMap') symbol = '↔';
@@ -2335,7 +2353,7 @@
           badge.textContent = symbol;
           badge.className = 'rc-decision ' + classFor(decision);
 
-          // Tooltip: Decision • Description \n info (if present)
+          // Tooltip
           const parts = [decision, desc].filter(Boolean).join(' • ');
           const tip = info ? `${parts}\n${info}` : (parts || decision);
           badge.setAttribute('data-tip', `${tip}${extra}`);
@@ -3016,7 +3034,8 @@
       // Some builds might have explicit classes for maps; if not, we'll use tip text below
       if (cl.contains('badge--apimap'))   return 'APIMap';
       if (cl.contains('badge--manual'))   return 'ManualMap';
-      if (cl.contains('badge--miss'))     return 'Other';       // "Not in SnowFusion" etc
+      if (cl.contains('badge--miss'))     return 'Other'; 
+      if (cl.contains('badge--query'))     return 'DMSCreate';       // "Not in SnowFusion" etc
     }
     // Fallback: parse the tip text (e.g., "DMSCreate • …", "APIMap • …")
     const tip = dec ? (dec.getAttribute('data-tip') || '') : '';
@@ -3285,7 +3304,7 @@
       <div>Included (DMS + non-DMS): <strong>${totalConsidered}</strong></div>
 
       <div style="margin-top:6px;">
-        <div><span class="rc-decision badge--create">✔</span> Needing Creation (DMSCreate): <strong>${buckets.DMSCreate}</strong></div>
+        <div><span class="rc-decision badge--create">✔</span><span>/</span><span class="rc-decision badge--query">?</span> Needing Creation(?) (DMSCreate): <strong>${buckets.DMSCreate}</strong></div>
         <div><span class="rc-decision badge--ok">↔</span> Exact Map to SNOMED (APIMap): <strong>${buckets.APIMap}</strong></div>
         <div><span class="rc-decision badge--warn">↔</span> Manually mapped to SNOMED (ManualMap): <strong>${buckets.ManualMap}</strong></div>
         <div>Non-DMS (NHS Mapped): <strong>${buckets.Other}</strong></div>
