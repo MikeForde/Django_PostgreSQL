@@ -1080,7 +1080,7 @@
     // Button 1: flat Form.io JSON export (image styled as normal button)
     const btn1 = document.createElement('button');
     btn1.type = 'button';
-    btn1.title = 'Export to Public/GitHub Form.io JSON';
+    btn1.title = 'Export to Public/GitHub Form.io JSON format';
     btn1.style.marginLeft = '10px';
     btn1.style.padding = '6px 10px';
     btn1.style.fontSize = '12px';
