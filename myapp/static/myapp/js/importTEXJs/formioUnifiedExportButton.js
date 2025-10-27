@@ -480,7 +480,6 @@
 
       // Build a Form.io select with multiple=true
       return [{
-        widget: "html5",
         type: 'select',
         key: uniqueKey('select_' + msLabelText),
         label: msLabelText,
@@ -556,7 +555,6 @@
       }
 
       return [{
-        widget: "html5",
         type: 'select',
         key: uniqueKey('select_' + finalLabel),
         label: finalLabel,
@@ -592,7 +590,6 @@
       });
 
       return [{
-        widget: "html5",
         type: 'selectboxes',
         key: uniqueKey('selectboxes_' + cap),
         label: cap,
