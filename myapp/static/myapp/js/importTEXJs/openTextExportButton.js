@@ -4,12 +4,47 @@
     const mount = document.getElementById('export-buttons-mount');
     if (!mount) return;
 
+    // Button 1: flat Form.io JSON export (image styled as normal button)
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = '-> OT Schema Only JSON';
+    btn.title = 'Export to OpenText Schema JSON format';
     btn.style.marginLeft = '10px';
     btn.style.padding = '6px 10px';
     btn.style.fontSize = '12px';
+    btn.style.border = '1px solid #888';
+    btn.style.borderRadius = '4px';
+    btn.style.background = '#f5f5f5';
+    btn.style.cursor = 'pointer';
+    // btn.style.display = 'flex';
+    // btn.style.alignItems = 'center';
+    // btn.style.justifyContent = 'center';
+    btn.style.transition = 'background 0.2s, box-shadow 0.2s';
+
+    // Hover / click effects
+    btn.addEventListener('mouseenter', () => {
+      btn.style.background = '#eaeaea';
+      btn.style.boxShadow = 'inset 0 1px 2px rgba(0,0,0,0.1)';
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.background = '#f5f5f5';
+      btn.style.boxShadow = 'none';
+    });
+    btn.addEventListener('mousedown', () => {
+      btn.style.background = '#ddd';
+    });
+    btn.addEventListener('mouseup', () => {
+      btn.style.background = '#eaeaea';
+    });
+
+    // Add the logo image
+    const img1 = document.createElement('img');
+    img1.src = '/static/myapp/images/OpenText-logo-SO4.png'; // path for formio-logo.png
+    img1.alt = 'Export to OpenText Schema JSON format';
+    img1.style.height = '14px';
+    img1.style.width = 'auto';
+    img1.style.display = 'block';
+    img1.style.pointerEvents = 'none';
+    btn.appendChild(img1);
     btn.addEventListener('click', exportToOpenText);
     mount.appendChild(btn);
   }

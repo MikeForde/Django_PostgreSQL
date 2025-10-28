@@ -39,7 +39,7 @@
     // Add the logo image
     const img1 = document.createElement('img');
     img1.src = '/static/myapp/images/OpenText-logo.png'; // path for formio-logo.png
-    img1.alt = 'Export to Form.io JSON';
+    img1.alt = 'Export to OpenText Developer Workbench JSON format';
     img1.style.height = '14px';
     img1.style.width = 'auto';
     img1.style.display = 'block';
