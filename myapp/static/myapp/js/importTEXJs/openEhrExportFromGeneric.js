@@ -596,7 +596,7 @@
 
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.title = 'Export to openEHR (3 files from generic)';
+    btn.title = 'Export to openEHR (3 files : Observation, Composition, Template)';
     btn.style.marginLeft = '5px';
     btn.style.padding = '6px 10px';
     btn.style.fontSize = '12px';

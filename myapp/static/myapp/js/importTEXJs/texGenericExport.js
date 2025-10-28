@@ -1125,7 +1125,7 @@
     if (!mount) return;
     const btn3 = document.createElement('button');
     btn3.type = 'button';
-    btn3.title = 'Export neutral scrape JSON (for openEHR / etc)';
+    btn3.title = 'Export Generic JSON format (intermediate representation)';
     btn3.style.marginLeft = '5px';
     btn3.style.padding = '6px 10px';
     btn3.style.fontSize = '12px';

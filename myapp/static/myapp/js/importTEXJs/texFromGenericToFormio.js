@@ -284,6 +284,43 @@
     return out;
   }
 
+  // ---------- build Form.io flat format----------
+  function makeFormioJSONFromComponents(baseTitle, atomicComponents){
+    const lcKey   = toLowerCamelCase(baseTitle);
+
+    const form = {
+      display: 'form',
+      type: 'form',
+      title: baseTitle,
+      name: lcKey,
+      path: lcKey,
+      components: atomicComponents
+    };
+
+    return form;
+  }
+
+  function exportFlatFromGeneric(){
+    if (!window.getGenericSnapshot) {
+      console.warn('getGenericSnapshot() is not available');
+      return;
+    }
+
+    const snap = window.getGenericSnapshot(); // { title, controls, ...}
+    const baseTitle = snap.title || 'Imported_TEX';
+
+    const atomicComponents = genericToFormioComponents(snap.controls);
+    const form = makeFormioJSONFromComponents(baseTitle, atomicComponents);
+
+    const blob = new Blob([JSON.stringify(form, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${baseTitle}_formio_GENERIC.json`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 100);
+  }
+
   // ---------- wrap in bundle project ----------
   function makeFormioBundleFromComponents(baseTitle, atomicComponents){
     const lcKey   = toLowerCamelCase(baseTitle);
@@ -363,7 +400,7 @@
     return bundle;
   }
 
-  // ---------- export using the generic snapshot ----------
+  // ---------- export fotmio project bundle using the generic snapshot ----------
   function exportBundleFromGeneric(){
     if (!window.getGenericSnapshot) {
       console.warn('getGenericSnapshot() is not available');
@@ -386,13 +423,61 @@
   }
 
   // ---------- UI button ----------
-  function addGenericButton(){
+  function addGenericFormioJSONButton(){
     const mount = document.getElementById('export-buttons-mount');
     if (!mount) return;
 
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = '→ POC Form.io (from GENERIC)';
+    btn.title = 'Export to Public/GitHub Form.io JSON format';
+    styleBtn(btn);
+    btn.addEventListener('click', exportFlatFromGeneric);
+    mount.appendChild(btn);
+
+    function styleBtn(b){
+      b.style.marginLeft = '5px';
+      b.style.padding = '6px 10px';
+      b.style.fontSize = '12px';
+      b.style.border = '1px solid #888';
+      b.style.borderRadius = '4px';
+      b.style.background = '#f5f5f5';
+      b.style.cursor = 'pointer';
+      b.style.transition = 'background 0.2s, box-shadow 0.2s';
+
+      b.addEventListener('mouseenter', () => {
+        b.style.background = '#eaeaea';
+        b.style.boxShadow = 'inset 0 1px 2px rgba(0,0,0,0.1)';
+      });
+      b.addEventListener('mouseleave', () => {
+        b.style.background = '#f5f5f5';
+        b.style.boxShadow = 'none';
+      });
+      b.addEventListener('mousedown', () => {
+        b.style.background = '#ddd';
+      });
+      b.addEventListener('mouseup', () => {
+        b.style.background = '#eaeaea';
+      });
+
+      // Add the logo image
+      const img = document.createElement('img');
+      img.src = '/static/myapp/images/formio-logo.png'; // static path
+      img.alt = 'Export to Form.io JSON';
+      img.style.height = '14px';
+      img.style.width = 'auto';
+      img.style.display = 'block';
+      img.style.pointerEvents = 'none'; // let the button handle clicks
+      b.appendChild(img);
+    }
+  }
+
+  function addGenericFormioProjectButton(){
+    const mount = document.getElementById('export-buttons-mount');
+    if (!mount) return;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.title = 'Export to Enterprise Form.io Project Template Import Format';
     styleBtn(btn);
     btn.addEventListener('click', exportBundleFromGeneric);
     mount.appendChild(btn);
@@ -421,9 +506,20 @@
       b.addEventListener('mouseup', () => {
         b.style.background = '#eaeaea';
       });
+
+      // Add the logo image
+      const img = document.createElement('img');
+      img.src = '/static/myapp/images/formio-logo-bg.png'; // static path
+      img.alt = 'Export to Form.io Project';
+      img.style.height = '14px';
+      img.style.width = 'auto';
+      img.style.display = 'block';
+      img.style.pointerEvents = 'none'; // let the button handle clicks
+      b.appendChild(img);
     }
   }
 
   // init
-  addGenericButton();
+  addGenericFormioJSONButton();
+  addGenericFormioProjectButton();
 })();
