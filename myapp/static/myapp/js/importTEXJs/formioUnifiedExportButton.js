@@ -1074,8 +1074,8 @@
   // UI Buttons
   // =========================================================
   function addButtons(){
-    const toolbar = document.querySelector('form[method="post"]') || document.body;
-    if (!toolbar) return;
+    const mount = document.getElementById('export-buttons-mount');
+    if (!mount) return;
 
     // Button 1: flat Form.io JSON export (image styled as normal button)
     const btn1 = document.createElement('button');
@@ -1121,7 +1121,7 @@
 
     // Click handler
     btn1.addEventListener('click', exportFlatForm);
-
+    mount.appendChild(btn1);
 
     // Button 2: bundled project
     // Button 2: bundled project (image styled as normal button)
@@ -1164,16 +1164,7 @@
     btn2.appendChild(img);
 
     btn2.addEventListener('click', exportBundleProject);
-
-
-    const renderBtn = toolbar.querySelector('button[type="submit"]');
-    if (renderBtn && renderBtn.parentNode) {
-      renderBtn.parentNode.appendChild(btn1);
-      renderBtn.parentNode.appendChild(btn2);
-    } else {
-      toolbar.appendChild(btn1);
-      toolbar.appendChild(btn2);
-    }
+    mount.appendChild(btn2);
   }
 
   // =========================================================

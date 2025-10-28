@@ -1,8 +1,8 @@
 // --- moved from import_tex.html ---
 (function () {
   function addOpenTextUIExportButton(){
-    const toolbar = document.querySelector('form[method="post"]') || document.body;
-    if (!toolbar) return;
+    const mount = document.getElementById('export-buttons-mount');
+    if (!mount) return;
 
     // Button 1: flat Form.io JSON export (image styled as normal button)
     const btn = document.createElement('button');
@@ -48,8 +48,7 @@
 
     // Click handler
     btn.addEventListener('click', exportToOpenTextUI);
-    const anchor = toolbar.querySelector('button[type="submit"]');
-    (anchor?.parentNode || toolbar).appendChild(btn);
+    mount.appendChild(btn);
   }
 
   // ===== Helpers (shared with prior exporters) ================================

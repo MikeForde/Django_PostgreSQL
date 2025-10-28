@@ -7,76 +7,77 @@
 
 <div class="tex-wrapper">
   <div class="tex-spacer">
-  <div class="tex-layout">
-    <form id="tex-controls" method="post" enctype="multipart/form-data">
+    <div class="tex-layout">
+      <form id="tex-controls" method="post" enctype="multipart/form-data">
       {% csrf_token %}
+
       <div class="controls-row">
-        <div>
-          <label for="{{ form.tex_file.id_for_label }}"><strong>Upload TEX</strong></label><br>
-          {{ form.tex_file }}
-        </div>
 
-        <div>
-          <label><strong>Or pick from library</strong></label><br>
+        <!-- SELECT CARD -->
+        <div class="control-card">
+          <div class="section-title">Select TEX: <span class="selected-tex-label">
+              - <code id="selected-tex-label">no tex file selected</code>
+          </span></div>
+          
 
-          <!-- Hover trigger + radios -->
-          <div id="lib-trigger" style="display:inline-flex; gap:8px; align-items:center; position:relative;">
-            <label style="margin:0;">
-              <input type="radio" name="libmode" value="list" {% if request.POST.libmode == 'list' or not request.POST.libmode %}checked{% endif %}>
-              List
-            </label>
-            <label style="margin:0;">
-              <input type="radio" name="libmode" value="search" {% if request.POST.libmode == 'search' %}checked{% endif %}>
-              Search
-            </label>
-            <label style="margin:0;">
-              <input type="radio" name="libmode" value="tree" {% if request.POST.libmode == 'tree' %}checked{% endif %}>
-              Tree
-            </label>
+          <!-- Mode bar: radios + Choose File -->
+          <div class="mode-wrapper">
+            <div class="mode-bar">
+              <label class="mode-item" data-mode="list">
+                <input type="radio" name="libmode" value="list"
+                  {% if request.POST.libmode == 'list' or not request.POST.libmode %}checked{% endif %}>
+                List
+              </label>
 
-            <!-- Flyout panel (only used for search/tree) -->
-            <div id="lib-flyout" style="display:none;">
-              <!-- Mode 2: search as you type -->
-              <div id="lib-pane-search" style="display:none; max-width:480px;">
-                <input id="lib-search-input" type="text" placeholder="Search by name, filename, or TARGETPATH…"
-                      style="width:100%; box-sizing:border-box; padding:4px 6px; font-size:12px;">
+              <label class="mode-item" data-mode="search" id="search-trigger">
+                <input type="radio" name="libmode" value="search"
+                  {% if request.POST.libmode == 'search' %}checked{% endif %}>
+                Search
+              </label>
+
+              <label class="mode-item" data-mode="tree" id="tree-trigger">
+                <input type="radio" name="libmode" value="tree"
+                  {% if request.POST.libmode == 'tree' %}checked{% endif %}>
+                Tree
+              </label>
+
+              <button type="button" class="choose-file-btn" id="choose-file-btn">Or Choose File</button>
+              {{ form.tex_file }}
+
+              <button type="submit" class="primary-btn">Render</button>
+            </div>
+
+            <!-- Flyout lives under the mode bar -->
+            <div id="lib-flyout">
+              <div id="lib-pane-search" style="display:none;">
+                <input id="lib-search-input" type="text"
+                      placeholder="Search by name, filename, or TARGETPATH…"
+                      style="width:100%; padding:4px 6px; font-size:12px;">
                 <div id="lib-search-results"
-                    style="margin-top:6px; max-height:220px; overflow:auto; border:1px solid #ddd; font-size:12px; line-height:1.3;"></div>
+                    style="margin-top:6px; max-height:200px; overflow:auto; border:1px solid #ddd;
+                            font-size:12px; line-height:1.3;"></div>
               </div>
 
-              <!-- Mode 3: tree / folder view -->
-              <div id="lib-pane-tree"
-                  style="display:none; max-width:480px; border:1px solid #ddd; padding:6px; max-height:260px; overflow:auto;
-                          font-size:12px; line-height:1.3;">
-                <div id="lib-tree"></div>
+              <div id="lib-pane-tree" style="display:none;">
+                <div id="lib-tree"
+                    style="max-height:220px; overflow:auto; font-size:12px; line-height:1.3;"></div>
               </div>
             </div>
           </div>
 
-          <!-- Mode 1: the original long list (remains inline) -->
+          <!-- List pane -->
           <div id="lib-pane-list" style="margin-top:6px;">
             {{ form.library_choice }}
           </div>
         </div>
-        <div>
-          <strong>Then render:</strong>
-          <span id="selected-tex-label" style="font-weight:800">no tex file selected</span><br>
-          <button type="submit" style="
-            background: linear-gradient(to bottom right, #7C9DB3, #6B8CA2);
-            color: #FFFF54;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 15px;
-            font-weight: 500;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-            transition: all 0.2s ease;
-            cursor: pointer;
-          ">
-            Render
-          </button>
+
+        <!-- EXPORT CARD -->
+        <div class="control-card">
+          <div class="section-title">Export</div>
+          <div id="export-buttons-mount" class="export-buttons"></div>
         </div>
-        </div>
+
+      </div>
     </form>
 
     {% if controls %}
@@ -1271,6 +1272,170 @@
 </style>
 
 <style>
+  .mode-wrapper {
+    position: relative;
+  }
+
+  /* make each mode label clickable pill */
+.mode-item,
+.choose-file-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #eef2f6;
+  border: 1px solid #c7d0d9;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.mode-item:hover,
+.choose-file-btn:hover {
+  background: #e2e8f0;
+}
+
+/* hide the native file input visually but keep it in DOM */
+input[type="file"][name="{{ form.tex_file.name }}"] {
+  display: none;
+}
+
+/* flyout panel */
+#lib-flyout {
+  position: absolute;
+  top: calc(100% + 4px);   /* a little below the pill row */
+  left: 0;
+  z-index: 1000;
+  min-width: 260px;
+  max-width: 480px;
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+  padding: 8px;
+  display: none;           /* JS toggles this */
+}
+
+/* pane bodies inside flyout */
+#lib-pane-search,
+#lib-pane-tree {
+  max-width: 100%;
+}
+
+/* highlight class for selected row in search/tree */
+.lib-selected {
+  background: #fffbe6;
+  outline: 1px solid #eab308;
+}
+  
+  /* container */
+  #tex-controls .controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .control-card {
+    flex: 1 1 340px;
+    background: #f9fafb;
+    border: 1px solid #d0d7de;
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+
+  .section-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 1rem;
+    color: #1f2937;
+  }
+
+  /* top row: modes + choose file */
+  .mode-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .mode-bar label,
+  .mode-bar button.choose-file-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #eef2f6;
+    border: 1px solid #c7d0d9;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .mode-bar label:hover,
+  .mode-bar button.choose-file-btn:hover {
+    background: #e2e8f0;
+  }
+
+  .mode-bar input[type="radio"] {
+    margin: 0;
+  }
+
+  /* Render button and status */
+  .primary-btn {
+    background: linear-gradient(to bottom right, #7C9DB3, #6B8CA2);
+    color: #FFFF54;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .primary-btn:hover {
+    filter: brightness(1.08);
+  }
+
+  .selected-tex-label {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: #374151;
+  }
+  .selected-tex-label code {
+    background: #eef2f6;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+
+  /* Export card */
+  .export-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .export-btn {
+    background: #fff;
+    color: #1f2937;
+    border: 1px solid #9ca3af;
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    cursor: pointer;
+  }
+  .export-btn:hover {
+    background: #f3f4f6;
+  }
+</style>
+
+
+
+<style>
     #rc-tooltip{
       position:fixed;
       z-index:99999;
@@ -1402,6 +1567,17 @@
   #readcodes-sidebar{ width:100% !important; }
 }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+  const chooseBtn = document.getElementById('choose-file-btn');
+  const fileInput = document.getElementById('{{ form.tex_file.id_for_label }}') || document.querySelector('input[name="{{ form.tex_file.name }}"]');
+  if (chooseBtn && fileInput) {
+    fileInput.style.display = 'none'; // keep it hidden
+    chooseBtn.addEventListener('click', () => fileInput.click());
+  }
+});
+</script>
 
 
 <script>
@@ -2622,40 +2798,32 @@
 
 <script>
   (function(){
-    // Source data from the view
     const LIB = {{ tex_library_index_json|safe }};
 
-    // Elements
     const paneList   = document.getElementById('lib-pane-list');
     const paneSearch = document.getElementById('lib-pane-search');
     const paneTree   = document.getElementById('lib-pane-tree');
+    const flyout     = document.getElementById('lib-flyout');
+
     const modeRadios = document.querySelectorAll('input[name="libmode"]');
+    const triggerSearch = document.getElementById('search-trigger');
+    const triggerTree   = document.getElementById('tree-trigger');
 
-    // Existing <select> for POST
     const selectList = paneList.querySelector('select');
-
-    // NEW: universal selected label
     const selectedLabel = document.getElementById('selected-tex-label');
 
-    // NEW: keep refs to highlight the selected row in search/tree
     let lastSearchRow = null;
     let lastTreeRow = null;
 
-    // Helper: set the visible “selected” text
     function setSelectedText(filename){
       if (!selectedLabel) return;
-      if (!filename) {
-        selectedLabel.textContent = 'no tex file selected';
-        return;
-      }
-      selectedLabel.textContent = filename;
+      selectedLabel.textContent = filename || 'no tex file selected';
     }
 
-    // Helper: set selected file (syncs the real select so POST keeps working)
     function chooseFile(filename, opts = {}){
       if (!filename) return;
 
-      // update native select (list mode)
+      // sync the list <select> so the POST works
       if (selectList) {
         selectList.value = filename;
         if (selectList.value !== filename) {
@@ -2667,10 +2835,8 @@
         }
       }
 
-      // update universal label
       setSelectedText(filename);
 
-      // update visual selection in search/tree (if provided)
       if (opts.searchRow) {
         if (lastSearchRow) lastSearchRow.classList.remove('lib-selected');
         opts.searchRow.classList.add('lib-selected');
@@ -2683,18 +2849,80 @@
       }
     }
 
-    // ---------- Mode switching ----------
-    function show(mode){
-      paneList.style.display   = (mode === 'list')   ? '' : 'none';
-      paneSearch.style.display = (mode === 'search') ? '' : 'none';
-      paneTree.style.display   = (mode === 'tree')   ? '' : 'none';
-    }
-    modeRadios.forEach(r => r.addEventListener('change', () => show(r.value)));
-    show('{{ libmode|default:"list" }}');
+    // ----- Flyout visibility helpers -----
+    function showFlyout(which){
+      // which = 'search' or 'tree'
+      if (which === 'search') {
+        paneSearch.style.display = '';
+        paneTree.style.display = 'none';
+      } else if (which === 'tree') {
+        paneSearch.style.display = 'none';
+        paneTree.style.display = '';
+      }
+      flyout.style.display = 'block';
 
-    // ---------- Search mode ----------
-    const qInput = document.getElementById('lib-search-input');
-    const results = document.getElementById('lib-search-results');
+      // also tick the correct radio so POST remembers what user last interacted with
+      modeRadios.forEach(r => {
+        r.checked = (r.value === which);
+      });
+    }
+
+    function hideFlyout(){
+      flyout.style.display = 'none';
+    }
+
+    // We'll use a small delay so it doesn't instantly vanish if the user moves toward the flyout.
+    let hideTimer = null;
+    function scheduleHide(){
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => {
+        // only hide if mouse is not currently over flyout
+        if (!flyout.matches(':hover')) {
+          hideFlyout();
+        }
+      }, 150);
+    }
+
+    // ----- Hover bindings -----
+    if (triggerSearch){
+      triggerSearch.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimer);
+        showFlyout('search');
+      });
+      triggerSearch.addEventListener('mouseleave', scheduleHide);
+    }
+
+    if (triggerTree){
+      triggerTree.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimer);
+        showFlyout('tree');
+      });
+      triggerTree.addEventListener('mouseleave', scheduleHide);
+    }
+
+    // Keep the flyout open while hovering it
+    if (flyout){
+      flyout.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimer);
+      });
+      flyout.addEventListener('mouseleave', scheduleHide);
+    }
+
+    // Clicking "List" should hide the flyout and make sure list is active
+    const triggerList = document.querySelector('.mode-item[data-mode="list"]');
+    if (triggerList){
+      triggerList.addEventListener('mouseenter', () => {
+        // don't show flyout for list
+        hideFlyout();
+        // update radio for POST
+        modeRadios.forEach(r => { r.checked = (r.value === 'list'); });
+      });
+      // we don't need mouseleave here
+    }
+
+    // ---------- Search mode rendering ----------
+    const qInput   = document.getElementById('lib-search-input');
+    const results  = document.getElementById('lib-search-results');
 
     function renderSearch(list){
       results.innerHTML = '';
@@ -2731,9 +2959,8 @@
     });
     renderSearch(LIB.slice(0, 50));
 
-    // ---------- Tree mode ----------
+    // ---------- Tree mode build (unchanged from your version) ----------
     (function(){
-      // simple storage helpers
       const LS_EXPANDED = 'texlib.tree.expanded';
       const LS_SCROLL   = 'texlib.tree.scroll';
       const expandedSet = new Set(JSON.parse(localStorage.getItem(LS_EXPANDED) || '[]'));
@@ -2756,10 +2983,8 @@
         return root;
       }
 
-      // pathKey is used to remember which folders are open
       function pathKey(pathArr){ return pathArr.join(' / '); }
 
-      // Recursively render a node. `path` is an array of folder names to here.
       function renderNode(node, name, path){
         const el = document.createElement('div');
         el.style.marginLeft = '10px';
@@ -2820,7 +3045,7 @@
               frow.textContent = f.label;
               frow.title = f.targetpath ? `${f.targetpath}/${f.filename}` : f.filename;
               frow.addEventListener('click', () => {
-                // ensure all ancestors for this file are marked expanded
+                // expand ancestors
                 for (let i = 1; i <= curPath.length; i++){
                   expandedSet.add(pathKey(curPath.slice(0,i)));
                 }
@@ -2831,7 +3056,6 @@
             });
           }
         } else {
-          // root
           if (node.children){
             Object.keys(node.children).sort().forEach(k => {
               el.appendChild(renderNode(node.children[k], k, []));
@@ -2857,7 +3081,6 @@
       treeMount.innerHTML = '';
       treeMount.appendChild(renderNode(treeRoot, null, []));
 
-      // restore and persist scroll position within the tree flyout
       const savedScroll = parseInt(localStorage.getItem(LS_SCROLL) || '0', 10);
       if (!isNaN(savedScroll)) treeMount.scrollTop = savedScroll;
 
@@ -2870,12 +3093,11 @@
       });
     })();
 
-    // ---------- Also watch: native list select & file uploads ----------
+    // ---------- List select + file upload ----------
     if (selectList){
       selectList.addEventListener('change', () => {
         if (selectList.value) {
           setSelectedText(selectList.value);
-          // clear any highlighted search/tree rows
           if (lastSearchRow) lastSearchRow.classList.remove('lib-selected');
           if (lastTreeRow)   lastTreeRow.classList.remove('lib-selected');
           lastSearchRow = lastTreeRow = null;
@@ -2885,15 +3107,24 @@
       });
     }
 
-    // File upload: when a user picks a file, show its name in the universal label
+    // File chooser proxy
+    const chooseBtn = document.getElementById('choose-file-btn');
     const fileInput = document.querySelector('input[type="file"][name="{{ form.tex_file.name }}"]') ||
-                      document.querySelector('#{{ form.tex_file.id_for_label }}') ||
+                      document.getElementById('{{ form.tex_file.id_for_label }}') ||
                       document.querySelector('input[type="file"]');
-    if (fileInput){
+
+    if (fileInput) {
+      fileInput.setAttribute('accept', '.tex');
+    }
+
+    if (chooseBtn && fileInput){
+      fileInput.style.display = 'none';
+      chooseBtn.addEventListener('click', () => fileInput.click());
+
       fileInput.addEventListener('change', () => {
         const fname = fileInput.files && fileInput.files[0] ? fileInput.files[0].name : '';
         setSelectedText(fname || '');
-        // clear library selection highlights (since upload takes precedence)
+        // clear list/search/tree visual picks
         if (selectList) selectList.value = '';
         if (lastSearchRow) lastSearchRow.classList.remove('lib-selected');
         if (lastTreeRow)   lastTreeRow.classList.remove('lib-selected');
@@ -2901,10 +3132,11 @@
       });
     }
 
-    // Initialize label from any preselected value
+    // Initialise label on load
     const initial = (selectList && selectList.value) ? selectList.value : '';
-    setSelectedText(initial || '');
+    setSelectedText(initial || 'no tex file selected');
   })();
+
 </script>
 
 <script>

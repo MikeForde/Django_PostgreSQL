@@ -1,8 +1,8 @@
 // --- moved from import_tex.html ---
 (function () {
   function addOpenTextExportButton(){
-    const toolbar = document.querySelector('form[method="post"]') || document.body;
-    if (!toolbar) return;
+    const mount = document.getElementById('export-buttons-mount');
+    if (!mount) return;
 
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -11,12 +11,7 @@
     btn.style.padding = '6px 10px';
     btn.style.fontSize = '12px';
     btn.addEventListener('click', exportToOpenText);
-    const renderBtn = toolbar.querySelector('button[type="submit"]');
-    if (renderBtn && renderBtn.parentNode) {
-      renderBtn.parentNode.appendChild(btn);
-    } else {
-      toolbar.appendChild(btn);
-    }
+    mount.appendChild(btn);
   }
 
   // ---------- Helpers (shareable with your Form.io exporter) --------------------
