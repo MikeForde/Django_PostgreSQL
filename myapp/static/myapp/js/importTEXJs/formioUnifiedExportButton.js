@@ -1081,7 +1081,7 @@
     const btn1 = document.createElement('button');
     btn1.type = 'button';
     btn1.title = 'Export to Public/GitHub Form.io JSON format';
-    btn1.style.marginLeft = '10px';
+    btn1.style.marginLeft = '5px';
     btn1.style.padding = '6px 10px';
     btn1.style.fontSize = '12px';
     btn1.style.border = '1px solid #888';
@@ -1128,7 +1128,7 @@
     const btn2 = document.createElement('button');
     btn2.type = 'button';
     btn2.title = 'Export to Enterprise Form.io Project Template Import Format'; // tooltip
-    btn2.style.marginLeft = '10px';
+    btn2.style.marginLeft = '5px';
     btn2.style.padding = '6px 10px';
     btn2.style.fontSize = '12px';
     btn2.style.border = '1px solid #888';

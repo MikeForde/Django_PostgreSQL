@@ -8,7 +8,7 @@
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.title = 'Export to OpenText Schema JSON format';
-    btn.style.marginLeft = '10px';
+    btn.style.marginLeft = '5px';
     btn.style.padding = '6px 10px';
     btn.style.fontSize = '12px';
     btn.style.border = '1px solid #888';

@@ -8,16 +8,13 @@
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.title = 'Export to OpenText Developer Workbench JSON format';
-    btn.style.marginLeft = '10px';
+    btn.style.marginLeft = '5px';
     btn.style.padding = '6px 10px';
     btn.style.fontSize = '12px';
     btn.style.border = '1px solid #888';
     btn.style.borderRadius = '4px';
     btn.style.background = '#f5f5f5';
     btn.style.cursor = 'pointer';
-    // btn.style.display = 'flex';
-    // btn.style.alignItems = 'center';
-    // btn.style.justifyContent = 'center';
     btn.style.transition = 'background 0.2s, box-shadow 0.2s';
 
     // Hover / click effects
