@@ -1,23 +1,23 @@
-(function(){
+(function () {
   // ===== Shared DOM helpers =====
   const CANVAS = document.getElementById('canvas') || document;
-  function qa(sel, root=CANVAS){ return Array.from(root.querySelectorAll(sel)); }
-  function txt(n){ return (n && (n.textContent || '').trim()) || ''; }
+  function qa(sel, root = CANVAS) { return Array.from(root.querySelectorAll(sel)); }
+  function txt(n) { return (n && (n.textContent || '').trim()) || ''; }
 
-  function geomFrom(el){
+  function geomFrom(el) {
     const s = getComputedStyle(el);
-    function px(n){ return parseInt(n,10) || 0; }
+    function px(n) { return parseInt(n, 10) || 0; }
     return { x: px(s.left), y: px(s.top), w: px(s.width), h: px(s.height) };
   }
 
-  function decodeUnicodeEscapes(str){
+  function decodeUnicodeEscapes(str) {
     if (!str) return '';
     return str.replace(/\\u([0-9a-fA-F]{4})/g, (_, g1) =>
       String.fromCharCode(parseInt(g1, 16))
     );
   }
 
-  function readcodeInfo(el){
+  function readcodeInfo(el) {
     const host = el.closest('.readcode-host');
     if (!host) return [];
 
@@ -31,7 +31,7 @@
     let autoText = '';
     rawLines.forEach(line => {
       if (/^\s*Auto-Entered Text\s*:/i.test(line)) {
-        autoText = line.replace(/^\s*Auto-Entered Text\s*:\s*/i,'').trim();
+        autoText = line.replace(/^\s*Auto-Entered Text\s*:\s*/i, '').trim();
       }
     });
 
@@ -39,7 +39,7 @@
     rawLines.forEach(line => {
       if (/^\s*Auto-Entered Text\s*:/i.test(line)) return;
       const m = line.split('—');
-      const code  = (m[0] || '').trim();
+      const code = (m[0] || '').trim();
       const label = (m.slice(1).join('—') || '').trim();
       if (code || label) {
         out.push({
@@ -53,7 +53,7 @@
     return out;
   }
 
-  function buildTooltipFromReadcodeMeta(metaArray){
+  function buildTooltipFromReadcodeMeta(metaArray) {
     if (!metaArray || !metaArray.length) return undefined;
     const lines = [];
     metaArray.forEach(m => {
@@ -73,34 +73,34 @@
   }
 
   // ===== helpers for generic model =====
-  function uniqueIdFromLabel(labelBase, hint=''){
+  function uniqueIdFromLabel(labelBase, hint = '') {
     const raw = (labelBase || '').trim() || 'field';
     const base = raw + (hint ? ('_' + hint) : '');
     return base
       .replace(/[^A-Za-z0-9_]+/g, '_')
       .replace(/^_+|_+$/g, '')
       .slice(0, 80) + '_' +
-      Math.random().toString(36).slice(2,8);
+      Math.random().toString(36).slice(2, 8);
   }
 
-  function isClassicReadCode(ctrl){
+  function isClassicReadCode(ctrl) {
     return !!(
       ctrl.querySelector('.rc-wrap') ||
       ctrl.querySelector('.rc-yesno') ||
-      ctrl.querySelector('.rc-chk')   ||
+      ctrl.querySelector('.rc-chk') ||
       ctrl.querySelector('.rc-prompt')
     );
   }
 
-  function hasAnyFormInputs(root){
+  function hasAnyFormInputs(root) {
     return !!root.querySelector(
       'select,textarea,input[type="text"],input[type="date"],input[type="number"],input[type="checkbox"],input[type="radio"]'
     );
   }
 
   // ----- findLabelFor with the 2 fixes (next-sibling, and gated Last Entry) -----
-  function makeFindLabelFor(ctrl){
-    return function findLabelFor(el){
+  function makeFindLabelFor(ctrl) {
+    return function findLabelFor(el) {
       // for=?
       if (el.id) {
         const m = ctrl.querySelector(`label[for="${CSS.escape(el.id)}"]`);
@@ -132,7 +132,7 @@
 
       // special audit "last entry" fallback ONLY if tpl-lastentry is involved
       const isAuditStyle = el.classList.contains('tpl-lastentry') ||
-                           el.closest('.tpl-lastentry');
+        el.closest('.tpl-lastentry');
       if (isAuditStyle) {
         const metaArray = readcodeInfo(el);
         if (metaArray && metaArray.length) {
@@ -155,7 +155,7 @@
   }
 
   // ----- mapper: ReadCode -> generic compound/text/number/date/radio -----
-  function toGenericFromReadCode(ctrl){
+  function toGenericFromReadCode(ctrl) {
     const geom = geomFrom(ctrl);
 
     const labelText = (ctrl.querySelector('.rc-prompt')?.textContent || '').trim() || 'Read code';
@@ -164,16 +164,16 @@
     const unifiedTooltip = buildTooltipFromReadcodeMeta(metaArray);
 
     const yesInput = ctrl.querySelector('.rc-yes-label input.rc-yesno');
-    const noInput  = ctrl.querySelector('.rc-no-label  input.rc-yesno');
+    const noInput = ctrl.querySelector('.rc-no-label  input.rc-yesno');
     const hasYesNo = !!(yesInput || noInput);
 
-    const textEl   = ctrl.querySelector('input[type="text"][name$="_text"]');
-    const valEl    = ctrl.querySelector('input[type="text"][name$="_val"]');
-    const dateEl   = ctrl.querySelector('input[type="date"]');
+    const textEl = ctrl.querySelector('input[type="text"][name$="_text"]');
+    const valEl = ctrl.querySelector('input[type="text"][name$="_val"]');
+    const dateEl = ctrl.querySelector('input[type="date"]');
 
-    const hasText  = !!textEl;
-    const hasVal   = !!valEl;
-    const hasDate  = !!dateEl;
+    const hasText = !!textEl;
+    const hasVal = !!valEl;
+    const hasDate = !!dateEl;
 
     const unitText = (() => {
       const span = valEl?.nextElementSibling;
@@ -183,25 +183,25 @@
 
     const parts = [];
 
-    if (hasYesNo){
+    if (hasYesNo) {
       const yesVal = yesInput?.value || 'yes';
-      const noVal  = noInput?.value  || 'no';
+      const noVal = noInput?.value || 'no';
       const defVal =
         (yesInput?.checked ? yesVal :
-         (noInput?.checked ? noVal : ''));
+          (noInput?.checked ? noVal : ''));
 
       parts.push({
         subKind: 'yesno',
         label: labelText,
         options: [
           { value: yesVal, label: 'Yes' },
-          { value: noVal,  label: 'No'  }
+          { value: noVal, label: 'No' }
         ],
         defaultValue: defVal
       });
     }
 
-    if (hasText){
+    if (hasText) {
       parts.push({
         subKind: 'text',
         label: hasYesNo ? (labelText + ' (text)') : labelText,
@@ -210,7 +210,7 @@
       });
     }
 
-    if (hasVal){
+    if (hasVal) {
       parts.push({
         subKind: 'number',
         label: hasYesNo ? (labelText + ' (value)') : labelText,
@@ -220,7 +220,7 @@
       });
     }
 
-    if (hasDate){
+    if (hasDate) {
       parts.push({
         subKind: 'date',
         label: hasYesNo ? (labelText + ' (date)') : (labelText + ' (date)'),
@@ -319,7 +319,7 @@
   }
 
   // ----- mapper: ReadList -> generic select-multi/select-single/radio/etc -----
-  function toGenericFromReadList(ctrl){
+  function toGenericFromReadList(ctrl) {
     const geom = geomFrom(ctrl);
     const metaArray = readcodeInfo(ctrl);
     const unifiedTooltip = buildTooltipFromReadcodeMeta(metaArray);
@@ -330,16 +330,20 @@
       const checkLabels = Array.from(msWrap.querySelectorAll('.ms-panel label'));
       const options = [];
       const defaults = [];
+      const defaultLabels = [];
       checkLabels.forEach(lab => {
         const inp = lab.querySelector('input[type="checkbox"]');
         if (!inp) return;
         const value = inp.value || '';
         let lbl = (lab.textContent || '').trim();
         if (value && lbl.startsWith(value)) {
-          lbl = lbl.replace(value,'').trim();
+          lbl = lbl.replace(value, '').trim();
         }
         options.push({ value, label: lbl || value });
-        if (inp.checked) defaults.push(value);
+        if (inp.checked) {
+          defaults.push(value);
+          defaultLabels.push(lbl || value);
+        }
       });
       return [{
         id: uniqueIdFromLabel(msLabelText),
@@ -347,7 +351,7 @@
         label: msLabelText,
         tooltip: unifiedTooltip,
         ui: { ...geom },
-        data: { options, defaultValues: defaults },
+        data: { options, defaultValues: defaults, defaultLabels },
         flags: { multiSelect: true }
       }];
     }
@@ -359,15 +363,18 @@
         (ctrl.querySelector('label')?.textContent || '').trim() ||
         'List';
 
+      // collect options
       const rawOptions = Array.from(select.querySelectorAll('option'))
-        .filter(o => (o.value || (o.textContent||'').trim()));
+        .filter(o => (o.value || (o.textContent || '').trim()));
       const builtOptions = rawOptions.map(o => ({
-        value: o.value || (o.textContent||'').trim(),
-        label: (o.textContent||'').trim() || o.value || ''
+        value: o.value || (o.textContent || '').trim(),
+        label: (o.textContent || '').trim() || o.value || ''
       }));
 
       const multiple = !!select.multiple;
 
+      // TEX quirk: first option might actually be label. If single-select & cap is generic,
+      // we promote that first option to label.
       let labelFinal = capGuess;
       let finalOptions = builtOptions.slice();
 
@@ -382,12 +389,20 @@
         }
       }
 
+      // defaults (values + labels)
       let defaultValues = [];
       let defaultValue = '';
+      let defaultLabels = [];
+      let defaultLabel = '';
+
       if (multiple) {
-        defaultValues = Array.from(select.selectedOptions || []).map(o => o.value);
+        const sels = Array.from(select.selectedOptions || []);
+        defaultValues = sels.map(o => o.value);
+        defaultLabels = sels.map(o => ((o.textContent || '').trim() || o.label || o.value));
       } else {
         defaultValue = select.value || '';
+        const selOpt = (select.selectedIndex >= 0) ? select.options[select.selectedIndex] : null;
+        defaultLabel = selOpt ? (((selOpt.textContent || '').trim() || selOpt.label || selOpt.value)) : '';
       }
 
       return [{
@@ -398,44 +413,19 @@
         ui: { ...geom },
         data: multiple ? {
           options: finalOptions,
-          defaultValues
+          defaultValues,
+          defaultLabels
         } : {
           options: finalOptions,
-          defaultValue
+          defaultValue,
+          defaultLabel
         },
-        flags: { multiSelect: multiple }
+        flags: {
+          multiSelect: multiple
+        }
       }];
     }
 
-    const checks = Array.from(ctrl.querySelectorAll('input[type="checkbox"]'));
-    if (checks.length) {
-      const cap =
-        (ctrl.querySelector('.rl-caption')?.textContent || '').trim() ||
-        (ctrl.querySelector('label')?.textContent || '').trim() ||
-        'List';
-
-      const options = [];
-      const defaults = [];
-      checks.forEach(ch => {
-        const lbl = (ch.closest('label')?.textContent || ch.value || 'Option').trim();
-        const value = (lbl || '').replace(/\s+/g,'_');
-        options.push({ value, label: lbl });
-        if (ch.checked) defaults.push(value);
-      });
-
-      return [{
-        id: uniqueIdFromLabel(cap),
-        kind: 'select-multi',
-        label: cap,
-        tooltip: unifiedTooltip,
-        ui: { ...geom },
-        data: {
-          options,
-          defaultValues: defaults
-        },
-        flags: { multiSelect: true }
-      }];
-    }
 
     const radios = Array.from(ctrl.querySelectorAll('input[type="radio"]'));
     if (radios.length) {
@@ -448,13 +438,32 @@
       const options = [];
       radios.forEach(r => {
         let lbl = (r.closest('label')?.textContent || r.value || 'Option').trim();
-        const val = r.value || lbl.replace(/\s+/g,'_');
+        // fallback: text node to the right of the input
+        if (!lbl) {
+          const sib = r.nextSibling;
+          if (sib && sib.nodeType === 3) {
+            lbl = (sib.nodeValue || '').trim() || 'Option';
+          }
+        }
+        const val = r.value || lbl.replace(/\s+/g, '_');
         if (!seen.has(val)) {
           seen.add(val);
           options.push({ value: val, label: lbl });
         }
       });
-      const def = (radios.find(r => r.checked)?.value) || '';
+
+      const checked = radios.find(r => r.checked);
+      const def = checked?.value || '';
+      let defLabel = '';
+      if (checked) {
+        defLabel =
+          (checked.closest('label')?.textContent || '').trim() ||
+          (() => {
+            const sib = checked.nextSibling;
+            return sib && sib.nodeType === 3 ? (sib.nodeValue || '').trim() : '';
+          })() ||
+          checked.value || '';
+      }
 
       return [{
         id: uniqueIdFromLabel(cap),
@@ -464,7 +473,8 @@
         ui: { ...geom },
         data: {
           options,
-          defaultValue: def
+          defaultValue: def,
+          defaultLabel: defLabel
         },
         flags: {}
       }];
@@ -487,7 +497,7 @@
   }
 
   // ----- mapper: generic ctrl (checkboxes, textfields, etc.) -----
-  function toGenericFromGenericControls(ctrl){
+  function toGenericFromGenericControls(ctrl) {
     const geom = geomFrom(ctrl);
     const out = [];
     const findLabelFor = makeFindLabelFor(ctrl);
@@ -514,13 +524,26 @@
         }
         if (!lbl) lbl = r.value || 'Option';
 
-        const val = r.value || lbl.replace(/\s+/g,'_');
-        if (!seenVals.has(val)){
+        const val = r.value || lbl.replace(/\s+/g, '_');
+        if (!seenVals.has(val)) {
           seenVals.add(val);
           opts.push({ value: val, label: lbl });
         }
       });
-      const defVal = (group.find(r => r.checked)?.value) || '';
+
+      const checked = group.find(r => r.checked);
+      const defVal = checked?.value || '';
+      let defLabel = '';
+      if (checked) {
+        defLabel =
+          (checked.closest('label')?.textContent || '').trim() ||
+          (() => {
+            const sib = checked.nextSibling;
+            return sib && sib.nodeType === 3 ? (sib.nodeValue || '').trim() : '';
+          })() ||
+          checked.value || '';
+      }
+
       const metaArray = readcodeInfo(group[0]);
       const unifiedTooltip = buildTooltipFromReadcodeMeta(metaArray);
       out.push({
@@ -531,7 +554,8 @@
         ui: { ...geom },
         data: {
           options: opts,
-          defaultValue: defVal
+          defaultValue: defVal,
+          defaultLabel: defLabel
         },
         flags: {}
       });
@@ -547,10 +571,27 @@
       })).filter(o => o.value || o.label);
 
       const multiple = !!sel.multiple;
-      const defVals = multiple
-        ? Array.from(sel.selectedOptions || []).map(o => o.value || txt(o))
-        : [];
-      const defVal = multiple ? '' : (sel.value || '');
+
+      // defaults (values + labels)
+      let defaultValues = [];
+      let defaultLabels = [];
+      let defaultValue = '';
+      let defaultLabel = '';
+
+      if (multiple) {
+        const sels = Array.from(sel.selectedOptions || []);
+        defaultValues = sels.map(o => (o.value || txt(o)));
+        defaultLabels = sels.map(o => {
+          const t = (o.textContent || '').trim();
+          return t || o.label || o.value || '';
+        });
+      } else {
+        defaultValue = sel.value || '';
+        const selOpt = (sel.selectedIndex >= 0) ? sel.options[sel.selectedIndex] : null;
+        defaultLabel = selOpt
+          ? ((selOpt.textContent || '').trim() || selOpt.label || selOpt.value || '')
+          : '';
+      }
 
       const metaArray = readcodeInfo(sel);
       const unifiedTooltip = buildTooltipFromReadcodeMeta(metaArray);
@@ -562,10 +603,12 @@
         ui: { ...geom },
         data: multiple ? {
           options: opts,
-          defaultValues: defVals
+          defaultValues,
+          defaultLabels
         } : {
           options: opts,
-          defaultValue: defVal
+          defaultValue,
+          defaultLabel
         },
         flags: { multiSelect: multiple }
       });
@@ -706,7 +749,7 @@
     return out;
   }
 
-  function toGenericFromLabelOrLink(ctrl){
+  function toGenericFromLabelOrLink(ctrl) {
     const geom = geomFrom(ctrl);
     const a = ctrl.querySelector('a[href]');
     if (a) {
@@ -736,7 +779,7 @@
   }
 
   // walk all .ctrl
-  function collectGenericControls(){
+  function collectGenericControls() {
     const controls = qa('.ctrl');
     const generic = [];
     controls.forEach(ctrl => {
@@ -757,7 +800,7 @@
     return generic;
   }
 
-  function getSelectedTexName(){
+  function getSelectedTexName() {
     const label = document.getElementById('selected-tex-label')?.textContent?.trim();
     if (label && label.toLowerCase() !== 'no tex file selected') return label;
     const libSel = document.querySelector('#lib-pane-list select');
@@ -766,7 +809,7 @@
     return h1 || 'Imported_TEX';
   }
 
-  function makeBaseTitleFromTexName(name){
+  function makeBaseTitleFromTexName(name) {
     let base = String(name || '').trim();
     base = base.replace(/\.[Tt][Ee][Xx]$/, '');
     base = base.replace(/\s+/g, '_');
@@ -775,9 +818,9 @@
   }
 
   // PUBLIC: return neutral snapshot
-  function getGenericSnapshot(){
+  function getGenericSnapshot() {
     const texNameRaw = getSelectedTexName();
-    const baseTitle  = makeBaseTitleFromTexName(texNameRaw);
+    const baseTitle = makeBaseTitleFromTexName(texNameRaw);
     const genericControls = collectGenericControls();
     return {
       texName: texNameRaw,

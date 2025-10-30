@@ -549,9 +549,9 @@
                           style="padding:6px 8px;"
                           data-readcodes="TRIQQNMF1 — MFD - Medically Fully Deployable\u000ATRIQQNML1 — MLD - Medically Limited Deployable\u000ATRIQQNMN1 — MND - Medically Not Deployable">
                   <legend>Medical Deployability</legend>
-                  <label><input type="radio" name="{{ c.name }}_deploy" value="Full"> Full</label>
-                  <label style="margin-left:12px;"><input type="radio" name="{{ c.name }}_deploy" value="Limited"> Limited</label>
-                  <label style="margin-left:12px;"><input type="radio" name="{{ c.name }}_deploy" value="Not"> Not</label>
+                  <label><input type="radio" name="{{ c.name }}_deploy" value="TRIQQNMF1" checked> Full</label>
+                  <label style="margin-left:12px;"><input type="radio" name="{{ c.name }}_deploy" value="TRIQQNML1"> Limited</label>
+                  <label style="margin-left:12px;"><input type="radio" name="{{ c.name }}_deploy" value="TRIQQNMN1"> Not</label>
                 </fieldset>
 
                 <label>JMES</label>
@@ -562,7 +562,7 @@
                     <option value="TRIQQNA11">1</option>
                     <option value="TRIQQNA21">2</option>
                     <option value="TRIQQNA31">3</option>
-                    <option value="TRIQQNA41">4</option>
+                    <option value="TRIQQNA41" selected>4</option>
                     <option value="TRIQQNA51">5</option>
                     <option value="TRIQQNA61">6</option>
                   </select>
@@ -606,7 +606,7 @@
                           data-readcodes="RAFMETE5 — Temporary MES\u000ARAFMEPE1 — Permanent MES\u000ARAFMENO3 — Not Applicable">
                     <option value="RAFMETE5">Temporary</option>
                     <option value="RAFMEPE1">Permanent</option>
-                    <option value="RAFMENO3">Not Applicable</option>
+                    <option value="RAFMENO3" selected>Not Applicable</option>
                   </select>
                 </div>
 
