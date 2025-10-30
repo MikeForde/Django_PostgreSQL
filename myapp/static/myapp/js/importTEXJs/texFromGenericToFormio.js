@@ -1,6 +1,28 @@
-(function(){
+(function () {
   // ---------- helpers ----------
-  function keyify(s){
+  function buildFormNameHidden() {
+    return {
+      label: 'FormName',
+      customDefaultValue:
+        'urlStr = window.location;\nurlHash = urlStr.hash;\nurlHashArr = urlHash.split("/");\nvalue = urlHashArr[2].split("?")[0];',
+      key: 'formName',
+      type: 'hidden',
+      input: true,
+      tableView: false,
+      lockKey: true,
+      source: '6900959e891d9b7237fa23c5',
+      isNew: true
+    };
+  }
+
+  // ADD: utility to enforce it as the first component (deduping if present)
+  function withFormNameFirst(components) {
+    const cleaned = (components || []).filter(c => c && c.key !== 'formName');
+    return [buildFormNameHidden(), ...cleaned];
+  }
+
+
+  function keyify(s) {
     return (s || '')
       .replace(/[^A-Za-z0-9_]+/g, '_')
       .replace(/^_+|_+$/g, '')
@@ -9,7 +31,7 @@
   }
 
   const takenKeys = new Set();
-  function uniqueKey(base){
+  function uniqueKey(base) {
     let k = keyify(base);
     if (!takenKeys.has(k)) { takenKeys.add(k); return k; }
     let i = 2;
@@ -19,7 +41,7 @@
     return k;
   }
 
-  function toLowerCamelCase(s){
+  function toLowerCamelCase(s) {
     const parts = String(s || '')
       .replace(/\.[A-Za-z0-9]+$/, '')
       .split(/[^A-Za-z0-9]+/)
@@ -34,14 +56,14 @@
   }
 
   // ---------- generic control -> Form.io components ----------
-  function genericControlToFormio(ctrl){
-    const label   = ctrl.label || 'Field';
+  function genericControlToFormio(ctrl) {
+    const label = ctrl.label || 'Field';
     const tooltip = ctrl.tooltip;
-    const req     = !!ctrl.flags?.required;
-    const kind    = ctrl.kind;
+    const req = !!ctrl.flags?.required;
+    const kind = ctrl.kind;
 
     // tiny sub-builders for compound parts
-    function buildYesNoPart(part){
+    function buildYesNoPart(part) {
       return {
         type: 'radio',
         input: true,
@@ -58,7 +80,7 @@
         tooltip
       };
     }
-    function buildNumberPart(part){
+    function buildNumberPart(part) {
       return {
         type: 'number',
         input: true,
@@ -70,7 +92,7 @@
         tooltip
       };
     }
-    function buildDatePart(part){
+    function buildDatePart(part) {
       return {
         type: 'datetime',
         input: true,
@@ -85,7 +107,7 @@
         tooltip
       };
     }
-    function buildTextPart(part){
+    function buildTextPart(part) {
       return {
         type: 'textfield',
         input: true,
@@ -99,7 +121,7 @@
       };
     }
 
-    switch(kind){
+    switch (kind) {
 
       case 'text':
         return [{
@@ -248,11 +270,11 @@
         const parts = ctrl.data?.parts || [];
         const exploded = [];
         parts.forEach(p => {
-          switch(p.subKind){
-            case 'yesno':  exploded.push(buildYesNoPart(p));  break;
+          switch (p.subKind) {
+            case 'yesno': exploded.push(buildYesNoPart(p)); break;
             case 'number': exploded.push(buildNumberPart(p)); break;
-            case 'date':   exploded.push(buildDatePart(p));   break;
-            case 'text':   exploded.push(buildTextPart(p));   break;
+            case 'date': exploded.push(buildDatePart(p)); break;
+            case 'text': exploded.push(buildTextPart(p)); break;
             default:
               break;
           }
@@ -274,7 +296,7 @@
     }
   }
 
-  function genericToFormioComponents(genericControls){
+  function genericToFormioComponents(genericControls) {
     takenKeys.clear();
     const out = [];
     genericControls.forEach(gc => {
@@ -285,8 +307,8 @@
   }
 
   // ---------- build Form.io flat format----------
-  function makeFormioJSONFromComponents(baseTitle, atomicComponents){
-    const lcKey   = toLowerCamelCase(baseTitle);
+  function makeFormioJSONFromComponents(baseTitle, atomicComponents) {
+    const lcKey = toLowerCamelCase(baseTitle);
 
     const form = {
       display: 'form',
@@ -300,7 +322,7 @@
     return form;
   }
 
-  function exportFlatFromGeneric(){
+  function exportFlatFromGeneric() {
     if (!window.getGenericSnapshot) {
       console.warn('getGenericSnapshot() is not available');
       return;
@@ -322,11 +344,11 @@
   }
 
   // ---------- wrap in bundle project ----------
-  function makeFormioBundleFromComponents(baseTitle, atomicComponents){
-    const lcKey   = toLowerCamelCase(baseTitle);
+  function makeFormioBundleFromComponents(baseTitle, atomicComponents) {
+    const lcKey = toLowerCamelCase(baseTitle);
     const formKey = lcKey + 'FormIoImported';
 
-    const wrappedComponents = [
+    const wrappedComponents = withFormNameFirst([
       {
         label: 'Columns',
         input: false,
@@ -353,7 +375,7 @@
         key: 'submit',
         type: 'button'
       }
-    ];
+    ]);
 
     const innerForm = {
       title: baseTitle + ' Form.io (Imported)',
@@ -365,6 +387,118 @@
       tags: [],
       settings: {},
       components: wrappedComponents,
+      access: [
+        {
+          "type": "create_own",
+          "roles": []
+        },
+        {
+          "type": "create_all",
+          "roles": []
+        },
+        {
+          "type": "read_own",
+          "roles": []
+        },
+        {
+          "type": "read_all",
+          "roles": [
+            "administrator",
+            "authenticated",
+            "anonymous"
+          ]
+        },
+        {
+          "type": "update_own",
+          "roles": []
+        },
+        {
+          "type": "update_all",
+          "roles": []
+        },
+        {
+          "type": "delete_own",
+          "roles": []
+        },
+        {
+          "type": "delete_all",
+          "roles": []
+        },
+        {
+          "type": "team_read",
+          "roles": []
+        },
+        {
+          "type": "team_write",
+          "roles": []
+        },
+        {
+          "type": "team_admin",
+          "roles": []
+        }
+      ],
+      "submissionAccess": [
+        {
+          "type": "create_own",
+          "roles": [
+            "everyone"
+          ]
+        },
+        {
+          "type": "create_all",
+          "roles": [
+            "everyone"
+          ]
+        },
+        {
+          "type": "read_own",
+          "roles": [
+            "everyone"
+          ]
+        },
+        {
+          "type": "read_all",
+          "roles": [
+            "everyone"
+          ]
+        },
+        {
+          "type": "update_own",
+          "roles": [
+            "everyone"
+          ]
+        },
+        {
+          "type": "update_all",
+          "roles": [
+            "everyone"
+          ]
+        },
+        {
+          "type": "delete_own",
+          "roles": [
+            "everyone"
+          ]
+        },
+        {
+          "type": "delete_all",
+          "roles": [
+            "everyone"
+          ]
+        },
+        {
+          "type": "team_read",
+          "roles": []
+        },
+        {
+          "type": "team_write",
+          "roles": []
+        },
+        {
+          "type": "team_admin",
+          "roles": []
+        }
+      ],
       properties: {},
       controller: '',
       submissionRevisions: '',
@@ -372,7 +506,7 @@
       esign: {}
     };
 
-    const projectName = 'Project_with_' + baseTitle.replace(/[^A-Za-z0-9]+/g,'');
+    const projectName = 'Project_with_' + baseTitle.replace(/[^A-Za-z0-9]+/g, '');
     const bundle = {
       title: 'TEX Conversions',
       version: '2.0.0',
@@ -384,7 +518,40 @@
       resources: {},
       revisions: {},
       reports: {},
-      excludeAccess: true
+      access: [
+        {
+          "type": "create_all",
+          "roles": []
+        },
+        {
+          "type": "read_all",
+          "roles": []
+        },
+        {
+          "type": "update_all",
+          "roles": []
+        },
+        {
+          "type": "delete_all",
+          "roles": []
+        },
+        {
+          "type": "create_own",
+          "roles": []
+        },
+        {
+          "type": "read_own",
+          "roles": []
+        },
+        {
+          "type": "update_own",
+          "roles": []
+        },
+        {
+          "type": "delete_own",
+          "roles": []
+        }
+      ]
     };
 
     bundle.forms[formKey] = innerForm;
@@ -393,7 +560,7 @@
       name: 'save',
       form: formKey,
       priority: 10,
-      method: ['create','update'],
+      method: ['create', 'update'],
       handler: ['before']
     };
 
@@ -401,7 +568,7 @@
   }
 
   // ---------- export fotmio project bundle using the generic snapshot ----------
-  function exportBundleFromGeneric(){
+  function exportBundleFromGeneric() {
     if (!window.getGenericSnapshot) {
       console.warn('getGenericSnapshot() is not available');
       return;
@@ -423,7 +590,7 @@
   }
 
   // ---------- UI button ----------
-  function addGenericFormioJSONButton(){
+  function addGenericFormioJSONButton() {
     const mount = document.getElementById('export-buttons-mount');
     if (!mount) return;
 
@@ -434,7 +601,7 @@
     btn.addEventListener('click', exportFlatFromGeneric);
     mount.appendChild(btn);
 
-    function styleBtn(b){
+    function styleBtn(b) {
       b.style.marginLeft = '5px';
       b.style.padding = '6px 10px';
       b.style.fontSize = '12px';
@@ -471,7 +638,7 @@
     }
   }
 
-  function addGenericFormioProjectButton(){
+  function addGenericFormioProjectButton() {
     const mount = document.getElementById('export-buttons-mount');
     if (!mount) return;
 
@@ -482,7 +649,7 @@
     btn.addEventListener('click', exportBundleFromGeneric);
     mount.appendChild(btn);
 
-    function styleBtn(b){
+    function styleBtn(b) {
       b.style.marginLeft = '5px';
       b.style.padding = '6px 10px';
       b.style.fontSize = '12px';
