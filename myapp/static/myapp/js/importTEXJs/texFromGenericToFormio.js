@@ -643,6 +643,8 @@
     if (!mount) return;
 
     const btn = document.createElement('button');
+    const bgcolor = '#dfefdf';
+    const bghighlight = '#b3e6b3';
     btn.type = 'button';
     btn.title = 'Export to Enterprise Form.io Project Template Import Format';
     styleBtn(btn);
@@ -655,23 +657,23 @@
       b.style.fontSize = '12px';
       b.style.border = '1px solid #888';
       b.style.borderRadius = '4px';
-      b.style.background = '#f5f5f5';
+      b.style.background = bgcolor;
       b.style.cursor = 'pointer';
       b.style.transition = 'background 0.2s, box-shadow 0.2s';
 
       b.addEventListener('mouseenter', () => {
-        b.style.background = '#eaeaea';
+        b.style.background = bghighlight ;
         b.style.boxShadow = 'inset 0 1px 2px rgba(0,0,0,0.1)';
       });
       b.addEventListener('mouseleave', () => {
-        b.style.background = '#f5f5f5';
+        b.style.background = bgcolor;
         b.style.boxShadow = 'none';
       });
       b.addEventListener('mousedown', () => {
         b.style.background = '#ddd';
       });
       b.addEventListener('mouseup', () => {
-        b.style.background = '#eaeaea';
+        b.style.background = bghighlight ;
       });
 
       // Add the logo image
@@ -687,6 +689,6 @@
   }
 
   // init
-  addGenericFormioJSONButton();
   addGenericFormioProjectButton();
+  addGenericFormioJSONButton();
 })();
