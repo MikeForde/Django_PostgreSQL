@@ -644,7 +644,7 @@
 
     const btn = document.createElement('button');
     const bgcolor = '#dfefdf';
-    const bghighlight = '#b3e6b3';
+    const bghighlight = '#c3e6c3';
     btn.type = 'button';
     btn.title = 'Export to Enterprise Form.io Project Template Import Format';
     styleBtn(btn);

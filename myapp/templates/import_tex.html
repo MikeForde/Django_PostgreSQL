@@ -2507,7 +2507,7 @@ input[type="file"][name="{{ form.tex_file.name }}"] {
 
         // --- Helper: detect DMS-like missing codes -------------------------------
         const looksLikeDms = (s) => {
-          const stripped = s.replace(/^(NEGATION-|QUERY-)/i, '');
+          const stripped = s.replace(/^(UNCERTAIN-|NEGATION-|QUERY-)/i, '');
           // ≥3 uppercase letters at start, total length ≥6
           return /^[A-Z]{3,}/.test(stripped) && stripped.length >= 6;
         };
@@ -2515,7 +2515,7 @@ input[type="file"][name="{{ form.tex_file.name }}"] {
         if (!hit) {
           // Missing or unknown
           // looksLikeDms and not NEGATION- or QUERY;
-          const isDmsLike = looksLikeDms(cleanCode) && !/^NEGATION-|^QUERY-/i.test(cleanCode);
+          const isDmsLike = looksLikeDms(cleanCode) && !/^UNCERTAIN-|^NEGATION-|^QUERY-/i.test(cleanCode);
 
           if (isDmsLike) {
             badge.textContent = '?';
@@ -2664,7 +2664,7 @@ input[type="file"][name="{{ form.tex_file.name }}"] {
         .replace(/^Last Entry for\s+/i, '')
         .split('—')[0]
         .split(' - ')[0];
-      const m = left.match(/^(?:UNCERTAIN-|NEGATION-)?[A-Z0-9]+(?:[./][A-Z0-9]+)?\.{0,10}/i);
+      const m = left.match(/^(?:QUERY-|UNCERTAIN-|NEGATION-)?[A-Z0-9]+(?:[./][A-Z0-9]+)?\.{0,10}/i);
       return m ? normalizeCode(m[0]) : '';
     }
 
@@ -2732,12 +2732,12 @@ input[type="file"][name="{{ form.tex_file.name }}"] {
       return Array.from(out);
     }
 
-    // Prefer exact matches; only if none, fall back to base (strip NEGATION-/UNCERTAIN-)
+    // Prefer exact matches; only if none, fall back to base (strip QUERY-/NEGATION-/UNCERTAIN-)
     function findHostsFor(code){
       const needle = normalizeCode(code);
       if (!needle) return [];
 
-      const baseNeedle = needle.replace(/^(NEGATION-|UNCERTAIN-)/, '');
+      const baseNeedle = needle.replace(/^(QUERY-|NEGATION-|UNCERTAIN-)/, '');
 
       // Candidate containers: anything that might hold read-code metadata or inputs
       const candidates = document.querySelectorAll(
@@ -3269,7 +3269,7 @@ input[type="file"][name="{{ form.tex_file.name }}"] {
     const code = (row.getAttribute('data-read-code') || '').trim();
 
     // Prefix-based ignore
-    if (/^(NEGATION-|QUERY-|Last Entry for QUERY-|Last Entry for NEGATION-)/i.test(code)) return 'Ignored';
+    if (/^(UNCERTAIN-|NEGATION-|QUERY-|Last Entry for UNCERTAIN-|Last Entry for QUERY-|Last Entry for NEGATION-)/i.test(code)) return 'Ignored';
 
     // Prefer decision badge classes (most robust)
     const dec = row.querySelector('.rc-decision');
@@ -3313,7 +3313,7 @@ input[type="file"][name="{{ form.tex_file.name }}"] {
     return map;
   }
 
-  const IGNORE_PREFIX_RE = /^(NEGATION-|QUERY-)/i;
+  const IGNORE_PREFIX_RE = /^(UNCERTAIN-|NEGATION-|QUERY-)/i;
   const LAST_ENTRY_RE    = /^Last Entry for\s+/i;
 
   // Return an object describing what this row represents.
@@ -3331,7 +3331,7 @@ input[type="file"][name="{{ form.tex_file.name }}"] {
     // Strip "Last Entry for " prefix if present
     code = code.replace(LAST_ENTRY_RE, '').trim();
 
-    // If it's NEGATION-/QUERY- after stripping, it's an ignored code
+    // If it's UNCERTAIN-/NEGATION-/QUERY- after stripping, it's an ignored code
     if (IGNORE_PREFIX_RE.test(code)) {
       // Return stable identity for the ignored code (the NEGATION-… thing itself)
       return { kind: 'ignored', id: code.toUpperCase() };
@@ -3344,7 +3344,7 @@ input[type="file"][name="{{ form.tex_file.name }}"] {
   // ===================== SCAN CONTROLS FOR CODES ==============================
   function collectCodes(){
     const seenReal     = new Set(); // unique "real" codes
-    const seenIgnored  = new Set(); // unique ignored (NEGATION-/QUERY-) codes
+    const seenIgnored  = new Set(); // unique ignored (UNCERTAIN-/NEGATION-/QUERY-) codes
 
     const buckets = { DMSCreate:0, APIMap:0, ManualMap:0, Other:0, Inactivate:0 };
     const otherList = [];
@@ -3566,7 +3566,7 @@ input[type="file"][name="{{ form.tex_file.name }}"] {
         <div><span class="rc-decision badge--ok">↔</span> Exact Map to SNOMED (APIMap): <strong>${buckets.APIMap}</strong></div>
         <div><span class="rc-decision badge--warn">↔</span> Manually mapped to SNOMED (ManualMap): <strong>${buckets.ManualMap}</strong></div>
         <div>Non-DMS (NHS Mapped): <strong>${buckets.Other}</strong></div>
-        <div style="opacity:.7;">Inactivate/NEGATION/QUERY (ignored): ${buckets.Inactivate}</div>
+        <div style="opacity:.7;">Inactivate/NEGATION/QUERY/UNCERTAIN (ignored): ${buckets.Inactivate}</div>
       </div>
 
       ${ratioLine}
