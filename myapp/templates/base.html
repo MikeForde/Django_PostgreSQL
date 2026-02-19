@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,6 +42,7 @@
             color: #FFFF54;
         }
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <header>
@@ -64,6 +66,8 @@
     <main>
         {% block content %}{% endblock %}
     </main>
+
+    {% block extra_js %}{% endblock %}
 </body>
 <footer>
     <p style="text-align: center; font-size: 0.8em; color: #777;">&copy; 2025 TT-MICP-D2S</p>
