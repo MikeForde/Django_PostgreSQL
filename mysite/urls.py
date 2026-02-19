@@ -29,10 +29,15 @@ urlpatterns = [
     path('import-tex/', views.import_tex_view, name='import_tex'),
     path("import-tex/submit/", views.submit_tex_form, name="submit_tex_form"),
     path('tex-library.json', views.tex_library_json, name='tex_library_json'),
+    path('import-docx/', views.import_docx_view, name='import_docx'),
+    path('docx-library.json', views.docx_library_json, name='docx_library_json'),
     path('dental/', views.dental, name='dental'),
     path('audiogram/analysis/', views.audiogram_analysis, name='audiogram_analysis'),
     path("audio/", views.audio_poc, name="audio_poc"),
     path("army/grading/", views.army_grading, name="army_grading"),
     path("naval/grading/", views.naval_grading, name="naval_grading"),
     path("raf/grading/", views.raf_grading, name="raf_grading"),
+    path("docx-file/", views.docx_file, name="docx_file"),
+
+
 ]

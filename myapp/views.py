@@ -9,6 +9,9 @@ from collections import OrderedDict
 from django.utils import timezone
 from django.conf import settings
 
+from django.urls import reverse
+from urllib.parse import urlencode
+
 
 # app/views.py
 import re
@@ -16,6 +19,386 @@ import json
 from django.http import HttpResponseBadRequest
 from pathlib import Path
 from django.views.decorators.http import require_GET
+
+# For docx library (not fully implemented yet)
+import zipfile
+import xml.etree.ElementTree as ET
+from .forms import DocxLibraryForm
+
+import hashlib
+import subprocess
+from django.http import FileResponse, Http404
+
+
+DOCX_W_NS = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+DOCX_W_URI = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+
+@require_GET
+def docx_file(request):
+    """
+    Streams a DOCX from DOCX_LIBRARY_DIR given a relpath ?p=...
+    Used by client-side docx-preview renderer.
+    """
+    rel = (request.GET.get("p") or "").strip()
+    if not rel:
+        raise Http404()
+
+    root = Path(getattr(settings, "DOCX_LIBRARY_DIR", "")).resolve()
+    docx_path = (root / rel).resolve()
+
+    # Prevent traversal
+    try:
+        docx_path.relative_to(root)
+    except Exception:
+        raise Http404()
+
+    if not docx_path.is_file() or docx_path.suffix.lower() != ".docx":
+        raise Http404()
+
+    # Force download? No — we want browser fetch. Use correct MIME.
+    return FileResponse(
+        open(docx_path, "rb"),
+        content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+
+
+
+def _scan_docx_library_recursive(folder: str):
+    """
+    Recursively scans DOCX_LIBRARY_DIR and returns items with relative paths.
+
+    Each item:
+      - relpath: "sub/dir/file.docx" (POSIX style)
+      - filename: basename
+      - label: stem as human label
+      - parts: ["sub","dir"] for tree
+    """
+    out = []
+    if not folder:
+        return out
+
+    root = Path(folder)
+    for p in sorted(root.rglob("*.docx")):
+        if not p.is_file():
+            continue
+
+        rel = p.relative_to(root).as_posix()
+        parts = list(Path(rel).parts[:-1])  # folders only
+        out.append({
+            "relpath": rel,
+            "filename": p.name,
+            "label": p.stem.replace("_", " "),
+            "parts": parts,
+        })
+
+    # Sort alphabetically by label then relpath for stable list view
+    out.sort(key=lambda d: (d["label"].lower(), d["relpath"].lower()))
+    return out
+
+@require_GET
+def docx_library_json(request):
+    folder = getattr(settings, "DOCX_LIBRARY_DIR", None)
+    data = _scan_docx_library_recursive(folder)
+
+    q = (request.GET.get("q") or "").strip().lower()
+    if q:
+        data = [
+            d for d in data
+            if q in d["label"].lower()
+            or q in d["filename"].lower()
+            or q in d["relpath"].lower()
+        ]
+
+    return JsonResponse({"items": data})
+
+
+def _extract_docx_docvars(docx_path: Path):
+    """
+    Return list of {name, val} from word/settings.xml <w:docVars><w:docVar .../>
+    """
+    items = []
+    try:
+        with zipfile.ZipFile(docx_path, "r") as z:
+            with z.open("word/settings.xml") as f:
+                xml_bytes = f.read()
+        root = ET.fromstring(xml_bytes)
+        for dv in root.findall(".//w:docVars/w:docVar", DOCX_W_NS):
+            name = dv.attrib.get(f"{{{DOCX_W_NS['w']}}}name") or ""
+            val  = dv.attrib.get(f"{{{DOCX_W_NS['w']}}}val") or ""
+            if name:
+                items.append({"name": name, "val": val})
+    except KeyError:
+        # settings.xml missing
+        pass
+    except Exception:
+        pass
+    return items
+
+def _parse_pipe_payload(raw: str):
+    """
+    Your common pattern: CODE|TERM|1|FLAGS...
+    Returns dict with code/term/etc where possible.
+    """
+    parts = (raw or "").split("|")
+    if len(parts) >= 2:
+        return {
+            "code": parts[0].strip(),
+            "term": parts[1].strip(),
+            "rest": "|".join(parts[2:]).strip() if len(parts) > 2 else "",
+        }
+    return {"code": "", "term": raw or "", "rest": ""}
+
+def _docx_preview_blocks(docx_path: Path, max_blocks: int = 500):
+    """
+    Dependency-free preview that extracts paragraphs + basic tables from word/document.xml.
+
+    Returns a list of blocks:
+      {"type":"p", "text":"...", "style":"Heading1|Normal|...", "is_list":bool}
+      {"type":"table", "rows":[["cell","cell"], ...]}
+    """
+    blocks = []
+
+    def _p_style(p_el):
+        # <w:pPr><w:pStyle w:val="Heading1"/>
+        ppr = p_el.find("w:pPr", DOCX_W_NS)
+        if ppr is None:
+            return ""
+        ps = ppr.find("w:pStyle", DOCX_W_NS)
+        if ps is None:
+            return ""
+        return ps.attrib.get(f"{{{DOCX_W_NS['w']}}}val", "") or ""
+
+    def _p_is_list(p_el):
+        # light check: <w:numPr> exists
+        ppr = p_el.find("w:pPr", DOCX_W_NS)
+        if ppr is None:
+            return False
+        return ppr.find("w:numPr", DOCX_W_NS) is not None
+
+    def _p_text(p_el):
+        # Collect text runs w:t plus w:tab and w:br
+        out = []
+        # iterate in document order
+        for node in p_el.iter():
+            tag = node.tag
+            if tag == f"{{{DOCX_W_URI}}}t" and node.text:
+                out.append(node.text)
+            elif tag == f"{{{DOCX_W_URI}}}tab":
+                out.append("\t")
+            elif tag == f"{{{DOCX_W_URI}}}br":
+                out.append("\n")
+        # Normalize whitespace lightly
+        text = "".join(out)
+        # Collapse excessive internal newlines but keep intent
+        text = "\n".join([ln.rstrip() for ln in text.splitlines()]).strip()
+        return text
+
+    def _tbl_rows(tbl_el):
+        rows = []
+        for tr in tbl_el.findall(".//w:tr", DOCX_W_NS):
+            row = []
+            # direct cells
+            for tc in tr.findall("./w:tc", DOCX_W_NS):
+                # cell text = concat of paragraphs
+                cell_lines = []
+                for p in tc.findall(".//w:p", DOCX_W_NS):
+                    t = _p_text(p)
+                    if t:
+                        cell_lines.append(t)
+                row.append("\n".join(cell_lines).strip())
+            if row:
+                rows.append(row)
+        return rows
+
+    try:
+        with zipfile.ZipFile(docx_path, "r") as z:
+            with z.open("word/document.xml") as f:
+                xml_bytes = f.read()
+        root = ET.fromstring(xml_bytes)
+
+        body = root.find(".//w:body", DOCX_W_NS)
+        if body is None:
+            return []
+
+        for child in list(body):
+            if len(blocks) >= max_blocks:
+                break
+
+            if child.tag == f"{{{DOCX_W_URI}}}p":
+                txt = _p_text(child)
+                style = _p_style(child)
+                is_list = _p_is_list(child)
+
+                if not txt:
+                    continue
+
+                # small UX: style/list prefixes
+                if is_list and not txt.startswith(("•", "-", "*")):
+                    txt = "• " + txt
+
+                blocks.append({
+                    "type": "p",
+                    "text": txt,
+                    "style": style,
+                    "is_list": is_list,
+                })
+
+            elif child.tag == f"{{{DOCX_W_URI}}}tbl":
+                rows = _tbl_rows(child)
+                if rows:
+                    blocks.append({
+                        "type": "table",
+                        "rows": rows,
+                    })
+
+    except Exception:
+        return []
+
+    return blocks
+
+def _docx_preview_paragraphs(docx_path: Path, max_paras: int = 400):
+    """
+    V1 preview: extract paragraph text from word/document.xml (stdlib only).
+    """
+    paras = []
+    try:
+        with zipfile.ZipFile(docx_path, "r") as z:
+            with z.open("word/document.xml") as f:
+                xml_bytes = f.read()
+
+        root = ET.fromstring(xml_bytes)
+
+        # Each paragraph is w:p, text runs are w:t
+        for p in root.findall(".//w:body/w:p", DOCX_W_NS):
+            texts = []
+            for t in p.findall(".//w:t", DOCX_W_NS):
+                if t.text:
+                    texts.append(t.text)
+            line = "".join(texts).strip()
+            if line:
+                paras.append(line)
+            if len(paras) >= max_paras:
+                break
+
+    except Exception:
+        pass
+
+    return paras
+
+def import_docx_view(request):
+    """
+    List/Search/Tree-select a DOCX from DOCX_LIBRARY_DIR (recursive),
+    render a simple preview (paragraph text) and show embedded codes/prompts
+    extracted from word/settings.xml (w:docVars).
+
+    Optional: if full_preview is ticked, render DOCX client-side using docx-preview.
+    """
+    form = DocxLibraryForm(request.POST or None)
+
+    want_full = bool(request.POST.get("full_preview"))
+
+    # Build library choices + index every request (so new files appear immediately)
+    folder = getattr(settings, "DOCX_LIBRARY_DIR", None)
+    choices = [("", "— choose a DOCX file —")]
+    library_index = []
+    if folder:
+        library_index = _scan_docx_library_recursive(folder)
+        for d in library_index:
+            choices.append((d["relpath"], d["label"]))
+    form.fields["library_choice"].choices = choices
+
+    selected_name = ""
+    preview_paras = []
+    preview_blocks = []
+    docvars = []
+    read_codes = []
+    full_docx_url = ""
+
+    # Remember last mode like import_tex (optional but nice)
+    lib_mode = request.POST.get("libmode") or request.session.get("docx_libmode", "list")
+
+    if request.method == "POST" and form.is_valid():
+        selected_name = (form.cleaned_data.get("library_choice") or "").strip()
+
+        if selected_name:
+            root = Path(getattr(settings, "DOCX_LIBRARY_DIR", "")).resolve()
+            docx_path = (root / selected_name).resolve()
+
+            # Prevent path traversal
+            try:
+                docx_path.relative_to(root)
+            except Exception:
+                return HttpResponseBadRequest("Invalid DOCX path.")
+
+            if not (docx_path.is_file() and docx_path.suffix.lower() == ".docx"):
+                return HttpResponseBadRequest("Invalid DOCX selection.")
+
+            # Full preview uses client-side renderer; server just streams the docx
+            if want_full:
+                full_docx_url = reverse("docx_file") + "?" + urlencode({"p": selected_name})
+            else:
+                preview_blocks = _docx_preview_blocks(docx_path)
+
+            # Metadata extraction (always)
+            docvars = _extract_docx_docvars(docx_path)
+
+            # Build the "codes" panel from relevant docVars
+            tmp_codes = []
+            for dv in docvars:
+                n = dv.get("name", "")
+                v = dv.get("val", "")
+
+                if n.startswith("Read_Code_") or n.startswith("Diary_Entry_"):
+                    parsed = _parse_pipe_payload(v)
+                    tmp_codes.append({
+                        "name": n,
+                        "raw": v,
+                        "code": parsed.get("code", ""),
+                        "label": parsed.get("term", ""),
+                        "rest": parsed.get("rest", ""),
+                        "kind": "Read/Diary",
+                    })
+                elif n.startswith("Free_Text_Prompt_"):
+                    tmp_codes.append({
+                        "name": n,
+                        "raw": v,
+                        "code": "",
+                        "label": v,
+                        "rest": "",
+                        "kind": "Prompt",
+                    })
+
+            # De-dup by code where present; keep prompts as-is
+            seen_codes = set()
+            read_codes = []
+            for it in tmp_codes:
+                c = (it.get("code") or "").strip()
+                if c:
+                    if c in seen_codes:
+                        continue
+                    seen_codes.add(c)
+                read_codes.append(it)
+
+        # persist mode selection
+        request.session["docx_libmode"] = lib_mode
+        request.session.modified = True
+
+    context = {
+        "form": form,
+        "selected_docx_label": selected_name or "no docx file selected",
+        "preview_paras": preview_paras,
+        "preview_blocks": preview_blocks,
+        "full_docx_url": full_docx_url,
+        "read_codes": read_codes,
+        "docvars_count": len(docvars),
+        "docx_library_index_json": json.dumps(library_index),
+        "libmode": lib_mode,
+        "want_full": want_full,
+    }
+    return render(request, "import_docx.html", context)
+
+
+
 
 TARGETPATH_RE = re.compile(r'^TARGETPATH\s*=\s*(.*)\s*$', re.IGNORECASE | re.MULTILINE)
 

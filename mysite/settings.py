@@ -12,6 +12,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 TEX_LIBRARY_DIR = BASE_DIR / "tex_library"   # e.g. <project>/tex_library
 TEX_LIBRARY_DIR.mkdir(exist_ok=True)
+DOCX_LIBRARY_DIR = BASE_DIR / "docx_library"
+DOCX_LIBRARY_DIR.mkdir(exist_ok=True)
+DOCX_PREVIEW_CACHE_DIR = BASE_DIR / "docx_preview_cache"
+
 
 SNOWFUSION_BASE_URL = "https://snowfusion-d2s-uksc-medsnomed-medsno.apps.ocp1.azure.dso.digital.mod.uk"
 

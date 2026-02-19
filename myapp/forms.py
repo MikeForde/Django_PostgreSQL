@@ -19,3 +19,9 @@ class TexUploadForm(forms.Form):
         label="Or pick from library",
         choices=[("", "— choose a sample —")] + _choices_from_library(),
     )
+
+class DocxLibraryForm(forms.Form):
+    library_choice = forms.ChoiceField(
+        choices=[("", "— choose a DOCX file —")],
+        required=False
+    )

@@ -1,0 +1,333 @@
+{# templates/import_docx.html #}
+{% extends "base.html" %}
+{% load static %}
+{% block title %}DOC Templates | TT-MICP{% endblock %}
+{% block content %}
+  <style>
+  .docx-wrapper { padding: 12px; }
+  .docx-layout { display: flex; flex-direction: column; gap: 10px; }
+  .controls-row { display:flex; gap:10px; align-items: stretch; }
+  .control-card { flex: 1; border:1px solid #ddd; border-radius:8px; padding:10px; background:#fff; }
+  .section-title { font-weight:600; margin-bottom:8px; }
+  .primary-btn { padding:6px 10px; border:1px solid #2b6cb0; background:#2b6cb0; color:#fff; border-radius:6px; cursor:pointer; }
+  .docx-work { display:flex; gap:10px; min-height: 520px; }
+  .docx-left { flex: 1 1 65%; border:1px solid #ccc; border-radius:8px; padding:10px; overflow:auto; background:#fff; }
+  .docx-right { flex: 0 0 420px; border:1px solid #ccc; border-radius:8px; padding:10px; overflow:auto; background:#fff; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  table.codes { width:100%; border-collapse: collapse; font-size: 12px; }
+  table.codes th, table.codes td { border-bottom:1px solid #eee; padding:6px 4px; vertical-align: top; }
+  table.codes th { text-align:left; position: sticky; top: 0; background:#fff; }
+  .pill { display:inline-block; font-size:11px; padding:2px 6px; border:1px solid #ddd; border-radius:999px; }
+  </style>
+  <div class="docx-wrapper">
+    <div class="docx-layout">
+      <form method="post">
+        {% csrf_token %}
+        <div class="controls-row">
+          <div class="control-card">
+            <code id="selected-docx-label">{{ selected_docx_label }}</code>
+            <div class="section-title">
+              Select DOC:
+              <div class="mode-wrapper">
+                <div class="mode-bar">
+                  <label class="mode-item" data-mode="list">
+                    <input type="radio"
+                           name="libmode"
+                           value="list"
+                           {% if request.POST.libmode == 'list' or not request.POST.libmode %}checked{% endif %}>
+                    List
+                  </label>
+                  <label class="mode-item" data-mode="search" id="docx-search-trigger">
+                    <input type="radio"
+                           name="libmode"
+                           value="search"
+                           {% if request.POST.libmode == 'search' %}checked{% endif %}>
+                    Search
+                  </label>
+                  <label class="mode-item" data-mode="tree" id="docx-tree-trigger">
+                    <input type="radio"
+                           name="libmode"
+                           value="tree"
+                           {% if request.POST.libmode == 'tree' %}checked{% endif %}>
+                    Tree
+                  </label>
+                  <button type="submit" class="primary-btn">Render</button>
+                  <label style="font-size:12px; margin-left:10px;">
+                    <input type="checkbox" name="full_preview" value="1"
+                          {% if request.POST.full_preview %}checked{% endif %}>
+                    Full preview
+                  </label>
+                </div>
+                <div id="docx-lib-flyout">
+                  <div id="docx-lib-pane-search" style="display:none;">
+                    <input id="docx-lib-search-input"
+                           type="text"
+                           placeholder="Search by name or path…"
+                           style="width:100%;
+                                  padding:4px 6px;
+                                  font-size:12px">
+                    <div id="docx-lib-search-results"
+                         style="margin-top:6px;
+                                max-height:200px;
+                                overflow:auto;
+                                border:1px solid #ddd;
+                                font-size:12px;
+                                line-height:1.3"></div>
+                  </div>
+                  <div id="docx-lib-pane-tree" style="display:none;">
+                    <div id="docx-lib-tree"
+                         style="max-height:220px;
+                                overflow:auto;
+                                font-size:12px;
+                                line-height:1.3"></div>
+                  </div>
+                </div>
+              </div>
+              <div id="docx-lib-pane-list" style="margin-top:6px;">{{ form.library_choice }}</div>
+            </div>
+            <div style="margin-top:8px; font-size:12px; color:#666;">
+              Extracted docVars: <span class="mono">{{ docvars_count }}</span>
+            </div>
+          </div>
+          <div class="control-card">
+            <div class="section-title">Notes</div>
+            <div style="font-size:12px; color:#555; line-height:1.35;">
+              Fast preview shows rough document only. Codes are extracted from <span class="mono">word/settings.xml</span>
+              (<span class="mono">w:docVars</span>).
+            </div>
+          </div>
+        </div>
+      </form>
+      <div class="docx-work">
+        <div class="docx-left">
+          <div class="section-title">Document Preview</div>
+          {% if full_docx_url %}
+            <div id="docx-preview-loading" style="color:#777; font-size:13px;">Loading full preview…</div>
+            <div id="docx-preview" style="width:100%; height:100%; overflow:auto;"></div>
+          {% elif preview_blocks %}
+            {% for b in preview_blocks %}
+              {% if b.type == "p" %}
+                {% if b.style|lower == "heading1"|lower %}
+                  <h3 style="margin:10px 0 6px 0;">{{ b.text }}</h3>
+                {% elif b.style|lower == "heading2"|lower %}
+                  <h4 style="margin:10px 0 6px 0;">{{ b.text }}</h4>
+                {% else %}
+                  <p style="margin:0 0 8px 0; white-space:pre-wrap;">{{ b.text }}</p>
+                {% endif %}
+              {% elif b.type == "table" %}
+                <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:12px;">
+                  <tbody>
+                    {% for row in b.rows %}
+                      <tr>
+                        {% for cell in row %}
+                          <td style="border:1px solid #eee; padding:6px; vertical-align:top; white-space:pre-wrap;">{{ cell }}</td>
+                        {% endfor %}
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <div style="color:#777; font-size:13px;">No preview loaded yet.</div>
+          {% endif %}
+        </div>
+        <div class="docx-right">
+          <div class="section-title">Embedded Codes / Prompts</div>
+          {% if read_codes %}
+            <table class="codes">
+              <thead>
+                <tr>
+                  <th style="width:90px;">Kind</th>
+                  <th style="width:110px;">Code</th>
+                  <th>Label / Prompt</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for it in read_codes %}
+                  <tr>
+                    <td>
+                      <span class="pill">{{ it.kind }}</span>
+                    </td>
+                    <td class="mono">{{ it.code|default:"" }}</td>
+                    <td>
+                      <div>{{ it.label }}</div>
+                      <div class="mono" style="color:#888; font-size:11px; margin-top:2px;">{{ it.name }}</div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <div style="color:#777; font-size:13px;">No codes extracted yet.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+  const DOCX_INDEX = {{ docx_library_index_json|safe }};
+
+  const flyout = document.getElementById('docx-lib-flyout');
+  const paneList = document.getElementById('docx-lib-pane-list');
+  const paneSearch = document.getElementById('docx-lib-pane-search');
+  const paneTree = document.getElementById('docx-lib-pane-tree');
+
+  const searchInput = document.getElementById('docx-lib-search-input');
+  const searchResults = document.getElementById('docx-lib-search-results');
+  const treeMount = document.getElementById('docx-lib-tree');
+
+  const selectEl = document.querySelector('select[name="library_choice"]');
+
+  function showMode(mode) {
+    // List pane is separate; flyout hosts search/tree
+    if (mode === 'list') {
+      paneList.style.display = '';
+      flyout.style.display = 'none';
+      paneSearch.style.display = 'none';
+      paneTree.style.display = 'none';
+    } else if (mode === 'search') {
+      paneList.style.display = 'none';
+      flyout.style.display = '';
+      paneSearch.style.display = '';
+      paneTree.style.display = 'none';
+      renderSearch('');
+      setTimeout(() => searchInput && searchInput.focus(), 0);
+    } else if (mode === 'tree') {
+      paneList.style.display = 'none';
+      flyout.style.display = '';
+      paneSearch.style.display = 'none';
+      paneTree.style.display = '';
+      renderTree();
+    }
+  }
+
+  function setSelected(relpath) {
+    if (!selectEl) return;
+    selectEl.value = relpath;
+    // Update label if you have one
+    const lbl = document.getElementById('selected-docx-label');
+    if (lbl) lbl.textContent = relpath;
+  }
+
+  function renderSearch(q) {
+    const term = (q || '').trim().toLowerCase();
+    const hits = !term ? DOCX_INDEX.slice(0, 200) : DOCX_INDEX.filter(d =>
+      d.label.toLowerCase().includes(term) ||
+      d.filename.toLowerCase().includes(term) ||
+      d.relpath.toLowerCase().includes(term)
+    ).slice(0, 400);
+
+    searchResults.innerHTML = hits.map(d => {
+      return `<div style="padding:4px 6px; border-bottom:1px solid #eee; cursor:pointer;" data-rel="${d.relpath}">
+                <div><strong>${escapeHtml(d.label)}</strong></div>
+                <div style="color:#777" class="mono">${escapeHtml(d.relpath)}</div>
+              </div>`;
+    }).join('') || `<div style="padding:6px; color:#777;">No matches.</div>`;
+
+    searchResults.querySelectorAll('[data-rel]').forEach(el => {
+      el.addEventListener('click', () => setSelected(el.getAttribute('data-rel')));
+    });
+  }
+
+  function renderTree() {
+    // Build nested object: folders -> files
+    const root = {};
+    for (const d of DOCX_INDEX) {
+      let node = root;
+      for (const seg of (d.parts || [])) {
+        node[seg] = node[seg] || {};
+        node = node[seg];
+      }
+      node.__files = node.__files || [];
+      node.__files.push(d);
+    }
+
+    function nodeHtml(node, depth=0) {
+      let html = '';
+      const folders = Object.keys(node).filter(k => k !== '__files').sort((a,b)=>a.localeCompare(b));
+      for (const f of folders) {
+        html += `<details style="margin-left:${depth*10}px;">
+                  <summary style="cursor:pointer;">📁 ${escapeHtml(f)}</summary>
+                  ${nodeHtml(node[f], depth+1)}
+                </details>`;
+      }
+      const files = (node.__files || []).sort((a,b)=>a.label.localeCompare(b.label));
+      for (const d of files) {
+        html += `<div style="margin-left:${depth*10}px; padding:2px 0; cursor:pointer;" data-rel="${d.relpath}">
+                  📄 <strong>${escapeHtml(d.label)}</strong>
+                  <span style="color:#777" class="mono"> — ${escapeHtml(d.filename)}</span>
+                </div>`;
+      }
+      return html;
+    }
+
+    treeMount.innerHTML = nodeHtml(root) || `<div style="padding:6px; color:#777;">No DOCX files found.</div>`;
+    treeMount.querySelectorAll('[data-rel]').forEach(el => {
+      el.addEventListener('click', () => setSelected(el.getAttribute('data-rel')));
+    });
+  }
+
+  function escapeHtml(s) {
+    return (s || '').replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  // Wire radios
+  document.querySelectorAll('input[name="libmode"]').forEach(r => {
+    r.addEventListener('change', () => showMode(r.value));
+  });
+
+  // Wire live search
+  if (searchInput) searchInput.addEventListener('input', e => renderSearch(e.target.value));
+
+  // Initial mode
+  const initial = document.querySelector('input[name="libmode"]:checked')?.value || 'list';
+  showMode(initial);
+  </script>
+
+  <script src="{% static 'vendor/jszip/jszip.min.js' %}"></script>
+  <script src="{% static 'vendor/docx-preview/docx-preview.js' %}"></script>
+  
+
+  {% if full_docx_url %}
+<script>
+(async function () {
+  const url = "{{ full_docx_url|escapejs }}";
+  const mount = document.getElementById("docx-preview");
+  const loading = document.getElementById("docx-preview-loading");
+  if (!mount) return;
+
+  try {
+    // Sanity checks
+    if (!window.JSZip) throw new Error("JSZip not loaded (window.JSZip missing).");
+    if (!window.docx || typeof window.docx.renderAsync !== "function") {
+      throw new Error("docx-preview not loaded (window.docx.renderAsync missing).");
+    }
+
+    const res = await fetch(url, { credentials: "same-origin" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const buf = await res.arrayBuffer();
+
+    await window.docx.renderAsync(buf, mount, null, {
+      className: "docx",
+      inWrapper: true,
+      breakPages: true,
+      renderHeaders: true,
+      renderFooters: true,
+      renderFootnotes: true
+    });
+
+    if (loading) loading.style.display = "none";
+  } catch (e) {
+    if (loading) loading.textContent = "Full preview failed: " + (e?.message || e);
+    console.error(e);
+    console.log("window.JSZip:", window.JSZip);
+    console.log("window.docx:", window.docx);
+  }
+})();
+</script>
+{% endif %}
+
+{% endblock %}
