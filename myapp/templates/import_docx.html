@@ -138,7 +138,6 @@
             <table class="codes">
               <thead>
                 <tr>
-                  <th style="width:90px;">Kind</th>
                   <th style="width:110px;">Code</th>
                   <th>Label / Prompt</th>
                 </tr>
@@ -146,9 +145,6 @@
               <tbody>
                 {% for it in read_codes %}
                   <tr>
-                    <td>
-                      <span class="pill">{{ it.kind }}</span>
-                    </td>
                     <td class="mono">{{ it.code|default:"" }}</td>
                     <td>
                       <div>{{ it.label }}</div>

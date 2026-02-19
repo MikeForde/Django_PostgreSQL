@@ -5,9 +5,8 @@ from .models import TexSnapshot
 from .forms import TexUploadForm
 from .tex_parser import parse_tex
 from django.http import JsonResponse
-from collections import OrderedDict
-from django.utils import timezone
 from django.conf import settings
+from .docx_parser import parse_document_xml
 
 from django.urls import reverse
 from urllib.parse import urlencode
@@ -21,12 +20,10 @@ from pathlib import Path
 from django.views.decorators.http import require_GET
 
 # For docx library (not fully implemented yet)
+from .forms import DocxLibraryForm
 import zipfile
 import xml.etree.ElementTree as ET
-from .forms import DocxLibraryForm
 
-import hashlib
-import subprocess
 from django.http import FileResponse, Http404
 
 
@@ -110,43 +107,6 @@ def docx_library_json(request):
         ]
 
     return JsonResponse({"items": data})
-
-
-def _extract_docx_docvars(docx_path: Path):
-    """
-    Return list of {name, val} from word/settings.xml <w:docVars><w:docVar .../>
-    """
-    items = []
-    try:
-        with zipfile.ZipFile(docx_path, "r") as z:
-            with z.open("word/settings.xml") as f:
-                xml_bytes = f.read()
-        root = ET.fromstring(xml_bytes)
-        for dv in root.findall(".//w:docVars/w:docVar", DOCX_W_NS):
-            name = dv.attrib.get(f"{{{DOCX_W_NS['w']}}}name") or ""
-            val  = dv.attrib.get(f"{{{DOCX_W_NS['w']}}}val") or ""
-            if name:
-                items.append({"name": name, "val": val})
-    except KeyError:
-        # settings.xml missing
-        pass
-    except Exception:
-        pass
-    return items
-
-def _parse_pipe_payload(raw: str):
-    """
-    Your common pattern: CODE|TERM|1|FLAGS...
-    Returns dict with code/term/etc where possible.
-    """
-    parts = (raw or "").split("|")
-    if len(parts) >= 2:
-        return {
-            "code": parts[0].strip(),
-            "term": parts[1].strip(),
-            "rest": "|".join(parts[2:]).strip() if len(parts) > 2 else "",
-        }
-    return {"code": "", "term": raw or "", "rest": ""}
 
 def _docx_preview_blocks(docx_path: Path, max_blocks: int = 500):
     """
@@ -256,45 +216,44 @@ def _docx_preview_blocks(docx_path: Path, max_blocks: int = 500):
 
     return blocks
 
-def _docx_preview_paragraphs(docx_path: Path, max_paras: int = 400):
-    """
-    V1 preview: extract paragraph text from word/document.xml (stdlib only).
-    """
-    paras = []
-    try:
-        with zipfile.ZipFile(docx_path, "r") as z:
-            with z.open("word/document.xml") as f:
-                xml_bytes = f.read()
+# def _docx_preview_paragraphs(docx_path: Path, max_paras: int = 400):
+#     """
+#     V1 preview: extract paragraph text from word/document.xml (stdlib only).
+#     """
+#     paras = []
+#     try:
+#         with zipfile.ZipFile(docx_path, "r") as z:
+#             with z.open("word/document.xml") as f:
+#                 xml_bytes = f.read()
 
-        root = ET.fromstring(xml_bytes)
+#         root = ET.fromstring(xml_bytes)
 
-        # Each paragraph is w:p, text runs are w:t
-        for p in root.findall(".//w:body/w:p", DOCX_W_NS):
-            texts = []
-            for t in p.findall(".//w:t", DOCX_W_NS):
-                if t.text:
-                    texts.append(t.text)
-            line = "".join(texts).strip()
-            if line:
-                paras.append(line)
-            if len(paras) >= max_paras:
-                break
+#         # Each paragraph is w:p, text runs are w:t
+#         for p in root.findall(".//w:body/w:p", DOCX_W_NS):
+#             texts = []
+#             for t in p.findall(".//w:t", DOCX_W_NS):
+#                 if t.text:
+#                     texts.append(t.text)
+#             line = "".join(texts).strip()
+#             if line:
+#                 paras.append(line)
+#             if len(paras) >= max_paras:
+#                 break
 
-    except Exception:
-        pass
+#     except Exception:
+#         pass
 
-    return paras
+#     return paras
 
 def import_docx_view(request):
     """
     List/Search/Tree-select a DOCX from DOCX_LIBRARY_DIR (recursive),
     render a simple preview (paragraph text) and show embedded codes/prompts
-    extracted from word/settings.xml (w:docVars).
+    extracted from word/document.xml via docx_parser.py.
 
     Optional: if full_preview is ticked, render DOCX client-side using docx-preview.
     """
     form = DocxLibraryForm(request.POST or None)
-
     want_full = bool(request.POST.get("full_preview"))
 
     # Build library choices + index every request (so new files appear immediately)
@@ -308,11 +267,13 @@ def import_docx_view(request):
     form.fields["library_choice"].choices = choices
 
     selected_name = ""
-    preview_paras = []
     preview_blocks = []
-    docvars = []
     read_codes = []
     full_docx_url = ""
+
+    # counts (avoid undefined vars on GET)
+    docx_fields_count = 0
+    parser_meta = {}
 
     # Remember last mode like import_tex (optional but nice)
     lib_mode = request.POST.get("libmode") or request.session.get("docx_libmode", "list")
@@ -339,45 +300,17 @@ def import_docx_view(request):
             else:
                 preview_blocks = _docx_preview_blocks(docx_path)
 
-            # Metadata extraction (always)
-            docvars = _extract_docx_docvars(docx_path)
-
-            # Build the "codes" panel from relevant docVars
-            tmp_codes = []
-            for dv in docvars:
-                n = dv.get("name", "")
-                v = dv.get("val", "")
-
-                if n.startswith("Read_Code_") or n.startswith("Diary_Entry_"):
-                    parsed = _parse_pipe_payload(v)
-                    tmp_codes.append({
-                        "name": n,
-                        "raw": v,
-                        "code": parsed.get("code", ""),
-                        "label": parsed.get("term", ""),
-                        "rest": parsed.get("rest", ""),
-                        "kind": "Read/Diary",
-                    })
-                elif n.startswith("Free_Text_Prompt_"):
-                    tmp_codes.append({
-                        "name": n,
-                        "raw": v,
-                        "code": "",
-                        "label": v,
-                        "rest": "",
-                        "kind": "Prompt",
-                    })
-
-            # De-dup by code where present; keep prompts as-is
-            seen_codes = set()
-            read_codes = []
-            for it in tmp_codes:
-                c = (it.get("code") or "").strip()
-                if c:
-                    if c in seen_codes:
-                        continue
-                    seen_codes.add(c)
-                read_codes.append(it)
+            # Right-panel extraction delegated to docx_parser.py (document.xml only)
+            parsed = parse_document_xml(docx_path)
+            print(parsed)
+            read_codes = parsed.get("legacy_fields", [])   # list of {code,label,kind}
+            parser_meta = {
+                "source": parsed.get("source"),
+                "count": len(read_codes),
+                "codes": parsed.get("codes", []),
+                "debug_log": parsed.get("debug_log", []),
+            }
+            docx_fields_count = len(read_codes)
 
         # persist mode selection
         request.session["docx_libmode"] = lib_mode
@@ -386,11 +319,11 @@ def import_docx_view(request):
     context = {
         "form": form,
         "selected_docx_label": selected_name or "no docx file selected",
-        "preview_paras": preview_paras,
         "preview_blocks": preview_blocks,
         "full_docx_url": full_docx_url,
         "read_codes": read_codes,
-        "docvars_count": len(docvars),
+        "docx_fields_count": docx_fields_count,
+        "docx_parser_meta": parser_meta,  # optional debugging
         "docx_library_index_json": json.dumps(library_index),
         "libmode": lib_mode,
         "want_full": want_full,
