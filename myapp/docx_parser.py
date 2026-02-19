@@ -91,10 +91,18 @@ def parse_document_xml(docx_path: str) -> Dict[str, Any]:
     # local helper (NO new top-level function names)
     def add_field(code: str, label: Optional[str], kind: str, where: str) -> None:
         nonlocal enriched_read_diary, enriched_free_text
-        
+
         c = (code or "").strip()
+        lbl = (label or "").strip()
+        
         if not c:
             return
+
+        # 🔥 HARD FILTER: ignore fields with no meaningful label
+        if not lbl or lbl.lower() == "none":
+            debug_log.append(f"[DROP] code={c} no usable label at {where}")
+            return
+    
         if c in seen:
             debug_log.append(f"[SKIP] duplicate code={c} at {where}")
             return
