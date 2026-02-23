@@ -258,7 +258,7 @@ def import_docx_view(request):
 
     # Build library choices + index every request (so new files appear immediately)
     folder = getattr(settings, "DOCX_LIBRARY_DIR", None)
-    choices = [("", "— choose a DOCX file —")]
+    choices = [("", "— choose a document —")]
     library_index = []
     if folder:
         library_index = _scan_docx_library_recursive(folder)
@@ -318,7 +318,7 @@ def import_docx_view(request):
 
     context = {
         "form": form,
-        "selected_docx_label": selected_name or "no docx file selected",
+        "selected_docx_label": selected_name or "no document selected",
         "preview_blocks": preview_blocks,
         "full_docx_url": full_docx_url,
         "read_codes": read_codes,

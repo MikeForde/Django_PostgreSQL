@@ -86,14 +86,13 @@
               <div id="docx-lib-pane-list" style="margin-top:6px;">{{ form.library_choice }}</div>
             </div>
             <div style="margin-top:8px; font-size:12px; color:#666;">
-              Extracted docVars: <span class="mono">{{ docvars_count }}</span>
+              {% comment %} Extracted document: <span class="mono">{{ docvars_count }}</span> {% endcomment %}
             </div>
           </div>
           <div class="control-card">
             <div class="section-title">Notes</div>
             <div style="font-size:12px; color:#555; line-height:1.35;">
-              Fast preview shows rough document only. Codes are extracted from <span class="mono">word/settings.xml</span>
-              (<span class="mono">w:docVars</span>).
+              Fast preview shows rough document only. <br>Codes and prompts are extracted from <span class="mono">word/documents.xml and word/settings.xml</span>
             </div>
           </div>
         </div>
