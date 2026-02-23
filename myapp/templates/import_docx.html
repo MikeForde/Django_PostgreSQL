@@ -31,30 +31,26 @@
               <div class="mode-wrapper">
                 <div class="mode-bar">
                   <label class="mode-item" data-mode="list">
-                    <input type="radio"
-                           name="libmode"
-                           value="list"
-                           {% if request.POST.libmode == 'list' or not request.POST.libmode %}checked{% endif %}>
+                    <input type="radio" name="libmode" value="list"
+                          {% if libmode == 'list' %}checked{% endif %}>
                     List
                   </label>
+
                   <label class="mode-item" data-mode="search" id="docx-search-trigger">
-                    <input type="radio"
-                           name="libmode"
-                           value="search"
-                           {% if request.POST.libmode == 'search' %}checked{% endif %}>
+                    <input type="radio" name="libmode" value="search"
+                          {% if libmode == 'search' %}checked{% endif %}>
                     Search
                   </label>
+
                   <label class="mode-item" data-mode="tree" id="docx-tree-trigger">
-                    <input type="radio"
-                           name="libmode"
-                           value="tree"
-                           {% if request.POST.libmode == 'tree' %}checked{% endif %}>
+                    <input type="radio" name="libmode" value="tree"
+                          {% if libmode == 'tree' %}checked{% endif %}>
                     Tree
                   </label>
                   <button type="submit" class="primary-btn">Render</button>
                   <label style="font-size:12px; margin-left:10px;">
                     <input type="checkbox" name="full_preview" value="1"
-                          {% if request.POST.full_preview %}checked{% endif %}>
+                         {% if want_full %}checked{% endif %}>
                     Full preview
                   </label>
                 </div>
@@ -162,6 +158,7 @@
   </div>
   <script>
   const DOCX_INDEX = {{ docx_library_index_json|safe }};
+  const DOCX_MODE_KEY = "docx:libmode";
 
   const flyout = document.getElementById('docx-lib-flyout');
   const paneList = document.getElementById('docx-lib-pane-list');
@@ -271,13 +268,22 @@
 
   // Wire radios
   document.querySelectorAll('input[name="libmode"]').forEach(r => {
-    r.addEventListener('change', () => showMode(r.value));
+    r.addEventListener('change', () => {
+      sessionStorage.setItem(DOCX_MODE_KEY, r.value);
+      showMode(r.value);
+    });
   });
 
   // Wire live search
   if (searchInput) searchInput.addEventListener('input', e => renderSearch(e.target.value));
 
   // Initial mode
+  const savedMode = sessionStorage.getItem(DOCX_MODE_KEY);
+  if (savedMode && ["list","search","tree"].includes(savedMode)) {
+    const radio = document.querySelector(`input[name="libmode"][value="${savedMode}"]`);
+    if (radio) radio.checked = true;
+  }
+
   const initial = document.querySelector('input[name="libmode"]:checked')?.value || 'list';
   showMode(initial);
   </script>

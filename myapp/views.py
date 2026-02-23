@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from urllib3 import request
 from .models import MrEvent
 from .models import MrConsultation
 from .models import TexSnapshot
@@ -29,6 +30,11 @@ from django.http import FileResponse, Http404
 
 DOCX_W_NS = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
 DOCX_W_URI = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+
+DOCX_LAST_KEY = "last_docx_relpath"
+DOCX_LAST_FULL_KEY = "last_docx_full_preview"
+DOCX_LIBMODE_KEY = "docx_libmode"
+DOCX_LAST_Q_KEY = "docx_last_q"   # optional if you have a search box you want to repopulate
 
 @require_GET
 def docx_file(request):
@@ -248,13 +254,10 @@ def _docx_preview_blocks(docx_path: Path, max_blocks: int = 500):
 def import_docx_view(request):
     """
     List/Search/Tree-select a DOCX from DOCX_LIBRARY_DIR (recursive),
-    render a simple preview (paragraph text) and show embedded codes/prompts
-    extracted from word/document.xml via docx_parser.py.
-
-    Optional: if full_preview is ticked, render DOCX client-side using docx-preview.
+    render a simple preview and show embedded codes/prompts.
+    Remembers last selected docx in session so user can navigate away/back.
     """
     form = DocxLibraryForm(request.POST or None)
-    want_full = bool(request.POST.get("full_preview"))
 
     # Build library choices + index every request (so new files appear immediately)
     folder = getattr(settings, "DOCX_LIBRARY_DIR", None)
@@ -266,55 +269,97 @@ def import_docx_view(request):
             choices.append((d["relpath"], d["label"]))
     form.fields["library_choice"].choices = choices
 
+    # Remember last mode like import_tex
+    lib_mode = request.POST.get("libmode") or request.session.get(DOCX_LIBMODE_KEY, "list")
+
+    # ---- NEW: restore last selection on GET (and as fallback on POST) ----
+    last_selected = (request.session.get("last_docx_relpath") or "").strip()
+    last_full = bool(request.session.get("last_docx_full_preview", False))
+
+    # Determine “want_full”:
+    # - on POST: from checkbox
+    # - on GET: restore from session (so page comes back in same mode)
+    want_full = bool(request.POST.get("full_preview")) if request.method == "POST" else bool(request.session.get(DOCX_LAST_FULL_KEY, False))
+
     selected_name = ""
     preview_blocks = []
     read_codes = []
     full_docx_url = ""
 
-    # counts (avoid undefined vars on GET)
     docx_fields_count = 0
     parser_meta = {}
 
-    # Remember last mode like import_tex (optional but nice)
-    lib_mode = request.POST.get("libmode") or request.session.get("docx_libmode", "list")
+    def _render_selected(relpath: str):
+        """Shared: validate relpath, render either preview blocks or full preview URL, parse codes."""
+        nonlocal selected_name, preview_blocks, read_codes, full_docx_url, docx_fields_count, parser_meta
+
+        selected_name = (relpath or "").strip()
+        if not selected_name:
+            return
+
+        root = Path(getattr(settings, "DOCX_LIBRARY_DIR", "")).resolve()
+        docx_path = (root / selected_name).resolve()
+
+        # Prevent traversal
+        try:
+            docx_path.relative_to(root)
+        except Exception:
+            return
+
+        if not (docx_path.is_file() and docx_path.suffix.lower() == ".docx"):
+            return
+
+        if want_full:
+            full_docx_url = reverse("docx_file") + "?" + urlencode({"p": selected_name})
+            preview_blocks = []
+        else:
+            preview_blocks = _docx_preview_blocks(docx_path)
+            full_docx_url = ""
+
+        parsed = parse_document_xml(docx_path)
+        read_codes = parsed.get("legacy_fields", [])
+        parser_meta = {
+            "source": parsed.get("source"),
+            "count": len(read_codes),
+            "codes": parsed.get("codes", []),
+            "debug_log": parsed.get("debug_log", []),
+        }
+        docx_fields_count = len(read_codes)
 
     if request.method == "POST" and form.is_valid():
         selected_name = (form.cleaned_data.get("library_choice") or "").strip()
 
         if selected_name:
-            root = Path(getattr(settings, "DOCX_LIBRARY_DIR", "")).resolve()
-            docx_path = (root / selected_name).resolve()
+            # Normal POST selection
+            _render_selected(selected_name)
 
-            # Prevent path traversal
+            # ---- NEW: persist last selected docx + preview mode ----
+            request.session["last_docx_relpath"] = selected_name
+            request.session["last_docx_full_preview"] = bool(want_full)
+            request.session["docx_libmode"] = lib_mode
+            request.session[DOCX_LIBMODE_KEY] = lib_mode
+            request.session[DOCX_LAST_FULL_KEY] = bool(want_full)
+            request.session.modified = True
+
+        else:
+            # ---- NEW: if POST but nothing chosen, fall back to last selection ----
+            if last_selected:
+                _render_selected(last_selected)
+
+            request.session["docx_libmode"] = lib_mode
+            request.session.modified = True
+
+    else:
+        # ---- NEW: GET restore most recent docx ----
+        if last_selected:
+            _render_selected(last_selected)
+
+        # Also pre-select the dropdown value on GET (so UI shows what’s restored)
+        if last_selected:
             try:
-                docx_path.relative_to(root)
+                form.fields["library_choice"].initial = last_selected
             except Exception:
-                return HttpResponseBadRequest("Invalid DOCX path.")
-
-            if not (docx_path.is_file() and docx_path.suffix.lower() == ".docx"):
-                return HttpResponseBadRequest("Invalid DOCX selection.")
-
-            # Full preview uses client-side renderer; server just streams the docx
-            if want_full:
-                full_docx_url = reverse("docx_file") + "?" + urlencode({"p": selected_name})
-            else:
-                preview_blocks = _docx_preview_blocks(docx_path)
-
-            # Right-panel extraction delegated to docx_parser.py (document.xml only)
-            parsed = parse_document_xml(docx_path)
-            print(parsed)
-            read_codes = parsed.get("legacy_fields", [])   # list of {code,label,kind}
-            parser_meta = {
-                "source": parsed.get("source"),
-                "count": len(read_codes),
-                "codes": parsed.get("codes", []),
-                "debug_log": parsed.get("debug_log", []),
-            }
-            docx_fields_count = len(read_codes)
-
-        # persist mode selection
-        request.session["docx_libmode"] = lib_mode
-        request.session.modified = True
+                pass
 
     context = {
         "form": form,
@@ -323,7 +368,7 @@ def import_docx_view(request):
         "full_docx_url": full_docx_url,
         "read_codes": read_codes,
         "docx_fields_count": docx_fields_count,
-        "docx_parser_meta": parser_meta,  # optional debugging
+        "docx_parser_meta": parser_meta,
         "docx_library_index_json": json.dumps(library_index),
         "libmode": lib_mode,
         "want_full": want_full,
