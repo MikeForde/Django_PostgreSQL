@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from urllib3 import request
 from .models import MrEvent
 from .models import MrConsultation
 from .models import TexSnapshot
