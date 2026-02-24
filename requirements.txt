@@ -1,4 +1,4 @@
-Django==5.0
+Django==5.2.11
 psycopg2-binary
 gunicorn
 django-environ
