@@ -38,6 +38,5 @@ urlpatterns = [
     path("naval/grading/", views.naval_grading, name="naval_grading"),
     path("raf/grading/", views.raf_grading, name="raf_grading"),
     path("docx-file/", views.docx_file, name="docx_file"),
-
-
+    path("api/read-snomed/lookup", views.read_snomed_lookup, name="read_snomed_lookup"),
 ]

@@ -107,3 +107,51 @@ class MrConsultation(models.Model):
     class Meta:
         managed = False  # We are using an existing table
         db_table = '"emispatient"."mr_consultation"'
+
+class ReadSnomedIntMap(models.Model):
+    read_code = models.CharField(max_length=10, db_index=True)
+    concept_id = models.TextField(db_index=True)        # SNOMED IDs can exceed bigint range; keep as text
+    term = models.TextField()                           # can be extremely long
+    description_id = models.TextField(db_index=True)
+
+    class Meta:
+        db_table = "read_snomed_int_map"
+        indexes = [
+            models.Index(fields=["read_code"]),
+            models.Index(fields=["concept_id"]),
+            models.Index(fields=["description_id"]),
+        ]
+        # Keep it safe without assuming one-to-one:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["read_code", "concept_id", "description_id"],
+                name="uq_read_int_readcode_concept_desc",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.read_code} -> {self.concept_id}"
+
+
+class ReadSnomedUkMap(models.Model):
+    read_code = models.CharField(max_length=10, db_index=True)
+    concept_id = models.TextField(db_index=True)
+    term = models.TextField()
+    description_id = models.TextField(db_index=True)
+
+    class Meta:
+        db_table = "read_snomed_uk_map"
+        indexes = [
+            models.Index(fields=["read_code"]),
+            models.Index(fields=["concept_id"]),
+            models.Index(fields=["description_id"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["read_code", "concept_id", "description_id"],
+                name="uq_read_uk_readcode_concept_desc",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.read_code} -> {self.concept_id}"

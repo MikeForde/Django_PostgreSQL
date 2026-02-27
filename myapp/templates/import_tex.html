@@ -2125,6 +2125,10 @@
 </script>
 
 <script>
+  window.READ_SNOMED_LOOKUP_URL = "{% url 'read_snomed_lookup' %}";
+</script>
+
+<script>
   (function(){
   const API = "{{ snowfusion_url }}/review/decisions";
 
@@ -2153,6 +2157,22 @@
     }
   });
 
+  const LOCAL_LOOKUP_URL = window.READ_SNOMED_LOOKUP_URL || '/api/read-snomed/lookup';
+
+  function localLookup(codes){
+    return fetch(LOCAL_LOOKUP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      // no CSRF needed if you keep this endpoint CSRF-exempt OR you’re already exempting POSTs
+      // If you enforce CSRF, we can add the token header here.
+      body: JSON.stringify({ codes })
+    }).then(r => r.ok ? r.json() : Promise.reject('local lookup failed'));
+  }
+
+  function stripTrailingDots(code){
+    return (code || '').replace(/\.+$/,''); // remove ONLY trailing dots
+  }
+
   function classFor(decision){
     if (!decision) return 'badge--miss';
     const d = String(decision).toLowerCase();
@@ -2170,6 +2190,7 @@
     })
     .then(r => r.ok ? r.json() : Promise.reject(r.statusText))
     .then(({ results } = { results:{} }) => {
+      const missing = []; 
       items.forEach(li => {
         // --- Normalise code for lookup ---
         let code = (li.querySelector('code')?.textContent || '').trim();
@@ -2195,14 +2216,20 @@
 
           if (isDmsLike) {
             badge.textContent = '?';
-            badge.className = 'rc-decision badge--query';
+            badge.className = 'rc-decision badge badge--query';
             badge.removeAttribute('title');
             badge.setAttribute('data-tip', `SnowFusion Status Unknown (was not a template code in 2022)${extra}`);
           } else {
             badge.textContent = '✗';
             badge.className = 'rc-decision badge badge--miss';
             badge.removeAttribute('title');
-            badge.setAttribute('data-tip', `Excluded from SnowFusion${extra}`);
+            badge.setAttribute('data-tip', `Not Found${extra}`);
+
+            // NEW: also try local DB lookup (but only for the base code)
+            const base = stripTrailingDots(
+              cleanCode.replace(/^(UNCERTAIN-|NEGATION-|QUERY-)/i, '').trim()
+            );
+            if (base) missing.push({ li, cleanCode: base });
           }
         } else {
           const decision = hit.decision || '—';
@@ -2225,14 +2252,84 @@
           badge.removeAttribute('title');
         }
       });
+      // NEW: local lookup pass for missing codes
+      const uniqMissing = [...new Set(missing.map(x => x.cleanCode))];
+      if (!uniqMissing.length) return;
+
+      localLookup(uniqMissing)
+        .then(({ results: localResults } = { results:{} }) => {
+          missing.forEach(({ li, cleanCode }) => {
+            const badge = li.querySelector('.rc-decision');
+            if (!badge) return;
+
+            const extra = li.dataset.autotext ? `\n${li.dataset.autotext}` : '';
+            const rec = localResults && localResults[cleanCode];
+            if (!rec) return; // still missing everywhere
+
+            // Show SNOMED ConceptId + term from DB tables
+            // Use a distinct symbol so it's obvious it came from local maps
+            badge.textContent = 'NHS';
+            badge.className = 'rc-decision badge badge--ok';
+
+            const src = rec.source === 'INT' ? 'International' : 'UK Extension';
+            badge.setAttribute(
+              'data-tip',
+              `NHS Mapping (${src})\nSNOMED ConceptId: ${rec.concept_id}\nTerm: ${rec.term}${extra}`
+            );
+          });
+          })
+        .catch(err => {
+          console.warn('Local read->snomed lookup failed:', err);
+        });
     })
     .catch(err => {
       console.error('SnowFusion lookup failed:', err);
-      items.forEach(li => {
-        const b = li.querySelector('.rc-decision');
-        const extra = li.dataset.autotext ? `\n${li.dataset.autotext}` : '';
-        if (b){ b.textContent = 'unavailable'; b.className = 'rc-decision badge badge--miss'; b.setAttribute('data-tip', `Unavailable${extra}`);}
-      });
+
+      // ✅ Fall back to local DB lookup for ALL codes
+      localLookup(codes)
+        .then(({ results: localResults } = { results:{} }) => {
+          items.forEach(li => {
+            let code = (li.querySelector('code')?.textContent || '').trim();
+            const cleanCode = code.replace(/^Last Entry for\s+/i, '').trim();
+            const base = stripTrailingDots(
+              cleanCode.replace(/^(UNCERTAIN-|NEGATION-|QUERY-)/i, '').trim()
+            );
+
+            const b = li.querySelector('.rc-decision');
+            if (!b) return;
+
+            const extra = li.dataset.autotext ? `\n${li.dataset.autotext}` : '';
+            const rec = localResults && localResults[base];
+
+            if (rec) {
+              b.textContent = '↔';
+              b.className = 'rc-decision badge badge--ok';
+              const src = rec.source === 'INT' ? 'INT (preferred)' : 'UK (fallback)';
+              b.setAttribute(
+                'data-tip',
+                `NHS Mapping (${src})\nSNOMED ConceptId: ${rec.concept_id}\nTerm: ${rec.term}${extra}`
+              );
+            } else {
+              b.textContent = '✗';
+              b.className = 'rc-decision badge badge--miss';
+              b.setAttribute('data-tip', `Unavailable in SnowFusion, not found locally${extra}`);
+            }
+          });
+        })
+        .catch(localErr => {
+          console.warn('Local read->snomed lookup failed:', localErr);
+
+          // If BOTH are down, then show Unavailable
+          items.forEach(li => {
+            const b = li.querySelector('.rc-decision');
+            const extra = li.dataset.autotext ? `\n${li.dataset.autotext}` : '';
+            if (b) {
+              b.textContent = 'unavailable';
+              b.className = 'rc-decision badge badge--miss';
+              b.setAttribute('data-tip', `Unavailable${extra}`);
+            }
+          });
+        });
     });
   })();
 </script>
@@ -3241,7 +3338,7 @@
         <div>${dmsLegend}</div>
         <div><span class="rc-decision badge--ok">↔</span> Exact Map to SNOMED (APIMap): <strong>${buckets.APIMap}</strong></div>
         <div><span class="rc-decision badge--warn">↔</span> Manually mapped to SNOMED (ManualMap): <strong>${buckets.ManualMap}</strong></div>
-        <div>Non-DMS (NHS Mapped): <strong>${buckets.Other}</strong></div>
+        <div><span class="rc-decision badge--ok">NHS</span> Non-DMS (NHS Mapped): <strong>${buckets.Other}</strong></div>
         <div style="opacity:.7;">Inactivate/NEGATION/QUERY/UNCERTAIN (ignored): ${buckets.Inactivate}</div>
       </div>
 

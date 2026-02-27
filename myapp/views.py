@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import MrEvent
 from .models import MrConsultation
 from .models import TexSnapshot
+from .models import ReadSnomedIntMap, ReadSnomedUkMap
 from .forms import TexUploadForm
 from .tex_parser import parse_tex
 from django.http import JsonResponse
@@ -34,6 +35,90 @@ DOCX_LAST_KEY = "last_docx_relpath"
 DOCX_LAST_FULL_KEY = "last_docx_full_preview"
 DOCX_LIBMODE_KEY = "docx_libmode"
 DOCX_LAST_Q_KEY = "docx_last_q"   # optional if you have a search box you want to repopulate
+
+# myapp/views.py
+import json
+import re
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.http import require_POST
+
+from .models import ReadSnomedIntMap, ReadSnomedUkMap
+
+PREFIX_RE = re.compile(r'^(QUERY-|NEGATION-|UNCERTAIN-)', re.IGNORECASE)
+
+def _normalize_read_code(code: str) -> str:
+    c = (code or "").strip()
+    c = re.sub(r'^Last Entry for\s+', '', c, flags=re.IGNORECASE).strip()
+    c = PREFIX_RE.sub('', c).strip()
+    return c[:10]  # enforce max length defensively
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+@require_POST
+def read_snomed_lookup(request):
+    """
+    POST JSON: {"codes": ["03FJ", "091", ...]}
+    Returns: {"results": {"03FJ": {"source":"INT","concept_id":"...","term":"..."}, ...}}
+    Preference: INT first, then UK for remaining.
+    """
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return HttpResponseBadRequest("Invalid JSON")
+
+    codes = payload.get("codes") or []
+    if not isinstance(codes, list):
+        return HttpResponseBadRequest("codes must be a list")
+
+    # normalize & de-dupe, keep a mapping back to original token
+    normed = []
+    seen = set()
+    for c in codes:
+        n = _normalize_read_code(str(c))
+        if n and n not in seen:
+            seen.add(n)
+            normed.append(n)
+
+    if not normed:
+        return JsonResponse({"results": {}})
+
+    results = {}
+
+    # --- INT first ---
+    int_rows = (
+        ReadSnomedIntMap.objects
+        .filter(read_code__in=normed)
+        .values("read_code", "concept_id", "term")
+    )
+    for r in int_rows:
+        rc = r["read_code"]
+        # if there are multiple rows for same code, first wins (good enough for sidebar)
+        if rc not in results:
+            results[rc] = {
+                "source": "INT",
+                "concept_id": r["concept_id"],
+                "term": r["term"],
+            }
+
+    # --- UK for the remainder ---
+    remaining = [c for c in normed if c not in results]
+    if remaining:
+        uk_rows = (
+            ReadSnomedUkMap.objects
+            .filter(read_code__in=remaining)
+            .values("read_code", "concept_id", "term")
+        )
+        for r in uk_rows:
+            rc = r["read_code"]
+            if rc not in results:
+                results[rc] = {
+                    "source": "UK",
+                    "concept_id": r["concept_id"],
+                    "term": r["term"],
+                }
+
+    return JsonResponse({"results": results})
 
 @require_GET
 def docx_file(request):
