@@ -2271,6 +2271,12 @@
             badge.textContent = 'NHS';
             badge.className = 'rc-decision badge badge--ok';
 
+            const row = badge.closest('.rc-row');
+            if (row) {
+              row.dataset.snomedConcept = rec.concept_id;
+              row.dataset.snomedSource  = rec.source || '';
+            }
+
             const src = rec.source === 'INT' ? 'International' : 'UK Extension';
             badge.setAttribute(
               'data-tip',
@@ -2302,9 +2308,15 @@
             const rec = localResults && localResults[base];
 
             if (rec) {
-              b.textContent = '↔';
+              b.textContent = 'NHS';
               b.className = 'rc-decision badge badge--ok';
-              const src = rec.source === 'INT' ? 'INT (preferred)' : 'UK (fallback)';
+              const row = badge.closest('.rc-row');
+              if (row) {
+                row.dataset.snomedConcept = rec.concept_id;
+                row.dataset.snomedSource  = rec.source || '';
+              }
+              
+              const src = rec.source === 'INT' ? 'International' : 'UK Extension';
               b.setAttribute(
                 'data-tip',
                 `NHS Mapping (${src})\nSNOMED ConceptId: ${rec.concept_id}\nTerm: ${rec.term}${extra}`
@@ -2399,8 +2411,8 @@
 
 <script>
   (function(){
-    const SNOWFUSION_REVIEW_BASE =
-      'https://snowfusion-d2s-uksc-medsnomed-medsno.apps.ocp1.azure.dso.digital.mod.uk/review/';
+    const SNOWFUSION_BASE =
+      'https://snowfusion-d2s-uksc-medsnomed-medsno.apps.ocp1.azure.dso.digital.mod.uk/';
 
     const sidebar = document.getElementById('readcodes-sidebar');
     if (!sidebar) return;
@@ -2410,12 +2422,20 @@
       if (!badge) return;
 
       const row = badge.closest('.rc-row');
-      let code = row?.getAttribute('data-read-code') || '';
-      // Strip leading “Last Entry for ” if present
-      code = code.replace(/^Last Entry for\s+/i, '').trim();
+      if (!row) return;
+
+      // If we have a mapped SNOMED conceptId, route to /snomed/<conceptId>
+      const conceptId = (row.dataset.snomedConcept || '').trim();
+      if (conceptId) {
+        window.open(SNOWFUSION_BASE + 'snomed/' + encodeURIComponent(conceptId), '_blank', 'noopener');
+        return;
+      }
+
+      // Otherwise fall back to /review/<readcode>
+      let code = (row.getAttribute('data-read-code') || '').replace(/^Last Entry for\s+/i, '').trim();
       if (!code) return;
 
-      window.open(SNOWFUSION_REVIEW_BASE + encodeURIComponent(code), '_blank', 'noopener');
+      window.open(SNOWFUSION_BASE + 'review/' + encodeURIComponent(code), '_blank', 'noopener');
     });
   })();
 </script>
