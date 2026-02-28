@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:800px; margin: 0 auto; padding: 14px;">
+  <h2>Delete mapping ({{ table_label }})</h2>
+
+  <p>Are you sure you want to delete:</p>
+  <ul>
+    <li><strong>ReadCode:</strong> <code>{{ object.read_code }}</code></li>
+    <li><strong>ConceptId:</strong> {{ object.concept_id }}</li>
+    <li><strong>DescriptionId:</strong> {{ object.description_id }}</li>
+    <li><strong>Term:</strong> {{ object.term }}</li>
+  </ul>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, delete</button>
+    <a href="{{ cancel_url }}" style="margin-left:10px;">Cancel</a>
+  </form>
+</div>
+{% endblock %}

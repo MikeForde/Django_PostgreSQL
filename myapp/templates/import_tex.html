@@ -2414,8 +2414,34 @@
     const SNOWFUSION_BASE =
       'https://snowfusion-d2s-uksc-medsnomed-medsno.apps.ocp1.azure.dso.digital.mod.uk/';
 
+    const NHS_TERM_BROWSER_BASE =
+      'https://termbrowser.nhs.uk/?perspective=full&conceptId1=';
+
     const sidebar = document.getElementById('readcodes-sidebar');
     if (!sidebar) return;
+
+    function extractConceptIdFromTip(tip){
+      // Your tip contains lines like: "416745009 - On examination - ..."
+      // SNOMED conceptIds are typically 6–18 digits; be conservative.
+      const m = String(tip || '').match(/\b\d{6,18}\b/);
+      return m ? m[0] : '';
+    }
+
+    function getConceptId(row, badge){
+      // 1) stored explicitly on row (local lookup path)
+      let cid = (row?.dataset?.snomedConcept || '').trim();
+      if (cid) return cid;
+
+      // 2) stored explicitly on badge (optional future improvement)
+      cid = (badge?.dataset?.conceptId || '').trim();
+      if (cid) return cid;
+
+      // 3) parse from tooltip text (covers your TRIQQBC1 example)
+      cid = extractConceptIdFromTip(badge?.getAttribute('data-tip'));
+      if (cid) return cid;
+
+      return '';
+    }
 
     sidebar.addEventListener('click', (e) => {
       const badge = e.target.closest('.rc-decision');
@@ -2424,18 +2450,43 @@
       const row = badge.closest('.rc-row');
       if (!row) return;
 
-      // If we have a mapped SNOMED conceptId, route to /snomed/<conceptId>
-      const conceptId = (row.dataset.snomedConcept || '').trim();
-      if (conceptId) {
-        window.open(SNOWFUSION_BASE + 'snomed/' + encodeURIComponent(conceptId), '_blank', 'noopener');
+      const conceptId = getConceptId(row, badge);
+
+      // Ctrl (Win/Linux) or Cmd (Mac) click => NHS SNOMED browser (if we have a conceptId)
+      if (e.ctrlKey || e.metaKey) {
+        if (conceptId) {
+          e.preventDefault();
+          window.open(
+            NHS_TERM_BROWSER_BASE + encodeURIComponent(conceptId),
+            '_blank',
+            'noopener'
+          );
+        }
         return;
       }
 
-      // Otherwise fall back to /review/<readcode>
-      let code = (row.getAttribute('data-read-code') || '').replace(/^Last Entry for\s+/i, '').trim();
+      // Normal click:
+      // If conceptId known => SnowFusion /snomed/<conceptId>
+      if (conceptId) {
+        window.open(
+          SNOWFUSION_BASE + 'snomed/' + encodeURIComponent(conceptId),
+          '_blank',
+          'noopener'
+        );
+        return;
+      }
+
+      // Otherwise => SnowFusion /review/<readcode>
+      let code = (row.getAttribute('data-read-code') || '')
+        .replace(/^Last Entry for\s+/i, '')
+        .trim();
       if (!code) return;
 
-      window.open(SNOWFUSION_BASE + 'review/' + encodeURIComponent(code), '_blank', 'noopener');
+      window.open(
+        SNOWFUSION_BASE + 'review/' + encodeURIComponent(code),
+        '_blank',
+        'noopener'
+      );
     });
   })();
 </script>

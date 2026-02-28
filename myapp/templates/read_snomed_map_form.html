@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:900px; margin: 0 auto; padding: 14px;">
+  <h2 style="margin: 0 0 10px;">Read → SNOMED ({{ table_label }})</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    <table cellpadding="6">
+      {{ form.as_table }}
+    </table>
+    <div style="margin-top:10px; display:flex; gap:10px;">
+      <button type="submit">Save</button>
+      <a href="{{ cancel_url }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

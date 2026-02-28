@@ -3,6 +3,7 @@ from .models import MrEvent
 from .models import MrConsultation
 from .models import TexSnapshot
 from .models import ReadSnomedIntMap, ReadSnomedUkMap
+from .forms import ReadSnomedIntMapForm, ReadSnomedUkMapForm
 from .forms import TexUploadForm
 from .tex_parser import parse_tex
 from django.http import JsonResponse
@@ -26,6 +27,17 @@ import zipfile
 import xml.etree.ElementTree as ET
 
 from django.http import FileResponse, Http404
+
+# mapping views
+from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.db.models import Q
+
+import os
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.views.decorators.http import require_http_methods
+from django.utils.crypto import constant_time_compare
 
 
 DOCX_W_NS = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
@@ -783,4 +795,155 @@ def _uniq_by_code(items):
         seen.add(code)
         out.append(it)
     return out
+
+class ReadSnomedAdminRequiredMixin:
+    """
+    Simple session-based gate protected by a shared password stored in env.
+    """
+    def dispatch(self, request, *args, **kwargs):
+        pw = os.environ.get("READ_SNOMED_ADMIN_PASSWORD", "")
+        # If no password configured, lock everything (fail closed).
+        if not pw:
+            return render(request, "read_snomed_admin_locked.html", status=503)
+
+        if request.session.get("read_snomed_admin_ok") is True:
+            return super().dispatch(request, *args, **kwargs)
+
+        return redirect("read_snomed_admin_unlock")
+
+
+@require_http_methods(["GET", "POST"])
+def read_snomed_admin_unlock(request):
+    pw = os.environ.get("READ_SNOMED_ADMIN_PASSWORD", "")
+    if not pw:
+        return render(request, "read_snomed_admin_locked.html", status=503)
+
+    error = ""
+    if request.method == "POST":
+        entered = (request.POST.get("password") or "")
+        if constant_time_compare(entered, pw):
+            request.session["read_snomed_admin_ok"] = True
+            # send them to INT list by default (change if you want)
+            return redirect("read_snomed_int_list")
+        error = "Incorrect password."
+
+    return render(request, "read_snomed_admin_unlock.html", {"error": error})
+
+
+@require_http_methods(["POST"])
+def read_snomed_admin_lock(request):
+    request.session.pop("read_snomed_admin_ok", None)
+    return redirect("read_snomed_admin_unlock")
+
+class _BaseMapListView(ListView):
+    template_name = "read_snomed_map_list.html"
+    paginate_by = 50
+    context_object_name = "rows"
+
+    def get_queryset(self):
+        qs = super().get_queryset().order_by("read_code")
+        q = (self.request.GET.get("q") or "").strip()
+        if q:
+            qs = qs.filter(
+                Q(read_code__icontains=q) |
+                Q(concept_id__icontains=q) |
+                Q(description_id__icontains=q) |
+                Q(term__icontains=q)
+            )
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["q"] = (self.request.GET.get("q") or "").strip()
+        ctx["table_label"] = getattr(self, "table_label", "Map")
+        ctx["base_url"] = getattr(self, "base_url", "")
+        return ctx
+
+
+class ReadSnomedIntMapList(ReadSnomedAdminRequiredMixin, _BaseMapListView):
+    model = ReadSnomedIntMap
+    table_label = "Read → SNOMED (INT preferred)"
+    base_url = "read_snomed_int"
+
+
+class ReadSnomedUkMapList(ReadSnomedAdminRequiredMixin, _BaseMapListView):
+    model = ReadSnomedUkMap
+    table_label = "Read → SNOMED (UK extension)"
+    base_url = "read_snomed_uk"
+
+
+class ReadSnomedIntMapCreate(ReadSnomedAdminRequiredMixin, CreateView):
+    model = ReadSnomedIntMap
+    form_class = ReadSnomedIntMapForm
+    template_name = "read_snomed_map_form.html"
+    success_url = reverse_lazy("read_snomed_int_list")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["table_label"] = "INT"
+        ctx["cancel_url"] = reverse_lazy("read_snomed_int_list")
+        return ctx
+
+
+class ReadSnomedIntMapUpdate(ReadSnomedAdminRequiredMixin, UpdateView):
+    model = ReadSnomedIntMap
+    form_class = ReadSnomedIntMapForm
+    template_name = "read_snomed_map_form.html"
+    success_url = reverse_lazy("read_snomed_int_list")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["table_label"] = "INT"
+        ctx["cancel_url"] = reverse_lazy("read_snomed_int_list")
+        return ctx
+
+
+class ReadSnomedIntMapDelete(ReadSnomedAdminRequiredMixin, DeleteView):
+    model = ReadSnomedIntMap
+    template_name = "read_snomed_map_confirm_delete.html"
+    success_url = reverse_lazy("read_snomed_int_list")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["table_label"] = "INT"
+        ctx["cancel_url"] = reverse_lazy("read_snomed_int_list")
+        return ctx
+
+
+class ReadSnomedUkMapCreate(ReadSnomedAdminRequiredMixin, CreateView):
+    model = ReadSnomedUkMap
+    form_class = ReadSnomedUkMapForm
+    template_name = "read_snomed_map_form.html"
+    success_url = reverse_lazy("read_snomed_uk_list")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["table_label"] = "UK"
+        ctx["cancel_url"] = reverse_lazy("read_snomed_uk_list")
+        return ctx
+
+
+class ReadSnomedUkMapUpdate(ReadSnomedAdminRequiredMixin, UpdateView):
+    model = ReadSnomedUkMap
+    form_class = ReadSnomedUkMapForm
+    template_name = "read_snomed_map_form.html"
+    success_url = reverse_lazy("read_snomed_uk_list")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["table_label"] = "UK"
+        ctx["cancel_url"] = reverse_lazy("read_snomed_uk_list")
+        return ctx
+
+
+class ReadSnomedUkMapDelete(DeleteView):
+    model = ReadSnomedUkMap
+    template_name = "read_snomed_map_confirm_delete.html"
+    success_url = reverse_lazy("read_snomed_uk_list")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["table_label"] = "UK"
+        ctx["cancel_url"] = reverse_lazy("read_snomed_uk_list")
+        return ctx
 

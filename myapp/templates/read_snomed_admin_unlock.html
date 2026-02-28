@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:520px; margin: 40px auto; padding: 14px;">
+  <h2>Read→SNOMED Admin</h2>
+  <p>Enter the password to enable editing.</p>
+
+  <form method="post" style="display:flex; gap:10px; align-items:center;">
+    {% csrf_token %}
+    <input type="password" name="password" autofocus style="flex:1;">
+    <button type="submit">Unlock</button>
+  </form>
+
+  {% if error %}
+    <div style="margin-top:10px; color:#b00020;">{{ error }}</div>
+  {% endif %}
+</div>
+{% endblock %}

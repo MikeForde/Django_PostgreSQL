@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post" action="{% url 'read_snomed_admin_lock' %}" style="display:inline;">
+  {% csrf_token %}
+  <button type="submit">Lock</button>
+</form>
+<div style="max-width:1100px; margin: 0 auto; padding: 14px;">
+  <h2 style="margin: 0 0 10px;">{{ table_label }}</h2>
+
+  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
+    <a href="{% url 'read_snomed_int_list' %}">INT</a> |
+    <a href="{% url 'read_snomed_uk_list' %}">UK</a>
+
+    <span style="flex:1;"></span>
+
+    <form method="get" style="display:flex; gap:8px; align-items:center;">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search read code / conceptId / term" style="min-width:320px;">
+      <button type="submit">Search</button>
+      {% if q %}<a href="?">Clear</a>{% endif %}
+    </form>
+
+    {% if base_url == "read_snomed_int" %}
+      <a href="{% url 'read_snomed_int_new' %}" style="margin-left:8px;">+ New</a>
+    {% else %}
+      <a href="{% url 'read_snomed_uk_new' %}" style="margin-left:8px;">+ New</a>
+    {% endif %}
+  </div>
+
+  <table border="1" cellpadding="6" cellspacing="0" style="width:100%; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th>ReadCode</th>
+        <th>ConceptId</th>
+        <th>DescriptionId</th>
+        <th>Term</th>
+        <th style="width:140px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+        <tr>
+          <td><code>{{ r.read_code }}</code></td>
+          <td style="font-family: monospace;">{{ r.concept_id }}</td>
+          <td style="font-family: monospace;">{{ r.description_id }}</td>
+          <td style="max-width:520px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ r.term }}">{{ r.term }}</td>
+          <td>
+            {% if base_url == "read_snomed_int" %}
+              <a href="{% url 'read_snomed_int_edit' r.pk %}">Edit</a> |
+              <a href="{% url 'read_snomed_int_delete' r.pk %}">Delete</a>
+            {% else %}
+              <a href="{% url 'read_snomed_uk_edit' r.pk %}">Edit</a> |
+              <a href="{% url 'read_snomed_uk_delete' r.pk %}">Delete</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">No rows.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if is_paginated %}
+    <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+      {% if page_obj.has_previous %}
+        <a href="?q={{ q }}&page={{ page_obj.previous_page_number }}">Prev</a>
+      {% endif %}
+      <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?q={{ q }}&page={{ page_obj.next_page_number }}">Next</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
