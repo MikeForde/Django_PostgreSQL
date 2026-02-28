@@ -2,7 +2,125 @@
 {% block content %}
 <div style="max-width:900px; margin: 0 auto; padding: 14px;">
   <h2 style="margin: 0 0 10px;">Read → SNOMED ({{ table_label }})</h2>
+  {% if not object %}
+  <div style="border:1px solid #ddd; padding:10px; border-radius:6px; margin: 10px 0 14px;">
+    <div style="font-weight:bold; margin-bottom:6px;">Paste &amp; Parse</div>
+    <div style="font-size:12px; opacity:.85; margin-bottom:6px;">
+      Paste a block containing ReadCode / SNOMED CT ConceptID / DescriptionID / Term. We’ll extract and fill the form fields.
+    </div>
 
+    <textarea id="paste-box" rows="8" style="width:100%; font-family: monospace;"
+      placeholder="Paste here…"></textarea>
+
+    <div style="display:flex; gap:10px; align-items:center; margin-top:8px;">
+      <button type="button" id="parse-btn">Parse</button>
+      <button type="button" id="clear-btn">Clear</button>
+      <span id="parse-status" style="font-size:12px;"></span>
+    </div>
+
+    <div id="parse-preview" style="margin-top:10px; display:none; background:#f7f7f7; padding:8px; border-radius:6px;">
+      <div style="font-weight:bold; margin-bottom:6px;">Preview</div>
+      <pre id="parse-preview-pre" style="margin:0; white-space:pre-wrap;"></pre>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const box = document.getElementById('paste-box');
+      const btn = document.getElementById('parse-btn');
+      const clr = document.getElementById('clear-btn');
+      const status = document.getElementById('parse-status');
+      const preview = document.getElementById('parse-preview');
+      const previewPre = document.getElementById('parse-preview-pre');
+
+      function cleanReadCode(s){
+        return String(s||'').trim().replace(/\.+$/,''); // strip trailing dots
+      }
+
+      function pickAfterLabel(lines, labelRe){
+        // Find "Label" line then take the next non-empty line as value
+        for (let i=0; i<lines.length; i++){
+          if (labelRe.test(lines[i])){
+            for (let j=i+1; j<lines.length; j++){
+              const v = (lines[j]||'').trim();
+              if (v) return v;
+            }
+          }
+        }
+        return '';
+      }
+
+      function extractFromBlock(text){
+        const lines = String(text||'').replace(/\r/g,'').split('\n').map(l=>l.trim());
+        const readCode = cleanReadCode(pickAfterLabel(lines, /^v2\s*ReadCode$/i) || pickAfterLabel(lines, /^ReadCode$/i));
+
+        // Prefer explicit SNOMED CT lines
+        let conceptId = pickAfterLabel(lines, /^SNOMED\s*CT\s*ConceptID$/i) || pickAfterLabel(lines, /^ConceptId$/i);
+        let descId    = pickAfterLabel(lines, /^SNOMED\s*CT\s*DescriptionID$/i) || pickAfterLabel(lines, /^DescriptionId$/i);
+        let term      = pickAfterLabel(lines, /^SNOMED\s*CT\s*Term$/i) || pickAfterLabel(lines, /^v2\s*Term30$/i) || pickAfterLabel(lines, /^term$/i);
+
+        // Fallback: if concept/desc are embedded like "12345 - blah"
+        const firstNumber = (s) => {
+          const m = String(s||'').match(/\b\d{6,18}\b/);
+          return m ? m[0] : '';
+        };
+        conceptId = firstNumber(conceptId) || '';
+        descId = firstNumber(descId) || '';
+
+        return { read_code: readCode, concept_id: conceptId, description_id: descId, term: term.trim() };
+      }
+
+      function setField(name, value){
+        // Django default ids are id_<fieldname>
+        const el =
+          document.getElementById('id_' + name) ||
+          document.querySelector('[name="' + name + '"]') ||
+          document.querySelector('[name$="' + name + '"]');
+        if (el && value) el.value = value;
+      }
+
+      function renderPreview(obj){
+        preview.style.display = 'block';
+        previewPre.textContent =
+          `ReadCode: ${obj.read_code || '(not found)'}\n` +
+          `ConceptId: ${obj.concept_id || '(not found)'}\n` +
+          `DescriptionId: ${obj.description_id || '(not found)'}\n` +
+          `Term: ${obj.term || '(not found)'}`;
+      }
+
+      btn?.addEventListener('click', () => {
+        status.textContent = '';
+        const obj = extractFromBlock(box.value);
+
+        renderPreview(obj);
+
+        // Fill the form fields (user can still edit before save)
+        setField('read_code', obj.read_code);
+        setField('concept_id', obj.concept_id);
+        setField('description_id', obj.description_id);
+        setField('term', obj.term);
+
+        const missing = [];
+        if (!obj.read_code) missing.push('ReadCode');
+        if (!obj.concept_id) missing.push('ConceptId');
+        if (!obj.description_id) missing.push('DescriptionId');
+        if (!obj.term) missing.push('Term');
+
+        status.style.color = missing.length ? '#b00020' : '#0a7a0a';
+        status.textContent = missing.length
+          ? ('Missing: ' + missing.join(', ') + ' (you can still fill manually)')
+          : 'Parsed OK — review below and click Save when ready.';
+      });
+
+      clr?.addEventListener('click', () => {
+        box.value = '';
+        status.textContent = '';
+        preview.style.display = 'none';
+        previewPre.textContent = '';
+      });
+    })();
+  </script>
+{% endif %}
   <form method="post">
     {% csrf_token %}
     <table cellpadding="6">
