@@ -123,6 +123,10 @@
 {% endif %}
   <form method="post">
     {% csrf_token %}
+    <tr>
+      <th>{{ form.dataset.label_tag }}</th>
+      <td>{{ form.dataset }}</td>
+    </tr>
     <table cellpadding="6">
       <tr>
         <th>{{ form.read_code.label_tag }}</th>

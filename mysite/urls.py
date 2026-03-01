@@ -49,4 +49,5 @@ urlpatterns = [
     path("read-snomed/uk/<int:pk>/delete/", views.ReadSnomedUkMapDelete.as_view(), name="read_snomed_uk_delete"),
     path("read-snomed/admin/unlock/", views.read_snomed_admin_unlock, name="read_snomed_admin_unlock"),
     path("read-snomed/admin/lock/", views.read_snomed_admin_lock, name="read_snomed_admin_lock"),
+    path("read-snomed/new/", views.ReadSnomedMapCreate.as_view(), name="read_snomed_new"),
 ]

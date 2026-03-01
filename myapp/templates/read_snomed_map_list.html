@@ -20,9 +20,9 @@
     </form>
 
     {% if base_url == "read_snomed_int" %}
-      <a href="{% url 'read_snomed_int_new' %}" style="margin-left:8px;">+ New</a>
+      <a href="{% url 'read_snomed_new' %}?ds=INT" style="margin-left:8px;">+ New</a>
     {% else %}
-      <a href="{% url 'read_snomed_uk_new' %}" style="margin-left:8px;">+ New</a>
+      <a href="{% url 'read_snomed_new' %}?ds=UK" style="margin-left:8px;">+ New</a>
     {% endif %}
   </div>
 

@@ -2,6 +2,7 @@ from django import forms
 from django.conf import settings
 from pathlib import Path
 from .models import ReadSnomedIntMap, ReadSnomedUkMap
+import re
 
 
 def _choices_from_library():
@@ -48,3 +49,30 @@ class ReadSnomedUkMapForm(forms.ModelForm):
             "description_id": forms.TextInput(),
             "term": forms.Textarea(attrs={"rows": 4}),
         }
+
+DATASET_CHOICES = [
+    ("INT", "INT (preferred)"),
+    ("UK", "UK (extension)"),
+]
+
+class ReadSnomedMapCreateForm(forms.Form):
+    dataset = forms.ChoiceField(choices=DATASET_CHOICES, initial="INT")
+    read_code = forms.CharField(max_length=10)
+    concept_id = forms.CharField(required=False)
+    description_id = forms.CharField(required=False)
+    term = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 4}))
+
+    def clean_read_code(self):
+        v = (self.cleaned_data.get("read_code") or "").strip()
+        v = re.sub(r"\.+$", "", v)  # strip trailing dots
+        return v[:10]
+
+    def clean_concept_id(self):
+        v = (self.cleaned_data.get("concept_id") or "").strip()
+        m = re.search(r"\b\d{6,18}\b", v)
+        return m.group(0) if m else v
+
+    def clean_description_id(self):
+        v = (self.cleaned_data.get("description_id") or "").strip()
+        m = re.search(r"\b\d{6,18}\b", v)
+        return m.group(0) if m else v

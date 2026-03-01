@@ -5,6 +5,7 @@ from .models import TexSnapshot
 from .models import ReadSnomedIntMap, ReadSnomedUkMap
 from .forms import ReadSnomedIntMapForm, ReadSnomedUkMapForm
 from .forms import TexUploadForm
+from .forms import ReadSnomedMapCreateForm
 from .tex_parser import parse_tex
 from django.http import JsonResponse
 from django.conf import settings
@@ -30,7 +31,7 @@ from django.http import FileResponse, Http404
 
 # mapping views
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, FormView
 from django.db.models import Q
 
 import os
@@ -949,3 +950,37 @@ class ReadSnomedUkMapDelete(DeleteView):
         ctx["cancel_url"] = reverse_lazy("read_snomed_uk_list")
         return ctx
 
+class ReadSnomedMapCreate(ReadSnomedAdminRequiredMixin, FormView):
+    template_name = "read_snomed_map_form.html"
+    form_class = ReadSnomedMapCreateForm
+
+    def get_initial(self):
+        initial = super().get_initial()
+        ds = (self.request.GET.get("ds") or "").strip().upper()
+        if ds in ("INT", "UK"):
+            initial["dataset"] = ds
+        return initial
+
+    def form_valid(self, form):
+        ds = form.cleaned_data["dataset"]
+        data = {
+            "read_code": form.cleaned_data["read_code"],
+            "concept_id": form.cleaned_data["concept_id"],
+            "description_id": form.cleaned_data["description_id"],
+            "term": form.cleaned_data["term"],
+        }
+        if ds == "UK":
+            ReadSnomedUkMap.objects.create(**data)
+            return super().form_valid(form)  # uses get_success_url
+        ReadSnomedIntMap.objects.create(**data)
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        ds = (self.request.POST.get("dataset") or "INT").upper()
+        return reverse_lazy("read_snomed_uk_list" if ds == "UK" else "read_snomed_int_list")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["is_create"] = True
+        ctx["cancel_url"] = reverse_lazy("read_snomed_int_list")  # sensible default
+        return ctx
