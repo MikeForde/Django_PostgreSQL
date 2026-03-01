@@ -2269,7 +2269,12 @@
             // Show SNOMED ConceptId + term from DB tables
             // Use a distinct symbol so it's obvious it came from local maps
             badge.textContent = 'NHS';
-            badge.className = 'rc-decision badge badge--ok';
+
+            // If DescriptionId is 0 => NHS recommended replacement was used
+            const replaced = String(rec.description_id ?? '') === '0';
+            badge.className = replaced
+              ? 'rc-decision badge badge--nhs-replaced'
+              : 'rc-decision badge badge--ok';
 
             const row = badge.closest('.rc-row');
             if (row) {
@@ -2278,9 +2283,13 @@
             }
 
             const src = rec.source === 'INT' ? 'International' : 'UK Extension';
+            const replacedNote = (String(rec.description_id ?? '') === '0')
+              ? '\nNote: ConceptId mapping changed based on NHS SNOMED Browser data'
+              : '';
+
             badge.setAttribute(
               'data-tip',
-              `NHS Mapping (${src})\nSNOMED ConceptId: ${rec.concept_id}\nTerm: ${rec.term}${extra}`
+              `NHS Mapping (${src})\nSNOMED ConceptId: ${rec.concept_id}\nTerm: ${rec.term}${replacedNote}${extra}`
             );
           });
           })
@@ -2308,8 +2317,13 @@
             const rec = localResults && localResults[base];
 
             if (rec) {
-              b.textContent = 'NHS';
-              b.className = 'rc-decision badge badge--ok';
+              badge.textContent = 'NHS';
+
+              // If DescriptionId is 0 => NHS recommended replacement was used
+              const replaced = String(rec.description_id ?? '') === '0';
+              badge.className = replaced
+                ? 'rc-decision badge badge--nhs-replaced'
+                : 'rc-decision badge badge--ok';
               const row = badge.closest('.rc-row');
               if (row) {
                 row.dataset.snomedConcept = rec.concept_id;
@@ -2317,9 +2331,13 @@
               }
               
               const src = rec.source === 'INT' ? 'International' : 'UK Extension';
-              b.setAttribute(
+              const replacedNote = (String(rec.description_id ?? '') === '0')
+                ? '\nNote: ConceptId mapping changed based on NHS SNOMED Browser data'
+                : '';
+
+              badge.setAttribute(
                 'data-tip',
-                `NHS Mapping (${src})\nSNOMED ConceptId: ${rec.concept_id}\nTerm: ${rec.term}${extra}`
+                `NHS Mapping (${src})\nSNOMED ConceptId: ${rec.concept_id}\nTerm: ${rec.term}${replacedNote}${extra}`
               );
             } else {
               b.textContent = '✗';
@@ -2417,32 +2435,156 @@
     const NHS_TERM_BROWSER_BASE =
       'https://termbrowser.nhs.uk/?perspective=full&conceptId1=';
 
+    const NHS_KAHOOTZ_BASE =
+      'https://nhsengland.kahootz.com/t_c_home/viewDatastore?datviewmode=list&nexturl=&sortdir1=asc&cardcolno=&showsingleitem=N&sort=&shownum=10&sourcedsid=&sortdir3=&sortcol3=&sortdir2=&dsid=407588&objectid=407588&showadvancedsearch=N&adv=&showallcolumns=N&rowid=&sel=&action=&sortcol1=col_0&ajaxmode=&sortcol2=&search=';
+
     const sidebar = document.getElementById('readcodes-sidebar');
     if (!sidebar) return;
 
+    // ----------------- helpers -----------------
     function extractConceptIdFromTip(tip){
-      // Your tip contains lines like: "416745009 - On examination - ..."
-      // SNOMED conceptIds are typically 6–18 digits; be conservative.
       const m = String(tip || '').match(/\b\d{6,18}\b/);
       return m ? m[0] : '';
     }
 
     function getConceptId(row, badge){
-      // 1) stored explicitly on row (local lookup path)
       let cid = (row?.dataset?.snomedConcept || '').trim();
       if (cid) return cid;
 
-      // 2) stored explicitly on badge (optional future improvement)
       cid = (badge?.dataset?.conceptId || '').trim();
       if (cid) return cid;
 
-      // 3) parse from tooltip text (covers your TRIQQBC1 example)
       cid = extractConceptIdFromTip(badge?.getAttribute('data-tip'));
       if (cid) return cid;
 
       return '';
     }
 
+    function getReadCode(row){
+      let code = (row?.getAttribute('data-read-code') || '').trim();
+      code = code.replace(/^Last Entry for\s+/i, '').trim();
+      return code;
+    }
+
+    function snowfusionUrl(readCode, conceptId){
+      if (conceptId) return SNOWFUSION_BASE + 'snomed/' + encodeURIComponent(conceptId);
+      if (readCode)  return SNOWFUSION_BASE + 'review/' + encodeURIComponent(readCode);
+      return '';
+    }
+
+    // ----------------- popover menu -----------------
+    let menu = null;
+
+    function ensureMenu(){
+      if (menu) return menu;
+
+      menu = document.createElement('div');
+      menu.id = 'rc-nav-menu';
+      Object.assign(menu.style, {
+        position: 'fixed',
+        zIndex: 3000,
+        display: 'none',
+        minWidth: '260px',
+        background: '#fff',
+        border: '1px solid #ccc',
+        borderRadius: '8px',
+        boxShadow: '0 6px 18px rgba(0,0,0,.2)',
+        padding: '6px',
+        font: '12px/1.3 Arial, sans-serif'
+      });
+
+      // click inside shouldn't close
+      menu.addEventListener('click', (e) => e.stopPropagation());
+
+      document.body.appendChild(menu);
+
+      // close on outside click / Esc
+      document.addEventListener('click', hideMenu);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideMenu(); });
+
+      return menu;
+    }
+
+    function hideMenu(){
+      if (menu) menu.style.display = 'none';
+    }
+
+    function positionMenu(anchorEl){
+      const rect = anchorEl.getBoundingClientRect();
+      const m = ensureMenu();
+      m.style.display = 'block'; // show first so we know size
+
+      const pad = 8;
+      const vw = window.innerWidth, vh = window.innerHeight;
+
+      let left = rect.right + pad;
+      let top  = rect.top + rect.height / 2 - m.offsetHeight / 2;
+
+      if (left + m.offsetWidth + pad > vw) left = rect.left - m.offsetWidth - pad;
+      if (top < pad) top = pad;
+      const maxTop = vh - m.offsetHeight - pad;
+      if (top > maxTop) top = maxTop;
+
+      m.style.left = left + 'px';
+      m.style.top  = top + 'px';
+    }
+
+    function addSection(title){
+      const m = ensureMenu();
+      const h = document.createElement('div');
+      h.textContent = title;
+      Object.assign(h.style, {
+        padding: '6px 8px',
+        fontWeight: 'bold',
+        borderTop: '1px solid #eee',
+        marginTop: '4px'
+      });
+      m.appendChild(h);
+    }
+
+    function addItem(label, url){
+      const m = ensureMenu();
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = label;
+      Object.assign(a.style, {
+        display: 'block',
+        padding: '6px 8px',
+        borderRadius: '6px',
+        color: '#0645ad',
+        textDecoration: 'none'
+      });
+      a.addEventListener('mouseenter', () => a.style.background = '#f2f2f2');
+      a.addEventListener('mouseleave', () => a.style.background = 'transparent');
+      m.appendChild(a);
+    }
+
+    function showNavMenu(anchorEl, { readCode, conceptId }){
+      const m = ensureMenu();
+      m.innerHTML = ''; // reset
+
+      // --- NHS section ---
+      addSection('NHS');
+
+      const sf = snowfusionUrl(readCode, conceptId);
+      if (sf) addItem('SnowFusion (default)', sf);
+
+      if (conceptId) {
+        addItem('NHS SNOMED Browser (ConceptId)', NHS_TERM_BROWSER_BASE + encodeURIComponent(conceptId));
+      }
+
+      if (readCode) {
+        addItem('NHS ReadCode search (Kahootz)', NHS_KAHOOTZ_BASE + encodeURIComponent(readCode));
+      }
+
+      // TODO later: other providers (e.g. SNOMED International browser, etc.)
+
+      positionMenu(anchorEl);
+    }
+
+    // ----------------- click handling -----------------
     sidebar.addEventListener('click', (e) => {
       const badge = e.target.closest('.rc-decision');
       if (!badge) return;
@@ -2450,43 +2592,22 @@
       const row = badge.closest('.rc-row');
       if (!row) return;
 
+      const readCode  = getReadCode(row);
       const conceptId = getConceptId(row, badge);
 
-      // Ctrl (Win/Linux) or Cmd (Mac) click => NHS SNOMED browser (if we have a conceptId)
+      // Ctrl/Cmd-click => show menu (instead of navigating)
       if (e.ctrlKey || e.metaKey) {
-        if (conceptId) {
-          e.preventDefault();
-          window.open(
-            NHS_TERM_BROWSER_BASE + encodeURIComponent(conceptId),
-            '_blank',
-            'noopener'
-          );
-        }
+        e.preventDefault();
+        e.stopPropagation();
+        showNavMenu(badge, { readCode, conceptId });
         return;
       }
 
-      // Normal click:
-      // If conceptId known => SnowFusion /snomed/<conceptId>
-      if (conceptId) {
-        window.open(
-          SNOWFUSION_BASE + 'snomed/' + encodeURIComponent(conceptId),
-          '_blank',
-          'noopener'
-        );
-        return;
+      // Normal click => current behaviour (SnowFusion)
+      const url = snowfusionUrl(readCode, conceptId);
+      if (url) {
+        window.open(url, '_blank', 'noopener');
       }
-
-      // Otherwise => SnowFusion /review/<readcode>
-      let code = (row.getAttribute('data-read-code') || '')
-        .replace(/^Last Entry for\s+/i, '')
-        .trim();
-      if (!code) return;
-
-      window.open(
-        SNOWFUSION_BASE + 'review/' + encodeURIComponent(code),
-        '_blank',
-        'noopener'
-      );
     });
   })();
 </script>

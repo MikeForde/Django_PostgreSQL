@@ -101,7 +101,7 @@ def read_snomed_lookup(request):
     int_rows = (
         ReadSnomedIntMap.objects
         .filter(read_code__in=normed)
-        .values("read_code", "concept_id", "term")
+        .values("read_code", "concept_id", "term", "description_id")
     )
     for r in int_rows:
         rc = r["read_code"]
@@ -111,6 +111,7 @@ def read_snomed_lookup(request):
                 "source": "INT",
                 "concept_id": r["concept_id"],
                 "term": r["term"],
+                "description_id": r["description_id"],
             }
 
     # --- UK for the remainder ---
@@ -119,7 +120,7 @@ def read_snomed_lookup(request):
         uk_rows = (
             ReadSnomedUkMap.objects
             .filter(read_code__in=remaining)
-            .values("read_code", "concept_id", "term")
+            .values("read_code", "concept_id", "term", "description_id")
         )
         for r in uk_rows:
             rc = r["read_code"]
@@ -128,6 +129,7 @@ def read_snomed_lookup(request):
                     "source": "UK",
                     "concept_id": r["concept_id"],
                     "term": r["term"],
+                    "description_id": r["description_id"],
                 }
 
     return JsonResponse({"results": results})

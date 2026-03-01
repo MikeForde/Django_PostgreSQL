@@ -17,6 +17,11 @@
     .badge--miss{ background:#ffffff; border-color:#ffffff; color:#ffffff; }
     .badge--query { background: #353535ff; border-color: #9a9a9aff; color: #ffffff; }
     .badge--loose{ background:#fb9295; border-color:#e8e8e8; color:#ffffff; }
+    .badge--nhs-replaced {
+      background: #f4e8ff;    /* pale lilac */
+      color: #4b1d7a;
+      border: 1px solid #d9c2ff;
+    }
     .rc-decision{ cursor:pointer; } 
     .readcode-highlight {
       outline: 2px solid #ffbf47;
