@@ -2272,9 +2272,12 @@
 
             // If DescriptionId is 0 => NHS recommended replacement was used
             const replaced = String(rec.description_id ?? '') === '0';
+            const inactive = String(rec.description_id ?? '') === '-1';
             badge.className = replaced
               ? 'rc-decision badge badge--nhs-replaced'
-              : 'rc-decision badge badge--ok';
+              : inactive
+                ? 'rc-decision badge badge--loose'
+                : 'rc-decision badge badge--ok';
 
             const row = badge.closest('.rc-row');
             if (row) {
@@ -2321,8 +2324,11 @@
 
               // If DescriptionId is 0 => NHS recommended replacement was used
               const replaced = String(rec.description_id ?? '') === '0';
+              const inactive = String(rec.description_id ?? '') === '-1';
               badge.className = replaced
-                ? 'rc-decision badge badge--nhs-replaced'
+              ? 'rc-decision badge badge--nhs-replaced'
+              : inactive
+                ? 'rc-decision badge badge--loose'
                 : 'rc-decision badge badge--ok';
               const row = badge.closest('.rc-row');
               if (row) {
