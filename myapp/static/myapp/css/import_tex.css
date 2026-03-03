@@ -24,9 +24,7 @@
       border: 1px solid #d9c2ff;
     }
     .badge--nhs-inactive {
-      background: #ffe8ef;    /* pale lilac */
-      color: #7a1d2c;
-      border: 1px solid #ffc2d6;
+      background:#fb9295; border-color:#e8e8e8; color:#ffffff;
     }
     .rc-decision{ cursor:pointer; } 
     .readcode-highlight {
