@@ -112,8 +112,8 @@
     const isCross = (d === '✗' || d === '✕' || d === '×');
 
     // --- exact mappings you requested ---
-    if (d === 'NHS' && cls.includes('badge--ok')) return 'NHS Digital Mapping';
-    if (d === 'NHS' && cls.includes('badge--loose')) return 'No valid active SNOMED map';
+    if (d === 'NHS' && cls.includes('badge--nhs-ok')) return 'NHS Digital Mapping';
+    if (d === 'NHS' && cls.includes('badge--nhs-inactive')) return 'No valid active SNOMED map';
     if (d === 'NHS' && cls.includes('badge--nhs-replaced')) return 'NHS Digital Mapping updated using NHS SNOMED browser';
 
     if (isSwap && cls.includes('badge--ok')) return 'Automatically mapped to SNOMED (concept with same term)';

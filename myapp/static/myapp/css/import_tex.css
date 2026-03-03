@@ -9,14 +9,15 @@
     background-color: var(--label-bg, #fff);
   }
 
-    .badge{ margin-left:8px; padding:1px 6px; border-radius:4px; font-size:11px; }
+    .badge{ margin-left:0px; padding:1px 6px; border-radius:4px; font-size:11px; }
     .badge--pending{ background:#eee; color:#666; }
-    .badge--create{ background:#c9fcd6; border-color:#91d5ff; color:#055118; }
-    .badge--ok{ background:#e6f7ff; border-color:#91d5ff; color:#096dd9; }
-    .badge--warn{ background:#fffbe6; border-color:#ffe58f; color:#ad6800; }
-    .badge--miss{ background:#ffffff; border-color:#ffffff; color:#ffffff; }
-    .badge--query { background: #353535ff; border-color: #9a9a9aff; color: #ffffff; }
-    .badge--loose{ background:#fb9295; border-color:#e8e8e8; color:#ffffff; }
+    .badge--create{ background:#c9fcd6; border-color:#91d5ff; color:#055118; margin-right: 8px; margin-left: 8px;}
+    .badge--ok{ background:#e6f7ff; border-color:#91d5ff; color:#096dd9;  margin-right: 8px; margin-left: 8px;}
+    .badge--nhs-ok{ background:#e6f7ff; border-color:#91d5ff; color:#096dd9; }
+    .badge--warn{ background:#fffbe6; border-color:#ffe58f; color:#ad6800; margin-right: 8px; margin-left: 8px;}
+    .badge--miss{ background:#ffffff; border-color:#ffffff; color:#ffffff; margin-right: 8px; margin-left: 8px;}
+    .badge--query { background: #353535ff; border-color: #9a9a9aff; color: #ffffff; margin-right: 8px; margin-left: 8px; }
+    .badge--loose{ background:#fb9295; border-color:#e8e8e8; color:#ffffff; margin-right: 8px; margin-left: 8px;}
     .badge--nhs-replaced {
       background: #f4e8ff;    /* pale lilac */
       color: #4b1d7a;

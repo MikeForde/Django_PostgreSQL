@@ -3,7 +3,7 @@
 {% load static %}
 {% block title %}Templates | TT-MICP{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'myapp/css/import_tex.css' %}">
+<link rel="stylesheet" href="{% static 'myapp/css/import_tex.css' %}?v=1">
 {% endblock %}
 {% block content %}
 
@@ -1214,8 +1214,8 @@
             <ul id="readcode-list" style="margin:0 0 12px; padding-left:18px;">
               {% for rc in all_read_codes %}
                 <li class="rc-row" data-read-code="{{ rc.code }}">
-                  <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
                   <span class="rc-decision badge badge--pending" title="Decision">checking…</span>
+                  <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
                 </li>
               {% endfor %}
             </ul>
@@ -1228,8 +1228,8 @@
             <ul id="diarycode-list" style="margin:0; padding-left:18px;">
               {% for rc in diary_read_codes %}
                 <li class="rc-row" data-read-code="{{ rc.code }}">
-                  <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
                   <span class="rc-decision badge badge--pending" title="Decision">checking…</span>
+                  <code class="rc-code">{{ rc.code }}</code> — <span class="rc-label">{{ rc.label }}</span>
                 </li>
               {% endfor %}
             </ul>
@@ -1557,6 +1557,12 @@
         li.setAttribute('data-read-code', code);
         if (autoText) li.dataset.autotext = autoText;      // ← store for tooltip
 
+        // decision badge placeholder
+        var b = document.createElement('span');
+        b.className = 'rc-decision badge badge--pending';
+        b.textContent = 'checking…';
+        li.appendChild(b);
+
         var c  = document.createElement('code');
         c.className = 'rc-code';
         c.textContent = code;
@@ -1567,12 +1573,6 @@
           spanLbl.textContent = ' — ' + label;
           li.appendChild(spanLbl);
         }
-
-        // decision badge placeholder
-        var b = document.createElement('span');
-        b.className = 'rc-decision badge badge--pending';
-        b.textContent = 'checking…';
-        li.appendChild(b);
 
         ul.appendChild(li);
         seen.add(code);
@@ -2173,13 +2173,13 @@
     return (code || '').replace(/\.+$/,''); // remove ONLY trailing dots
   }
 
-  function classFor(decision){
-    if (!decision) return 'badge--miss';
+  function classFor(decision){  
+    if (!decision) return 'badge badge--miss';
     const d = String(decision).toLowerCase();
-    if (d.includes('dms')) return 'badge--create';
-    if (d.includes('inactivate')) return 'badge--loose';
-    if (d.includes('manual')) return 'badge--warn';
-    if (d.includes('api') || d.includes('exact') || d.includes('auto')) return 'badge--ok';
+    if (d.includes('dms')) return 'badge badge--create';
+    if (d.includes('inactivate')) return 'badge badge--loose';
+    if (d.includes('manual')) return 'badge badge--warn';
+    if (d.includes('api') || d.includes('exact') || d.includes('auto')) return 'badge badge--ok';
     return 'badge--ok';
   }
 
@@ -2276,8 +2276,8 @@
             badge.className = replaced
               ? 'rc-decision badge badge--nhs-replaced'
               : inactive
-                ? 'rc-decision badge badge--loose'
-                : 'rc-decision badge badge--ok';
+                ? 'rc-decision badge badge--nhs-inactive'
+                : 'rc-decision badge badge--nhs-ok';
 
             const row = badge.closest('.rc-row');
             if (row) {
@@ -2328,8 +2328,8 @@
               badge.className = replaced
               ? 'rc-decision badge badge--nhs-replaced'
               : inactive
-                ? 'rc-decision badge badge--loose'
-                : 'rc-decision badge badge--ok';
+                ? 'rc-decision badge badge--nhs-inactive'
+                : 'rc-decision badge badge--nhs-ok';
               const row = badge.closest('.rc-row');
               if (row) {
                 row.dataset.snomedConcept = rec.concept_id;
