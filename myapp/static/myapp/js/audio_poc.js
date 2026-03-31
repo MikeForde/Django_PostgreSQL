@@ -20,9 +20,13 @@ $(document).ready(function () {
     var cDay = currentDate.getDate();
     var cMonth = currentDate.getMonth() + 1;
     var cYear = currentDate.getFullYear();
+
+    // Demo DOB = today minus 35 years
+    var demoDob = new Date(currentDate.getFullYear() - 35, currentDate.getMonth(), currentDate.getDate());
+
     dtCurrent.value = "" + cDay + "/" + cMonth + "/" + cYear;
     if (dtPrevious) dtPrevious.addEventListener("change", () => updateAudio("canvas"));
-    if (dtCurrent)  dtCurrent.addEventListener("change",  () => updateAudio("canvas"));
+    if (dtCurrent) dtCurrent.addEventListener("change", () => updateAudio("canvas"));
 
     function setToday(el) {
         if (!el) return;
@@ -32,11 +36,42 @@ $(document).ready(function () {
         } else {
             const d = new Date();
             const pad = n => String(n).padStart(2, "0");
-            el.value = `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+            el.value = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
         }
     }
 
-    if (dtCurrent && !dtCurrent.value)  setToday(dtCurrent);
+    if (dtCurrent && !dtCurrent.value) setToday(dtCurrent);
+
+    function parseInputDate(d) {
+        if (!d) return null;
+
+        if (d.includes("-")) {
+            const [yyyy, mm, dd] = d.split("-").map(Number);
+            if (!yyyy || !mm || !dd) return null;
+            return new Date(yyyy, mm - 1, dd);
+        }
+
+        if (d.includes("/")) {
+            const [dd, mm, yyyy] = d.split("/").map(Number);
+            if (!yyyy || !mm || !dd) return null;
+            return new Date(yyyy, mm - 1, dd);
+        }
+
+        const t = new Date(d);
+        return isNaN(t) ? null : t;
+    }
+
+    function calculateAgeAtDate(dob, onDate) {
+        if (!dob || !onDate) return 35; // demo-safe fallback
+
+        let age = onDate.getFullYear() - dob.getFullYear();
+        const monthDiff = onDate.getMonth() - dob.getMonth();
+
+        if (monthDiff < 0 || (monthDiff === 0 && onDate.getDate() < dob.getDate())) {
+            age--;
+        }
+        return age;
+    }
 
 
     // === original functions (unaltered logic) ===
@@ -46,7 +81,7 @@ $(document).ready(function () {
         columnSize = 48;            // top padding
         var rowSize = 56;           // left padding (room for y labels)
         BOTTOM_PAD = 48;            // bottom padding (global)
-        RIGHT_PAD  = 24;        // right padding
+        RIGHT_PAD = 24;        // right padding
         var xAxis = ["500Hz", "1KHz", "2KHz", "3KHz", "4KHz", "6KHz", "8KHz"];
 
         canvas = document.getElementById(canvasName);
@@ -61,7 +96,7 @@ $(document).ready(function () {
         ORIGIN_Y = columnSize;        // global origin for Y
 
         yScale = (canvas.height - columnSize - BOTTOM_PAD) / (Val_max - Val_min);
-        xScale = (canvas.width  - ORIGIN_X   - RIGHT_PAD)  / sections;
+        xScale = (canvas.width - ORIGIN_X - RIGHT_PAD) / sections;
 
         var xOffSet = (0.06 * xScale);
 
@@ -145,9 +180,9 @@ $(document).ready(function () {
     function drawLegendFor(canvasName) {
         // legend placement
         const startX = ORIGIN_X - 40;
-        const baseY  = ORIGIN_Y - 39; 
-        const lineW  = 14;
-        const rowH   = 14;
+        const baseY = ORIGIN_Y - 39;
+        const lineW = 14;
+        const rowH = 14;
         const txtOff = 20;
 
         // legend rows per canvas
@@ -155,14 +190,14 @@ $(document).ready(function () {
         if (canvasName === "canvas" || canvasName === "canvas2") {
             // Current / Previous charts -> Right vs Left
             rows = [
-            { label: "Right", color: "#FF0066", symbol: "o" },
-            { label: "Left",  color: "#3341ff", symbol: "x" },
+                { label: "Right", color: "#FF0066", symbol: "o" },
+                { label: "Left", color: "#3341ff", symbol: "x" },
             ];
         } else {
             // Right / Left charts -> Current vs Previous
             rows = [
-            { label: "Current",  color: "#ff6d4e", symbol: "x" }, 
-            { label: "Previous", color: "#009a00", symbol: "o" },   
+                { label: "Current", color: "#ff6d4e", symbol: "x" },
+                { label: "Previous", color: "#009a00", symbol: "o" },
             ];
         }
 
@@ -193,6 +228,8 @@ $(document).ready(function () {
 
 
     window.showAnalysis = function (canvasName) {
+        fnCalcWarnReferLevels(); // always refresh before analysis
+
         var lblA;
         if (canvasName == "canvas") {
             lblA = document.querySelector("[data-id='lblAnalysis'] div");
@@ -266,16 +303,29 @@ $(document).ready(function () {
 
     window.fnCalcWarnReferLevels = function () {
         var txtGender = document.querySelector("[data-id='txtGender']");
+        var txtAge = document.querySelector("[data-id='txtAge']");
         var arrWarnRefer;
-        if (txtGender.value == "M") {
+
+        if (txtGender && txtGender.value == "M") {
             arrWarnRefer = [51, 95, 67, 113, 82, 132, 100, 154, 121, 183, 142, 211, 165, 240, 190, 269, 217, 296, 235, 311];
         } else {
             arrWarnRefer = [46, 78, 55, 91, 63, 105, 71, 119, 80, 134, 93, 153, 111, 176, 131, 204, 157, 235, 175, 255];
         }
-        var txtAge = document.querySelector("[data-id='txtAge']");
-        var iAge = +txtAge.value;
-        if (iAge < 20) iAge = 20; else if (iAge > 69) iAge = 69;
-        iAge = parseInt((iAge - 20) / 5); iAge = iAge * 2;
+
+        // Age must be the age at the date of the CURRENT audiogram.
+        // Demo rule: patient DOB is fixed at "today minus 35 years".
+        var audioDate = parseInputDate(dtCurrent ? dtCurrent.value : "");
+        var iAge = calculateAgeAtDate(demoDob, audioDate || new Date());
+
+        // Keep visible field in sync for demo clarity, if present
+        if (txtAge) txtAge.value = iAge;
+
+        if (iAge < 20) iAge = 20;
+        else if (iAge > 69) iAge = 69;
+
+        iAge = parseInt((iAge - 20) / 5, 10);
+        iAge = iAge * 2;
+
         iWarning = arrWarnRefer[iAge];
         iRefer = arrWarnRefer[iAge + 1];
     };
@@ -332,7 +382,7 @@ $(document).ready(function () {
         var dCalcLeftHigh = (iSumLeftHigh - iSumLeft2High) / dDiff;
         var dCalcRightHigh = (iSumRightHigh - iSumRight2High) / dDiff;
 
-        if (dCalcLeftHigh >= 10|| dCalcRightHigh >= 10) {
+        if (dCalcLeftHigh >= 10 || dCalcRightHigh >= 10) {
             sReport = "Audiogram shows rapid hearing loss: refer to the Medical Officer or an occupationally qualified nurse.";
         } else {
             sReport = "No indication of rapid hearing loss.";
@@ -349,40 +399,15 @@ $(document).ready(function () {
     function Round1(val) { return Math.round(val * 10) / 10; }
 
     function DateDiff(date1, date2) {
-        // returns years as a floating-point number (not floored)
-        function parse(d) {
-            if (!d) return null;
-
-            // Support native date inputs: YYYY-MM-DD
-            if (d.includes("-")) {
-            const [yyyy, mm, dd] = d.split("-").map(Number);
-            if (!yyyy || !mm || !dd) return null;
-            return new Date(yyyy, mm - 1, dd);
-            }
-
-            // Support legacy text inputs: DD/MM/YYYY
-            if (d.includes("/")) {
-            const [dd, mm, yyyy] = d.split("/").map(Number);
-            if (!yyyy || !mm || !dd) return null;
-            return new Date(yyyy, mm - 1, dd);
-            }
-
-            // Fallback: let Date try
-            const t = new Date(d);
-            return isNaN(t) ? null : t;
-        }
-
-        const dt1 = parse(date1);
-        const dt2 = parse(date2);
-        if (!dt1 || !dt2) return 1; // safe fallback (prevents NaN and /0)
+        const dt1 = parseInputDate(date1);
+        const dt2 = parseInputDate(date2);
+        if (!dt1 || !dt2) return 1;
 
         const ms = dt2.getTime() - dt1.getTime();
-        // Use 365.25 to approximate leap years
         const years = ms / (1000 * 60 * 60 * 24 * 365.25);
 
-        // Guard against zero/negative intervals (same day or reversed)
         return (years > 0 ? years : 1);
-     }
+    }
 
     function fnGetLowH(iSum) { return (iSum > 150) ? 4 : (iSum > 84) ? 3 : (iSum > 45) ? 2 : 1; }
     function fnGetHighH(iSum) { return (iSum > 210) ? 4 : (iSum > 123) ? 3 : (iSum > 45) ? 2 : 1; }
@@ -419,7 +444,7 @@ $(document).ready(function () {
 
         var txtBoxLName = "TextBoxL", txtBoxRName = "TextBoxR";
         for (i = 1; i <= 3; i++) { let L = document.querySelector("[data-id='" + txtBoxLName + i + "']"); let R = document.querySelector("[data-id='" + txtBoxRName + i + "']"); iSumLeftLow += +L.value; iSumRightLow += +R.value; }
-        for (i = 4; i <= 6; i++){ let L=document.querySelector("[data-id='"+txtBoxLName+i+"']"); let R=document.querySelector("[data-id='"+txtBoxRName+i+"']"); iSumLeftHigh+=+L.value; iSumRightHigh+=+R.value; }
+        for (i = 4; i <= 6; i++) { let L = document.querySelector("[data-id='" + txtBoxLName + i + "']"); let R = document.querySelector("[data-id='" + txtBoxRName + i + "']"); iSumLeftHigh += +L.value; iSumRightHigh += +R.value; }
 
         iHLeftLow = fnGetLowH(iSumLeftLow); iHRightLow = fnGetLowH(iSumRightLow);
         iHLeftHigh = fnGetHighH(iSumLeftHigh); iHRightHigh = fnGetHighH(iSumRightHigh);
@@ -432,7 +457,7 @@ $(document).ready(function () {
 
         txtBoxLName = "TextBoxLC"; txtBoxRName = "TextBoxRC";
         for (i = 1; i <= 3; i++) { let L = document.querySelector("[data-id='" + txtBoxLName + i + "']"); let R = document.querySelector("[data-id='" + txtBoxRName + i + "']"); iSumLeft2Low += +L.value; iSumRight2Low += +R.value; }
-        for (i = 4; i <= 6; i++) { let L = document.querySelector("[data-id='"+txtBoxLName+i+"']"); let R=document.querySelector("[data-id='"+txtBoxRName+i+"']"); iSumLeft2High+=+L.value; iSumRight2High+=+R.value; }
+        for (i = 4; i <= 6; i++) { let L = document.querySelector("[data-id='" + txtBoxLName + i + "']"); let R = document.querySelector("[data-id='" + txtBoxRName + i + "']"); iSumLeft2High += +L.value; iSumRight2High += +R.value; }
 
         iHLeft2Low = fnGetLowH(iSumLeft2Low); iHRight2Low = fnGetLowH(iSumRight2Low);
         iHLeft2High = fnGetHighH(iSumLeft2High); iHRight2High = fnGetHighH(iSumRight2High);
@@ -460,6 +485,7 @@ $(document).ready(function () {
     }
 
     window.updateAudio = function (canvasName) {
+        fnCalcWarnReferLevels();
         draw(1, canvasName);
         draw(0, "canvas3");
         draw(0, "canvas4");
