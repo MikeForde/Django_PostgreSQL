@@ -39,7 +39,7 @@ $(document).ready(function () {
     if (dtCurrent && !dtCurrent.value)  setToday(dtCurrent);
 
 
-    // === Your original functions (unaltered logic) ===
+    // === original functions (unaltered logic) ===
     window.draw = function (bolCalc, canvasName) {
         sections = 7; Val_max = 130; Val_min = -20;
         var stepSize = 10;
@@ -332,14 +332,14 @@ $(document).ready(function () {
         var dCalcLeftHigh = (iSumLeftHigh - iSumLeft2High) / dDiff;
         var dCalcRightHigh = (iSumRightHigh - iSumRight2High) / dDiff;
 
-        if (dCalcLeftHigh > 9 || dCalcRightHigh > 9) {
+        if (dCalcLeftHigh >= 10|| dCalcRightHigh >= 10) {
             sReport = "Audiogram shows rapid hearing loss: refer to the Medical Officer or an occupationally qualified nurse.";
         } else {
             sReport = "No indication of rapid hearing loss.";
         }
 
         sReport += "\n\nCalculation: New date = " + dtNew + ", Old date = " + dtOld + ", Date Interval(years) = " + Round1(dDiff)
-            + "\nDifference divided by Date Interval Threshold > 9"
+            + "\nDifference divided by Date Interval Threshold >= 10"
             + "\nRIGHT Sum(3,4,6 KHz) = " + iSumRightHigh + ", Previous RIGHT Sum = " + iSumRight2High + ", Difference/Years = " + Round1(dCalcRightHigh)
             + "\nLEFT  Sum(3,4,6 KHz) = " + iSumLeftHigh + ", Previous LEFT  Sum = " + iSumLeft2High + ", Difference/Years = " + Round1(dCalcLeftHigh);
 
