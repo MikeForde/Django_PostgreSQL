@@ -21,12 +21,7 @@ $(document).ready(function () {
     var cMonth = currentDate.getMonth() + 1;
     var cYear = currentDate.getFullYear();
 
-    // Demo DOB = today minus 35 years
-    var demoDob = new Date(currentDate.getFullYear() - 35, currentDate.getMonth(), currentDate.getDate());
-
-    dtCurrent.value = "" + cDay + "/" + cMonth + "/" + cYear;
-    if (dtPrevious) dtPrevious.addEventListener("change", () => updateAudio("canvas"));
-    if (dtCurrent) dtCurrent.addEventListener("change", () => updateAudio("canvas"));
+    var dtBaseDob = document.querySelector("[data-id='dtBaseDob']");
 
     function setToday(el) {
         if (!el) return;
@@ -41,6 +36,30 @@ $(document).ready(function () {
     }
 
     if (dtCurrent && !dtCurrent.value) setToday(dtCurrent);
+
+    function setDefaultBaseDob(el) {
+        if (!el) return;
+
+        const today = new Date();
+        const dob = new Date(today.getFullYear() - 35, today.getMonth(), today.getDate());
+
+        if (el.type === "date") {
+            const yyyy = dob.getFullYear();
+            const mm = String(dob.getMonth() + 1).padStart(2, "0");
+            const dd = String(dob.getDate()).padStart(2, "0");
+            el.value = `${yyyy}-${mm}-${dd}`;
+        } else {
+            const pad = n => String(n).padStart(2, "0");
+            el.value = `${pad(dob.getDate())}/${pad(dob.getMonth() + 1)}/${dob.getFullYear()}`;
+        }
+    }
+
+    // Force default DOB on page load for demo mode
+    if (dtBaseDob) setDefaultBaseDob(dtBaseDob);
+
+    if (dtPrevious) dtPrevious.addEventListener("change", () => updateAudio("canvas"));
+    if (dtCurrent) dtCurrent.addEventListener("change", () => updateAudio("canvas"));
+    if (dtBaseDob) dtBaseDob.addEventListener("change", () => updateAudio("canvas"));
 
     function parseInputDate(d) {
         if (!d) return null;
@@ -297,6 +316,7 @@ $(document).ready(function () {
         }
         sReport += "\n\nCalculation: RIGHT Sum(1,2,3,4,6 KHz) = " + iSumRight +
             ", LEFT Sum(1,2,3,4, 6 KHz) = " + iSumLeft +
+            ", Age used = " + document.querySelector("[data-id='txtAge']").value +
             ", Thresholds: Warning >=" + iWarning + ", Referral >=" + iRefer;
         return sReport;
     }
@@ -312,12 +332,14 @@ $(document).ready(function () {
             arrWarnRefer = [46, 78, 55, 91, 63, 105, 71, 119, 80, 134, 93, 153, 111, 176, 131, 204, 157, 235, 175, 255];
         }
 
-        // Age must be the age at the date of the CURRENT audiogram.
-        // Demo rule: patient DOB is fixed at "today minus 35 years".
+        // Age is calculated from Base DOB at the date of the current audiogram
+        var baseDob = parseInputDate(dtBaseDob ? dtBaseDob.value : "");
         var audioDate = parseInputDate(dtCurrent ? dtCurrent.value : "");
-        var iAge = calculateAgeAtDate(demoDob, audioDate || new Date());
+        var iAge = calculateAgeAtDate(baseDob, audioDate || new Date());
 
-        // Keep visible field in sync for demo clarity, if present
+        // Demo-safe fallback if DOB missing/invalid
+        if (!baseDob) iAge = 35;
+
         if (txtAge) txtAge.value = iAge;
 
         if (iAge < 20) iAge = 20;
